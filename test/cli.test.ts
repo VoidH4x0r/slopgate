@@ -18,7 +18,7 @@ interface CliResult {
  * test files run in separate processes (the default), and capturing it there
  * corrupts the report.
  */
-async function run(args: readonly string[]): Promise<CliResult> {
+async function run(args: readonly string[], cwd = process.cwd()): Promise<CliResult> {
   const stdoutChunks: string[] = [];
   const stderrChunks: string[] = [];
   const status = await main(args, {
@@ -29,6 +29,7 @@ async function run(args: readonly string[]): Promise<CliResult> {
       stderrChunks.push(text);
     },
     isTTY: false,
+    cwd,
   });
   return { status, stdout: stdoutChunks.join(''), stderr: stderrChunks.join('') };
 }
@@ -488,7 +489,6 @@ test('cli: a nested package does not hide ancestor manifests or sibling modules'
 
 test('cli: a non-git package sees sibling modules from a workspace cwd', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cwd-crosspkg-'));
-  const previousCwd = process.cwd();
   try {
     await mkdir(path.join(dir, 'project', 'lib'), { recursive: true });
     await mkdir(path.join(dir, 'project', 'packages', 'app'), { recursive: true });
@@ -502,14 +502,13 @@ test('cli: a non-git package sees sibling modules from a workspace cwd', async (
       'from lib.util import f\n',
     );
 
-    // cwd is the *parent* of the project root, so the ancestor-chain indexing
-    // (not just lookup-root indexing) is required to see project/lib.
-    process.chdir(dir);
-    const result = await run([path.join(dir, 'project', 'packages', 'app'), '--no-color']);
+    // cwd is the parent of the project root, so ancestor-chain indexing (not
+    // just lookup-root indexing) is required to see project/lib. The relative
+    // target also proves the CLI uses the injected cwd rather than process.cwd.
+    const result = await run(['project/packages/app', '--no-color'], dir);
     assert.equal(result.status, 0, result.stderr);
     assert.doesNotMatch(result.stdout, /phantom-import/);
   } finally {
-    process.chdir(previousCwd);
     await rm(dir, { recursive: true, force: true });
   }
 });

@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 - Config `include` / `exclude` globs are matched relative to the config file's directory (or the project root when no config exists), so a root config still governs `slopgate backend` and CLI `--exclude generated/**` works without a config file.
-- Registry indexing is scoped to the repository/target, lazy-loads project deps, caches project/non-project ancestor checks, and respects `config.exclude`; MCP rebuilds the index per call so new modules and projects are visible, while configs invalidate on mtime. Non-git scans use a lookup boundary for ancestor manifests and Python-bearing top-level modules of every directory between the package and cwd.
+- Registry indexing is scoped to the repository/target, lazy-loads project deps, caches project/non-project ancestor checks, and respects `config.exclude`; MCP rebuilds the index per call so new modules and projects are visible, while configs invalidate on mtime. Non-git scans use a lookup boundary for ancestor manifests and bounded-recursion Python top-level modules (including namespace packages without `__init__.py`) between the package and cwd.
 - Python files choose the nearest **Python** manifest rather than a nested Node-only `package.json`; TS files use the nearest `package.json`; indexes cover ancestor manifests and sibling modules.
 - Python project markers are derived from the same list as `PYTHON_MANIFESTS` (`requirements-dev.txt`, `environment.yml`, etc.).
 - `pytest.warns` / `pytest.deprecated_call` count as assertions, but a plain `warnings.warn()` does not.

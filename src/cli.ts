@@ -259,6 +259,8 @@ export interface CliIo {
   out(text: string): void;
   err(text: string): void;
   isTTY: boolean;
+  /** Working directory for relative paths; injectable so tests avoid chdir. */
+  cwd: string;
 }
 
 /** Real process streams. Tests pass their own collector instead. */
@@ -267,6 +269,7 @@ export function defaultIo(): CliIo {
     out: (text) => process.stdout.write(text),
     err: (text) => process.stderr.write(text),
     isTTY: process.stdout.isTTY === true,
+    cwd: process.cwd(),
   };
 }
 
@@ -363,7 +366,7 @@ jobs:
 `;
 
 async function runInit(options: Options, io: CliIo, version: string): Promise<number> {
-  const requested = path.resolve(options.paths[0] ?? '.');
+  const requested = path.resolve(io.cwd, options.paths[0] ?? '.');
   // Find the repo root before creating a directory, so `init newdir` does not
   // leave an empty directory when the config belongs at the root.
   const repoRoot = await findGitRoot(requested);
@@ -376,18 +379,18 @@ async function runInit(options: Options, io: CliIo, version: string): Promise<nu
   const workflowPath = path.join(workflowRoot, '.github', 'workflows', 'slopgate.yml');
 
   if (!options.force && (await exists(configPath))) {
-    warn(io, options, `${path.relative(process.cwd(), configPath)} already exists (use --force to overwrite)`);
+    warn(io, options, `${path.relative(io.cwd, configPath)} already exists (use --force to overwrite)`);
   } else {
     await writeFile(configPath, JSON.stringify(initConfig(options.strict), null, 2) + '\n', 'utf8');
-    writeOut(io, `created ${path.relative(process.cwd(), configPath)}`);
+    writeOut(io, `created ${path.relative(io.cwd, configPath)}`);
   }
 
   if (!options.force && (await exists(workflowPath))) {
-    warn(io, options, `${path.relative(process.cwd(), workflowPath)} already exists (use --force to overwrite)`);
+    warn(io, options, `${path.relative(io.cwd, workflowPath)} already exists (use --force to overwrite)`);
   } else {
     await mkdir(path.dirname(workflowPath), { recursive: true });
     await writeFile(workflowPath, INIT_WORKFLOW(version, workflowTarget, options.strict), 'utf8');
-    writeOut(io, `created ${path.relative(process.cwd(), workflowPath)}`);
+    writeOut(io, `created ${path.relative(io.cwd, workflowPath)}`);
   }
 
   const policy = options.strict
@@ -409,8 +412,8 @@ interface ScanRun {
   onlyDiff: number;
 }
 
-async function runMcp(options: Options): Promise<number> {
-  const root = path.resolve(options.paths[0] ?? '.');
+async function runMcp(options: Options, cwd: string): Promise<number> {
+  const root = path.resolve(cwd, options.paths[0] ?? '.');
   const info = await stat(root).catch(() => undefined);
   if (!info?.isDirectory()) {
     throw new Error(`MCP root is not a directory: ${root}`);
@@ -420,9 +423,8 @@ async function runMcp(options: Options): Promise<number> {
 }
 
 /** Git root, else cwd when it contains the scan target, else the target itself. */
-function scopeBoundary(scanBase: string, repoRoot: string | undefined): string {
+function scopeBoundary(scanBase: string, repoRoot: string | undefined, cwd: string): string {
   if (repoRoot) return repoRoot;
-  const cwd = path.resolve(process.cwd());
   const relative = path.relative(cwd, scanBase);
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))
     ? cwd
@@ -433,14 +435,14 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   if (options.paths.length > 1) {
     throw new Error('only one path is supported; run slopgate once per path');
   }
-  const target = path.resolve(options.paths[0] ?? '.');
+  const target = path.resolve(io.cwd, options.paths[0] ?? '.');
   const targetInfo = await stat(target).catch(() => undefined);
   if (!targetInfo) {
     throw new Error(`path not found: ${target}`);
   }
   const scanBase = targetInfo.isFile() ? path.dirname(target) : target;
   const repoRoot = await findGitRoot(scanBase);
-  const scopeRoot = scopeBoundary(scanBase, repoRoot);
+  const scopeRoot = scopeBoundary(scanBase, repoRoot, io.cwd);
   const projectRoot = await resolveProjectRoot(scanBase, scopeRoot);
   // In git, a root config applies to every package. Without git, do not let a
   // parent project's config leak across a nested project boundary.
@@ -488,7 +490,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
 
   if (result.stats.files === 0) {
     throw new Error(
-      `no files matched under ${path.relative(process.cwd(), target) || '.'} (check include/exclude patterns)`,
+      `no files matched under ${path.relative(io.cwd, target) || '.'} (check include/exclude patterns)`,
     );
   }
 
@@ -507,7 +509,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     );
     writeOut(
       io,
-      `wrote ${result.findings.length} findings to ${path.relative(process.cwd(), writeTarget)} (baseline now ${baseline.entries.length})`,
+      `wrote ${result.findings.length} findings to ${path.relative(io.cwd, writeTarget)} (baseline now ${baseline.entries.length})`,
     );
     return 0;
   }
@@ -580,11 +582,11 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     );
     if (options.verbose) {
       const configLabel = configFile
-        ? path.relative(process.cwd(), path.join(configRoot, configFile))
+        ? path.relative(io.cwd, path.join(configRoot, configFile))
         : '(none)';
       writeOut(
         io,
-        `  config: ${configLabel}  include: ${merged.include.length} pattern(s)  baseline: ${baseline ? path.relative(process.cwd(), baselinePath) : '(none)'}` +
+        `  config: ${configLabel}  include: ${merged.include.length} pattern(s)  baseline: ${baseline ? path.relative(io.cwd, baselinePath) : '(none)'}` +
           (onlyDiff > 0 ? `  diff-only: ${onlyDiff} finding(s) outside the diff were ignored` : '') +
           '\n',
       );
@@ -620,7 +622,7 @@ export async function main(argv: readonly string[], io: CliIo = defaultIo()): Pr
       case 'init':
         return await runInit(options, io, version);
       case 'mcp':
-        return await runMcp(options);
+        return await runMcp(options, io.cwd);
       case 'scan':
         return await runScan(options, io);
       default:

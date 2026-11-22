@@ -8,10 +8,22 @@ const MAX_WALK_DEPTH = 12;
 const PYTHON_FILE = /\.pyi?$/;
 const VALID_MODULE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
-async function hasPythonFiles(dir: string): Promise<boolean> {
+async function hasPythonFiles(dir: string, depth = 0): Promise<boolean> {
+  if (depth > 3) return false;
   try {
     const entries = await readdir(dir, { withFileTypes: true });
-    return entries.some((entry) => entry.isFile() && PYTHON_FILE.test(entry.name));
+    for (const entry of entries) {
+      if (entry.isFile() && PYTHON_FILE.test(entry.name)) return true;
+      if (
+        entry.isDirectory() &&
+        VALID_MODULE.test(entry.name) &&
+        !DEFAULT_IGNORE_DIRS.has(entry.name) &&
+        (await hasPythonFiles(path.join(dir, entry.name), depth + 1))
+      ) {
+        return true;
+      }
+    }
+    return false;
   } catch {
     return false;
   }

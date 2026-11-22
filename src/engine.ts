@@ -20,7 +20,7 @@ import type {
 export interface ScanOptions {
   root: string;
   config: Config;
-  /** Directory that owns manifests and local modules; defaults to the scan root. */
+  /** Nearest project root for the target; manifests are resolved per file. */
   projectRoot?: string;
   /** Directory that owns the active `.slopgate.json`; config globs are relative to it. */
   configRoot?: string;
