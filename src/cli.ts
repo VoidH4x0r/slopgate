@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { loadBaseline, partitionByBaseline, writeBaseline } from './baseline.ts';
-import { loadConfig, meetsConfidence, type Config, type FailOn } from './config.ts';
+import { confidenceRank, loadConfig, meetsConfidence, type Config, type FailOn } from './config.ts';
 import { assertSafeRef, diffSince, findRepoRoot, isInDiffWithPrefix } from './diff.ts';
 import { scanProject } from './engine.ts';
 import { serveMcp } from './mcp.ts';
@@ -308,7 +308,7 @@ const INIT_CONFIG = {
   failOn: 'high',
 } satisfies Partial<Config>;
 
-const INIT_WORKFLOW = `name: slopgate
+const INIT_WORKFLOW = (version: string): string => `name: slopgate
 
 on:
   push:
@@ -328,27 +328,27 @@ jobs:
         with:
           node-version: 22
       - name: Scan for AI slop
-        run: npx --yes @voidh4x0r/slopgate@latest . --fail-on high --format pretty
+        run: npx --yes @voidh4x0r/slopgate@${version} . --fail-on high --format pretty
 `;
 
-async function runInit(options: Options, io: CliIo): Promise<number> {
+async function runInit(options: Options, io: CliIo, version: string): Promise<number> {
   const root = path.resolve(options.paths[0] ?? '.');
   await mkdir(root, { recursive: true });
   const configPath = path.join(root, '.slopgate.json');
   const workflowPath = path.join(root, '.github', 'workflows', 'slopgate.yml');
 
   if (!options.force && (await exists(configPath))) {
-    warn(io, options, `${configPath} already exists (use --force to overwrite)`);
+    warn(io, options, `${path.relative(process.cwd(), configPath)} already exists (use --force to overwrite)`);
   } else {
     await writeFile(configPath, JSON.stringify(INIT_CONFIG, null, 2) + '\n', 'utf8');
     writeOut(io, `created ${path.relative(process.cwd(), configPath)}`);
   }
 
   if (!options.force && (await exists(workflowPath))) {
-    warn(io, options, `${workflowPath} already exists (use --force to overwrite)`);
+    warn(io, options, `${path.relative(process.cwd(), workflowPath)} already exists (use --force to overwrite)`);
   } else {
     await mkdir(path.dirname(workflowPath), { recursive: true });
-    await writeFile(workflowPath, INIT_WORKFLOW, 'utf8');
+    await writeFile(workflowPath, INIT_WORKFLOW(version), 'utf8');
     writeOut(io, `created ${path.relative(process.cwd(), workflowPath)}`);
   }
 
@@ -415,15 +415,23 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     ...(options.rules.length > 0 ? { onlyRules: new Set(options.rules) } : {}),
   });
 
+  for (const message of result.warnings) warn(io, options, message);
+
   if (result.stats.files === 0) {
-    warn(
-      io,
-      options,
+    throw new Error(
       `no files matched under ${path.relative(process.cwd(), target) || '.'} (check include/exclude patterns)`,
     );
   }
 
-  for (const message of result.warnings) warn(io, options, message);
+  const baselinePath = path.resolve(projectRoot, options.baseline ?? DEFAULT_BASELINE);
+  const explicitWrite = options.writeBaseline;
+  if (explicitWrite) {
+    const writeTarget = path.resolve(projectRoot, explicitWrite);
+    // Record the current findings, not the diff-filtered subset.
+    await writeBaseline(writeTarget, result.findings);
+    writeOut(io, `wrote ${result.findings.length} findings to ${path.relative(process.cwd(), writeTarget)}`);
+    return 0;
+  }
 
   let findings: Finding[] = result.findings;
   let onlyDiff = 0;
@@ -437,21 +445,18 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     onlyDiff = before - findings.length;
   }
 
-  const baselinePath = path.resolve(projectRoot, options.baseline ?? DEFAULT_BASELINE);
-  const explicitWrite = options.writeBaseline;
-  if (explicitWrite) {
-    const writeTarget = path.resolve(projectRoot, explicitWrite);
-    await writeBaseline(writeTarget, findings);
-    writeOut(io, `wrote ${findings.length} findings to ${path.relative(process.cwd(), writeTarget)}`);
-    return 0;
-  }
-
   const baseline = (await loadBaseline(baselinePath)) ?? undefined;
   if (baseline === undefined && options.baseline !== undefined) {
     throw new Error(`baseline file not found: ${baselinePath}`);
   }
   const { fresh, known } = partitionByBaseline(findings, baseline);
-  const visible = fresh.filter((finding) => meetsConfidence(finding.confidence, merged.confidence));
+  // `--fail-on` below `--confidence` must lower the display threshold too,
+  // otherwise the setting can never fail CI (the findings are filtered out).
+  const displayConfidence: Confidence =
+    merged.failOn === 'none' || confidenceRank(merged.confidence) <= confidenceRank(merged.failOn)
+      ? merged.confidence
+      : merged.failOn;
+  const visible = fresh.filter((finding) => meetsConfidence(finding.confidence, displayConfidence));
   const hidden = fresh.length - visible.length;
 
   const run: ScanRun = {
@@ -528,7 +533,7 @@ export async function main(argv: readonly string[], io: CliIo = defaultIo()): Pr
       case 'rules':
         return await runRules(options, io);
       case 'init':
-        return await runInit(options, io);
+        return await runInit(options, io, await readVersion());
       case 'mcp':
         return await runMcp(options);
       case 'scan':

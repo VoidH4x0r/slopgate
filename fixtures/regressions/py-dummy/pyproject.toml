@@ -1,0 +1,4 @@
+[project]
+name = "case-dummy"
+version = "0.1.0"
+dependencies = []

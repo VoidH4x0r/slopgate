@@ -1,24 +1,28 @@
 {
-  "generatedAt": "2026-11-22T04:04:36.780Z",
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-22T06:46:22.958Z",
+  "slopgateVersion": "0.1.1",
+  "nodeVersion": "v24.19.0",
   "corpora": [
     {
       "name": "cpython-stdlib",
+      "digest": "027f952580cd6622",
       "files": 1845,
       "lines": 991705,
-      "durationMs": 12069,
-      "findings": 6818,
-      "high": 35,
+      "durationMs": 11673,
+      "findings": 6814,
+      "high": 26,
       "suppressed": 0,
       "parseErrors": 9,
       "byRule": {
         "py/stub-body": {
-          "high": 2,
-          "medium": 283,
+          "high": 0,
+          "medium": 281,
           "low": 33
         },
         "py/swallowed-exception": {
-          "high": 27,
-          "medium": 420,
+          "high": 22,
+          "medium": 425,
           "low": 0
         },
         "py/dead-branch": {
@@ -27,8 +31,8 @@
           "low": 0
         },
         "py/noop-test": {
-          "high": 2,
-          "medium": 5933,
+          "high": 0,
+          "medium": 5935,
           "low": 0
         },
         "py/phantom-import": {
@@ -44,18 +48,13 @@
       },
       "precision": {
         "overall": {
-          "tp": 32,
-          "fp": 3,
-          "precision": 0.9142857142857143
+          "tp": 25,
+          "fp": 1,
+          "precision": 0.9615384615384616
         },
         "byRule": {
           "py/swallowed-exception": {
-            "tp": 27,
-            "fp": 0,
-            "precision": 1
-          },
-          "py/stub-body": {
-            "tp": 2,
+            "tp": 22,
             "fp": 0,
             "precision": 1
           },
@@ -68,11 +67,6 @@
             "tp": 3,
             "fp": 0,
             "precision": 1
-          },
-          "py/noop-test": {
-            "tp": 0,
-            "fp": 2,
-            "precision": 0
           }
         }
       },
@@ -118,14 +112,6 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "94bb1860c88c8c10",
-          "ruleId": "py/swallowed-exception",
-          "file": "idlelib/debugger.py",
-          "line": 266,
-          "confidence": "high",
-          "snippet": "except:"
-        },
-        {
           "fingerprint": "815c91cc58f96bae",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/debugobj.py",
@@ -161,22 +147,6 @@
           "fingerprint": "e598848ed8006a4c",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/pyshell.py",
-          "line": 509,
-          "confidence": "high",
-          "snippet": "except:"
-        },
-        {
-          "fingerprint": "e598848ed8006a4c",
-          "ruleId": "py/swallowed-exception",
-          "file": "idlelib/pyshell.py",
-          "line": 1217,
-          "confidence": "high",
-          "snippet": "except:"
-        },
-        {
-          "fingerprint": "e598848ed8006a4c",
-          "ruleId": "py/swallowed-exception",
-          "file": "idlelib/pyshell.py",
           "line": 1270,
           "confidence": "high",
           "snippet": "except:"
@@ -196,22 +166,6 @@
           "line": 384,
           "confidence": "high",
           "snippet": "except Exception:"
-        },
-        {
-          "fingerprint": "8b3bfafc5964c0fa",
-          "ruleId": "py/stub-body",
-          "file": "multiprocessing/dummy/__init__.py",
-          "line": 75,
-          "confidence": "high",
-          "snippet": "def freeze_support():"
-        },
-        {
-          "fingerprint": "4ea0fe68407152a4",
-          "ruleId": "py/stub-body",
-          "file": "multiprocessing/dummy/__init__.py",
-          "line": 119,
-          "confidence": "high",
-          "snippet": "def shutdown():"
         },
         {
           "fingerprint": "6dbead5f4586824b",
@@ -252,14 +206,6 @@
           "line": 462,
           "confidence": "high",
           "snippet": "except:"
-        },
-        {
-          "fingerprint": "04f955297bbd0003",
-          "ruleId": "py/swallowed-exception",
-          "file": "multiprocessing/resource_tracker.py",
-          "line": 480,
-          "confidence": "high",
-          "snippet": "except Exception:"
         },
         {
           "fingerprint": "43215991ab4b349e",
@@ -310,22 +256,6 @@
           "snippet": "assert mod.__dict__ == mod.__dict__"
         },
         {
-          "fingerprint": "b57ec4b25feca2c7",
-          "ruleId": "py/noop-test",
-          "file": "test/test_itertools.py",
-          "line": 73,
-          "confidence": "high",
-          "snippet": "def testR(r):"
-        },
-        {
-          "fingerprint": "2678e33cbb07507d",
-          "ruleId": "py/noop-test",
-          "file": "test/test_itertools.py",
-          "line": 76,
-          "confidence": "high",
-          "snippet": "def testR2(r):"
-        },
-        {
           "fingerprint": "61ab19eec2f04703",
           "ruleId": "py/tautological-assert",
           "file": "test/test_zipfile/_path/test_path.py",
@@ -348,22 +278,19 @@
           "line": 42,
           "confidence": "high",
           "snippet": "except:"
-        },
-        {
-          "fingerprint": "1a50ea445e9655bb",
-          "ruleId": "py/swallowed-exception",
-          "file": "typing.py",
-          "line": 1243,
-          "confidence": "high",
-          "snippet": "except Exception:"
         }
       ]
     },
     {
       "name": "express",
+      "package": {
+        "name": "express",
+        "version": "5.3.0"
+      },
+      "digest": "d2b720bf4294881f",
       "files": 7,
       "lines": 2783,
-      "durationMs": 39,
+      "durationMs": 40,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -381,9 +308,14 @@
     },
     {
       "name": "chalk",
+      "package": {
+        "name": "chalk",
+        "version": "6.0.1"
+      },
+      "digest": "7e4d9210a0fc613d",
       "files": 2,
       "lines": 799,
-      "durationMs": 7,
+      "durationMs": 13,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -401,9 +333,14 @@
     },
     {
       "name": "execa",
+      "package": {
+        "name": "execa",
+        "version": "10.2.1"
+      },
+      "digest": "4c7472ad58bd8a01",
       "files": 111,
       "lines": 8363,
-      "durationMs": 158,
+      "durationMs": 182,
       "findings": 11,
       "high": 0,
       "suppressed": 0,
@@ -427,9 +364,14 @@
     },
     {
       "name": "semver",
+      "package": {
+        "name": "semver",
+        "version": "7.8.6"
+      },
+      "digest": "2035d82b564fe0fd",
       "files": 49,
       "lines": 3166,
-      "durationMs": 63,
+      "durationMs": 48,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -447,9 +389,14 @@
     },
     {
       "name": "commander",
+      "package": {
+        "name": "commander",
+        "version": "15.1.0"
+      },
+      "digest": "a1904525101c27be",
       "files": 7,
       "lines": 4225,
-      "durationMs": 46,
+      "durationMs": 38,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -467,9 +414,14 @@
     },
     {
       "name": "debug",
+      "package": {
+        "name": "debug",
+        "version": "4.4.3"
+      },
+      "digest": "423d0332532c2e32",
       "files": 4,
       "lines": 841,
-      "durationMs": 10,
+      "durationMs": 8,
       "findings": 4,
       "high": 0,
       "suppressed": 0,
@@ -493,9 +445,14 @@
     },
     {
       "name": "eslint",
+      "package": {
+        "name": "eslint",
+        "version": "10.15.0"
+      },
+      "digest": "8d19ccdb8205985c",
       "files": 409,
       "lines": 100880,
-      "durationMs": 852,
+      "durationMs": 838,
       "findings": 3,
       "high": 0,
       "suppressed": 0,
@@ -524,9 +481,14 @@
     },
     {
       "name": "glob",
+      "package": {
+        "name": "glob",
+        "version": "14.0.6"
+      },
+      "digest": "dc4dc56c06b64fb8",
       "files": 7,
       "lines": 2217,
-      "durationMs": 22,
+      "durationMs": 36,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -544,9 +506,14 @@
     },
     {
       "name": "yargs",
+      "package": {
+        "name": "yargs",
+        "version": "18.2.0"
+      },
+      "digest": "53ba47a2d90b26ae",
       "files": 5,
       "lines": 198,
-      "durationMs": 6,
+      "durationMs": 8,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -563,6 +530,8 @@
       "findingsList": []
     }
   ],
+  "staleLabels": [],
+  "unlabeledHigh": [],
   "recall": {
     "total": 14,
     "detected": 14,

@@ -1,9 +1,27 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import test from 'node:test';
 import { DEFAULT_CONFIG } from '../src/config.ts';
 import { scanProject } from '../src/engine.ts';
-import { FIXTURES, scanFixture } from './helpers.ts';
+import { FIXTURES, ROOT, scanFixture } from './helpers.ts';
+
+test('scanProject strips a UTF-8 BOM before computing positions', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-bom-src-'));
+  try {
+    await writeFile(path.join(dir, 'app.py'), '\uFEFFimport requests_v2\n\ndef f():\n    pass\n', 'utf8');
+    const result = await scanProject({
+      root: dir,
+      config: { ...DEFAULT_CONFIG, include: ['**/*.py'], exclude: [] },
+    });
+    const phantom = result.findings.find((finding) => finding.ruleId === 'py/phantom-import');
+    assert.ok(phantom, 'the import must still be reported');
+    assert.equal(phantom.start.line, 1);
+    assert.equal(phantom.start.column, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
 
 test('scanProject finds the expected rule set in the demo fixture', async () => {
   const result = await scanFixture('demo');

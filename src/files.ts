@@ -29,9 +29,10 @@ const EXTENSION_LANGUAGE: Readonly<Record<string, LanguageId>> = {
   '.cts': 'typescript',
   '.tsx': 'tsx',
   '.jsx': 'tsx',
-  '.js': 'typescript',
-  '.mjs': 'typescript',
-  '.cjs': 'typescript',
+  // JSX is legal in .js, and the tsx grammar is a superset of plain JS.
+  '.js': 'tsx',
+  '.mjs': 'tsx',
+  '.cjs': 'tsx',
 };
 
 const MAX_FILE_BYTES = 1024 * 1024;
@@ -62,19 +63,56 @@ export function toPosix(p: string): string {
   return p.replace(/\\/g, '/');
 }
 
-/**
- * Translate a small glob dialect into a RegExp anchored at the whole path.
- * Supported: `**` (any depth), `*` (within one segment), `?`.
- */
-export function globToRegExp(glob: string): RegExp {
-  const normalized = toPosix(glob).replace(/^\.\//, '');
+/** Split `a,{b,c},d` on commas that are not inside braces. */
+function splitAlternatives(value: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i];
+    if (ch === '{') {
+      depth += 1;
+    } else if (ch === '}') {
+      depth -= 1;
+    } else if (ch === ',' && depth === 0) {
+      parts.push(value.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(value.slice(start));
+  return parts;
+}
+
+function translateGlob(glob: string): string {
   let re = '';
-  for (let i = 0; i < normalized.length; i += 1) {
-    const ch = normalized[i] ?? '';
+  for (let i = 0; i < glob.length; i += 1) {
+    const ch = glob[i] ?? '';
+    if (ch === '{') {
+      let depth = 0;
+      let end = -1;
+      for (let j = i; j < glob.length; j += 1) {
+        if (glob[j] === '{') depth += 1;
+        else if (glob[j] === '}') {
+          depth -= 1;
+          if (depth === 0) {
+            end = j;
+            break;
+          }
+        }
+      }
+      if (end === -1) {
+        re += '\\{';
+        continue;
+      }
+      const alternatives = splitAlternatives(glob.slice(i + 1, end)).map(translateGlob);
+      re += `(?:${alternatives.join('|')})`;
+      i = end;
+      continue;
+    }
     if (ch === '*') {
-      if (normalized[i + 1] === '*') {
+      if (glob[i + 1] === '*') {
         i += 1;
-        if (normalized[i + 1] === '/') {
+        if (glob[i + 1] === '/') {
           i += 1;
           re += '(?:[^/]+/)*';
         } else {
@@ -91,7 +129,17 @@ export function globToRegExp(glob: string): RegExp {
       re += ch;
     }
   }
-  return new RegExp('^' + re + '$');
+  return re;
+}
+
+/**
+ * Translate a small glob dialect into a RegExp anchored at the whole path.
+ * Supported: `**` (any depth), `*` (within one segment), `?`, and `{a,b}`
+ * alternatives (nested braces allowed).
+ */
+export function globToRegExp(glob: string): RegExp {
+  const normalized = toPosix(glob).replace(/^\.\//, '');
+  return new RegExp('^' + translateGlob(normalized) + '$');
 }
 
 export function matchesAny(relPath: string, patterns: readonly RegExp[]): boolean {
@@ -150,19 +198,16 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
       const rel = toPosix(path.relative(root, abs));
 
       if (entry.isSymbolicLink()) {
-        skipped += 1;
         continue;
       }
       if (entry.isDirectory()) {
         if (ignoreDirs.has(entry.name) || matchesAny(rel + '/', excludeRe)) {
-          skipped += 1;
           continue;
         }
         await walk(abs);
         continue;
       }
       if (!entry.isFile()) {
-        skipped += 1;
         continue;
       }
       if (matchesAny(rel, excludeRe)) {

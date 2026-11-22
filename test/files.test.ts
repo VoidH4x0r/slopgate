@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import test from 'node:test';
 import { discoverFiles, globToRegExp, languageFor, toPosix } from '../src/files.ts';
-import { FIXTURES } from './helpers.ts';
+import { FIXTURES, ROOT } from './helpers.ts';
 
 test('globToRegExp: ** matches any depth, * stays in one segment', () => {
   assert.ok(globToRegExp('**/*.py').test('app.py'));
@@ -16,6 +17,24 @@ test('globToRegExp: escapes regex metacharacters', () => {
   const pattern = globToRegExp('a+b(1).py');
   assert.ok(pattern.test('a+b(1).py'));
   assert.ok(!pattern.test('aab(1).py'));
+});
+
+test('globToRegExp: brace alternatives, including nested braces', () => {
+  const ts = globToRegExp('**/*.{ts,tsx}');
+  assert.ok(ts.test('a.ts'));
+  assert.ok(ts.test('src/deep/a.tsx'));
+  assert.ok(!ts.test('a.js'));
+  assert.ok(globToRegExp('src/{a,b}/*.py').test('src/b/x.py'));
+  assert.ok(globToRegExp('{a,{b,c}}.py').test('c.py'));
+  assert.ok(!globToRegExp('{a,{b,c}}.py').test('d.py'));
+});
+
+test('languageFor maps JavaScript (including JSX) to the tsx grammar', () => {
+  assert.equal(languageFor('a.js'), 'tsx');
+  assert.equal(languageFor('a.mjs'), 'tsx');
+  assert.equal(languageFor('a.cjs'), 'tsx');
+  assert.equal(languageFor('a.jsx'), 'tsx');
+  assert.equal(languageFor('a.ts'), 'typescript');
 });
 
 test('languageFor maps extensions and skips declaration files', () => {
@@ -61,4 +80,17 @@ test('discoverFiles accepts a single file path', async () => {
 
   const ignored = await discoverFiles({ root: path.join(FIXTURES, 'demo', 'pyproject.toml') });
   assert.deepEqual(ignored.files, []);
+});
+
+test('discoverFiles does not count ignored directories as skipped files', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-skip-'));
+  try {
+    await mkdir(path.join(dir, 'node_modules', 'pkg'), { recursive: true });
+    await writeFile(path.join(dir, 'node_modules', 'pkg', 'index.js'), 'export {};\n', 'utf8');
+    const result = await discoverFiles({ root: dir });
+    assert.deepEqual(result.files, []);
+    assert.equal(result.skipped, 0);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

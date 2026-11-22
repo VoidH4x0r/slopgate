@@ -3,7 +3,6 @@ import type { AstNode } from '../ast.ts';
 import type { Rule, RuleContext, RuleDraft } from '../types.ts';
 import {
   ancestorOfType,
-  calleeName,
   collapseWhitespace,
   descendantsOfType,
   endOf,
@@ -88,16 +87,55 @@ function matchesAlias(specifier: string, aliases: readonly string[]): boolean {
   });
 }
 
-const ASSERTION_CALLEE =
-  /^(expect|assert\w*|assert|expectTypeOf|should|equal|deepEqual|throws|rejects|to[A-Z]\w*|pass)\b/;
+const ASSERTION_ROOTS = new Set(['assert', 'expect', 'expectTypeOf', 'should', 'chai']);
+
+const T_ASSERTION_MEMBERS = new Set([
+  'ok',
+  'is',
+  'not',
+  'same',
+  'throws',
+  'rejects',
+  'match',
+  'snapshot',
+  'pass',
+  'fail',
+  'assert',
+]);
+
+/**
+ * Test whether a call is an assertion. The full callee path matters:
+ * `assert.strictEqual` ends in `strictEqual`, which the old last-segment
+ * regex missed, so node:assert-based tests were reported as assertion-free.
+ */
+function isAssertionCallee(text: string): boolean {
+  if (text.length === 0) return false;
+  // node:assert and node:assert/strict: assert(...) plus every method.
+  if (text === 'assert' || text.startsWith('assert.')) return true;
+  // Jest/Vitest/Chai: expect(x).toBe(y), expect(x).not.toEqual(y), expect.soft(...)
+  if (text === 'expect' || text === 'expectTypeOf') return true;
+  if (text.startsWith('expect(') || text.startsWith('expect.') || text.startsWith('expectTypeOf(')) {
+    return true;
+  }
+  if (text === 'should' || text.startsWith('should.') || text.startsWith('should(')) return true;
+  if (text.startsWith('chai.')) return true;
+  // node:test context: t.ok, t.is, t.throws, t.assert.strictEqual, ...
+  if (/^t\.assert(\.[A-Za-z_$][\w$]*)*$/.test(text)) return true;
+  if (/^t\.[A-Za-z_$][\w$]*$/.test(text)) {
+    const member = text.slice(2);
+    return T_ASSERTION_MEMBERS.has(member);
+  }
+  return false;
+}
 
 function hasAssertion(body: AstNode): boolean {
   let found = false;
   walk(body, (node) => {
     if (found) return false;
     if (node.type === 'call_expression') {
-      const name = calleeName(node) ?? '';
-      if (ASSERTION_CALLEE.test(name)) {
+      const fn = node.childForFieldName('function') ?? node.namedChildren[0];
+      const text = collapseWhitespace(fn?.text ?? '');
+      if (isAssertionCallee(text)) {
         found = true;
         return false;
       }
@@ -106,8 +144,6 @@ function hasAssertion(body: AstNode): boolean {
   });
   return found;
 }
-
-const LITERAL = /^(true|false|null|undefined|-?\d[\d_]*(?:\.\d+)?|'[^']*'|"[^"]*"|`[^`]*`)$/;
 
 const phantomImport: Rule = {
   meta: {
@@ -166,6 +202,33 @@ const phantomImport: Rule = {
   },
 };
 
+const TEST_MODIFIERS = new Set([
+  'only',
+  'skip',
+  'todo',
+  'concurrent',
+  'sequential',
+  'each',
+  'fails',
+  'failing',
+  'serial',
+]);
+
+/**
+ * `test(...)` / `it(...)` and their modifiers (`test.only`, `test.each(...)`).
+ * The root segment alone is not enough: `test.valid.forEach(...)` inside
+ * ESLint's rule tester is a data loop, not a test.
+ */
+function isTestCall(fn: AstNode): boolean {
+  let node = fn;
+  if (node.type === 'call_expression') node = node.childForFieldName('function') ?? node;
+  const text = collapseWhitespace(node.text);
+  const root = text.split(/[.(]/)[0] ?? '';
+  if (root !== 'test' && root !== 'it') return false;
+  const modifiers = [...text.matchAll(/\.([A-Za-z_$][\w$]*)/g)].map((match) => match[1] ?? '');
+  return modifiers.every((name) => TEST_MODIFIERS.has(name));
+}
+
 const noopTest: Rule = {
   meta: {
     id: 'ts/noop-test',
@@ -182,9 +245,7 @@ const noopTest: Rule = {
 
     for (const call of descendantsOfType(ctx.root, ['call_expression'])) {
       const fn = call.childForFieldName('function');
-      if (!fn) continue;
-      const head = collapseWhitespace(fn.text).split('.')[0]?.replace(/\(.*$/, '');
-      if (head !== 'test' && head !== 'it') continue;
+      if (!fn || !isTestCall(fn)) continue;
 
       const args = call.childForFieldName('arguments');
       if (!args) continue;
@@ -271,7 +332,6 @@ const tautologicalAssert: Rule = {
       const isSelf =
         expected !== undefined &&
         expected === actual &&
-        (LITERAL.test(actual) || expected === actual) &&
         ['toBe', 'toEqual', 'toStrictEqual'].includes(property);
       const isTruthyTrue = property === 'toBeTruthy' && expected === 'true';
 

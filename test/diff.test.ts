@@ -41,6 +41,41 @@ function finding(file: string, line: number): Finding {
   };
 }
 
+test('parseUnifiedDiff ignores content lines that look like file headers', () => {
+  const diff = [
+    'diff --git a/src/preinc.ts b/src/preinc.ts',
+    '--- a/src/preinc.ts',
+    '+++ b/src/preinc.ts',
+    '@@ -10,0 +11,1 @@',
+    '++ x;',
+    '@@ -40,0 +42,2 @@',
+    '+const a = 1;',
+    '+const b = 2;',
+  ].join('\n');
+  const set = parseUnifiedDiff(diff);
+  assert.deepEqual(
+    [...(set.lines.get('src/preinc.ts') ?? [])].sort((a, b) => a - b),
+    [11, 42, 43],
+  );
+  assert.equal(set.lines.has('x;'), false);
+});
+
+test('parseUnifiedDiff tracks context and deletion lines in a hunk', () => {
+  const diff = [
+    'diff --git a/app.ts b/app.ts',
+    '--- a/app.ts',
+    '+++ b/app.ts',
+    '@@ -1,2 +1,2 @@',
+    ' context',
+    '+added',
+    '-removed',
+    '@@ -4,0 +5,1 @@',
+    '+after',
+  ].join('\n');
+  const set = parseUnifiedDiff(diff);
+  assert.deepEqual([...(set.lines.get('app.ts') ?? [])], [2, 5]);
+});
+
 test('parseUnifiedDiff records added lines per file', () => {
   const set = parseUnifiedDiff(SAMPLE);
   assert.deepEqual([...(set.lines.get('app.py') ?? [])].sort((a, b) => a - b), [11, 12, 13]);

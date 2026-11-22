@@ -69,8 +69,8 @@ Measured on **1,115,177 lines** of real code — the CPython standard library (a
 
 | Metric | Result |
 | --- | --- |
-| High-confidence findings | **35** (0.04 per 1,000 lines), in 21 of 2,446 files |
-| Labeled precision of high-confidence findings | **91.4%** (32/35 manually reviewed) |
+| High-confidence findings | **26** (0.03 per 1,000 lines), in 17 of 1,845 CPython files |
+| Labeled precision of high-confidence findings | **96.2%** (25/26 manually reviewed) |
 | Recall on 14 seeded defects | **14/14** |
 | High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** |
 
@@ -115,6 +115,7 @@ slopgate [path] [options]
   --format pretty|json|sarif|github output format                  (default: pretty)
   --confidence high|medium|low    minimum confidence to report       (default: high)
   --fail-on high|medium|low|none  minimum confidence that fails CI   (default: high)
+                                   (a lower value also lowers what is displayed)
   --baseline [path]               ignore findings recorded in a file (default: .slopgate-baseline.json)
   --write-baseline [path]         record current findings, then exit 0
   --diff [ref]                    only report findings on changed lines (default: HEAD)
@@ -216,7 +217,7 @@ For inline pull-request annotations **without** code scanning, use `--format git
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
 
-Exit codes: `0` no findings at or above `--fail-on`, `1` findings at or above the threshold, `2` usage or configuration error (missing path, unknown rule id, invalid config, git failure).
+Exit codes: `0` no findings at or above `--fail-on`, `1` findings at or above the threshold, `2` usage or configuration error (missing path, unknown rule id, invalid config, git failure, or zero files matched).
 
 ### Suppressing a finding
 
@@ -242,7 +243,7 @@ try { ... } catch {}
 | `py/phantom-import` · `ts/phantom-import` | import that no manifest declares and, for TS, that is not even installed |
 | `py/noop-test` · `ts/noop-test` | `test_*` / `test()` / `it()` bodies with no assertion |
 | `py/tautological-assert` · `ts/tautological-assert` | `assert True`, `expect(true).toBe(true)`, `x == x` |
-| `py/stub-body` · `ts/stub-function` | body that is only `pass`, `...`, `{}`, or `throw new Error("not implemented")` |
+| `py/stub-body` · `ts/stub-function` | function declarations and class methods whose body is only `pass`, `...`, `{}`, or `throw new Error("not implemented")` (empty arrow callbacks are not reported unless they throw) |
 | `py/swallowed-exception` · `ts/swallowed-exception` | `except: pass`, `catch {}` (JS empty catch is medium by design) |
 | `py/dead-branch` · `ts/dead-branch` | `if False:` / `if (false)`, and their always-true twins |
 | `py/unreachable` · `ts/unreachable` | statements after `return` / `raise` / `throw` / `continue` |
@@ -261,7 +262,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 
 ## Performance
 
-`slopgate` parses with tree-sitter compiled to WebAssembly, reuses one parser per language, and never spawns a subprocess:
+`slopgate` parses with tree-sitter compiled to WebAssembly and reuses one parser per language. Scanning never spawns a subprocess. `--diff` and the MCP `scan_diff` tool invoke `git`, so those two paths need git on `PATH` and a sandbox that permits child processes:
 
 - 20 files / ~3k lines: **~125 ms** end to end (Windows laptop, cold start)
 - 1,845 files / 991,705 lines (CPython standard library): **~12 s** in the benchmark run
@@ -273,6 +274,12 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.1 — 14 rules, Python + TS/JS, baseline, diff mode, SARIF, GitHub annotations, MCP server, suppression
 - [ ] v0.2 — duplicate-block detection, Go and Rust grammars, `--fix` for the safe subset
 - [ ] v0.3 — published false-positive benchmark across popular repositories, VS Code diagnostics
+
+## Known limitations
+
+- `.gitignore` is not read. Generated trees are skipped only through the built-in ignore list and your own `exclude` patterns.
+- Symbolic links are skipped, and files larger than 1 MB are ignored. `--format json` reports the count in `stats.skipped`.
+- A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 
 ## When **not** to use it
 
@@ -288,7 +295,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 136 tests; the tests themselves make no network or child-process calls
+npm test            # 166 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

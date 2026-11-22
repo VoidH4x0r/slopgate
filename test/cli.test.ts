@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import * as path from 'node:path';
 import test from 'node:test';
 import { main } from '../src/cli.ts';
@@ -121,12 +121,42 @@ test('cli: an explicitly requested baseline that does not exist exits 2', async 
   assert.match(result.stderr, /baseline file not found/);
 });
 
-test('cli: scanning zero files warns instead of failing silently', async () => {
+test('cli: scanning zero files exits 2 instead of reporting a clean run', async () => {
   const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-empty-'));
   try {
     const result = await run([dir, '--no-color']);
-    assert.equal(result.status, 0);
+    assert.equal(result.status, 2);
     assert.match(result.stderr, /no files matched/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: a config value from Object.prototype is rejected', async () => {
+  const result = await run(['fixtures/regressions/cfg', '--no-color']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /confidence/);
+});
+
+test('cli: --fail-on medium lowers the display threshold and fails the run', async () => {
+  const result = await run(['fixtures/regressions/failon', '--fail-on', 'medium', '--format', 'json']);
+  assert.equal(result.status, 1, result.stderr);
+  const payload = JSON.parse(result.stdout) as {
+    findings: Array<{ ruleId: string; confidence: string }>;
+  };
+  assert.equal(payload.findings.length, 1);
+  assert.equal(payload.findings[0]?.ruleId, 'ts/swallowed-exception');
+  assert.equal(payload.findings[0]?.confidence, 'medium');
+});
+
+test('cli: init pins the current version instead of writing @latest', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-init-'));
+  try {
+    const result = await run(['init', dir]);
+    assert.equal(result.status, 0, result.stderr);
+    const workflow = await readFile(path.join(dir, '.github', 'workflows', 'slopgate.yml'), 'utf8');
+    assert.match(workflow, /@\d+\.\d+\.\d+ \. --fail-on high/);
+    assert.ok(!workflow.includes('@latest'), 'the generated workflow must be reproducible');
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

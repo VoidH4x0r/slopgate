@@ -4,6 +4,7 @@ import { asAst } from '../src/ast.ts';
 import { DEFAULT_CONFIG, type Config } from '../src/config.ts';
 import { scanProject, type ScanResult } from '../src/engine.ts';
 import { getParser } from '../src/parser.ts';
+import { collectCommentRanges } from '../src/rules/helpers.ts';
 import { RULE_BY_ID } from '../src/rules/index.ts';
 import type { LanguageId, ProjectDeps, RuleContext, RuleDraft } from '../src/types.ts';
 
@@ -51,12 +52,14 @@ export async function contextFor(
   const parser = await getParser(language);
   const tree = parser.parse(source);
   if (!tree) throw new Error('parser returned null');
+  const root = asAst(tree.rootNode);
   return {
     file,
     lines: source.split(/\r?\n/),
-    root: asAst(tree.rootNode),
+    root,
     language,
     deps,
+    comments: collectCommentRanges(root),
   };
 }
 

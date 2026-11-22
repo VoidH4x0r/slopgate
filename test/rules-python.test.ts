@@ -26,9 +26,82 @@ test('py/phantom-import stays quiet for stdlib, declared, local and optional imp
 });
 
 test('py/phantom-import understands import-name to distribution-name mappings', async () => {
-  const deps = makeDeps({ pythonDeclared: ['pyyaml'] });
-  const drafts = await runRule('py/phantom-import', 'import yaml\n', 'python', deps);
+  const source = [
+    'import docx',
+    'import grpc',
+    'import git',
+    'import pptx',
+    'from google.protobuf import message',
+  ].join('\n');
+  const deps = makeDeps({
+    pythonDeclared: ['python-docx', 'grpcio', 'gitpython', 'python-pptx', 'protobuf'],
+  });
+  const drafts = await runRule('py/phantom-import', source, 'python', deps);
   assert.deepEqual(drafts, []);
+});
+
+test('py/phantom-import does not map every google import to protobuf', async () => {
+  const drafts = await runRule(
+    'py/phantom-import',
+    'from google.cloud import storage\n',
+    'python',
+    makeDeps({ pythonDeclared: ['protobuf'] }),
+  );
+  assert.equal(drafts.length, 1);
+  assert.match(drafts[0]?.message ?? '', /google\.cloud/);
+});
+
+test('py/stub-body skips .pyi stubs and no-op shim modules', async () => {
+  const source = 'def load_config(path: str) -> int: ...\n';
+  assert.deepEqual(await runRuleOnFile('py/stub-body', source, 'python', 'pkg/types.pyi'), []);
+
+  const dummy = 'def freeze_support():\n    pass\n';
+  assert.deepEqual(
+    await runRuleOnFile('py/stub-body', dummy, 'python', 'multiprocessing/dummy/__init__.py'),
+    [],
+  );
+});
+
+test('py/swallowed-exception counts a comment between try and except', async () => {
+  const source = [
+    'def describe(obj):',
+    '    try:',
+    '        obj.__orig_class__ = obj',
+    '    # Expected on objects that reject attribute assignment.',
+    '    except Exception:',
+    '        pass',
+    '    return obj',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('py/phantom-import treats conftest.py as test infrastructure', async () => {
+  const drafts = await runRuleOnFile(
+    'py/phantom-import',
+    'import pytest\n',
+    'python',
+    'tests/conftest.py',
+  );
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('py/phantom-import ignores imports under a platform guard', async () => {
+  const source = ['import sys', "if sys.platform == 'java':", '    from java.lang import System'].join('\n');
+  assert.deepEqual(await runRule('py/phantom-import', source, 'python'), []);
+});
+
+test('py/noop-test demotes camelCase test helpers with parameters', async () => {
+  const drafts = await runRuleOnFile(
+    'py/noop-test',
+    'def testR(r):\n    print(r)\n',
+    'python',
+    'test/test_itertools.py',
+  );
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
 });
 
 test('py/noop-test flags tests without assertions', async () => {

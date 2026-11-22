@@ -72,6 +72,42 @@ test('ts/noop-test accepts tests that assert', async () => {
   assert.deepEqual(drafts, []);
 });
 
+test('ts/noop-test recognises node:assert method assertions', async () => {
+  const source = [
+    "import assert from 'node:assert/strict';",
+    "import { test } from 'node:test';",
+    "test('strictEqual', () => { assert.strictEqual(1 + 1, 2); });",
+    "test('ok', () => { assert.ok(1 + 1 === 2); });",
+    "test('deepStrictEqual', () => { assert.deepStrictEqual({ a: 1 }, { a: 1 }); });",
+    "test('notEqual', () => { assert.notEqual(1, 2); });",
+    "test('match', () => { assert.match('hello', /ell/); });",
+    "test('context', (t) => { t.ok(true); });",
+  ].join('\n');
+  const drafts = await runRule('ts/noop-test', source, 'typescript');
+  assert.deepEqual(drafts, []);
+});
+
+test('ts/noop-test still flags a test with no assertion', async () => {
+  const source = [
+    "import { test } from 'node:test';",
+    "test('nothing', () => { console.log('hi'); });",
+  ].join('\n');
+  const drafts = await runRule('ts/noop-test', source, 'typescript');
+  assert.equal(drafts.length, 1);
+  assert.match(drafts[0]?.message ?? '', /no assertions/);
+});
+
+test('ts/noop-test does not treat test.<data>.forEach() as a test', async () => {
+  const source = [
+    "import { test } from 'node:test';",
+    'test.valid.forEach((valid, index) => { run(valid, index); });',
+    'test.invalid.forEach((invalid, index) => { run(invalid, index); });',
+    'test.only("real", () => { assert.ok(true); });',
+  ].join('\n');
+  const drafts = await runRule('ts/noop-test', source, 'typescript');
+  assert.deepEqual(drafts, []);
+});
+
 test('ts/tautological-assert finds self-comparisons', async () => {
   assert.equal((await runRule('ts/tautological-assert', 'expect(true).toBe(true);\n', 'typescript')).length, 1);
   assert.equal((await runRule('ts/tautological-assert', 'expect(x).toEqual(x);\n', 'typescript')).length, 1);

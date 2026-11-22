@@ -46,5 +46,9 @@ export async function getParser(language: LanguageId): Promise<Parser> {
   })();
 
   parserCache.set(language, created);
+  // A failed grammar load must not be cached forever: the next call retries.
+  created.catch(() => {
+    parserCache.delete(language);
+  });
   return created;
 }

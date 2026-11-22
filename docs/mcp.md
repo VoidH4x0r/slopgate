@@ -26,7 +26,7 @@ The server prints a single line to stderr on startup (`slopgate mcp 0.1.0 ready 
 { "name": "scan_diff", "arguments": { "base": "origin/main", "confidence": "high", "maxFindings": 20 } }
 ```
 
-Scans the repository and keeps only findings that start on a line added since `base` (default `HEAD`). Untracked files count as fully changed. This is the tool an agent should call before finishing a task.
+Scans the repository and keeps a finding when its `start..end` range intersects a line added since `base` (default `HEAD`). Untracked files count as fully changed. This is the tool an agent should call before finishing a task.
 
 ### `scan_path`
 
@@ -76,4 +76,4 @@ printf '%s\n' \
 
 - Only the `tools` capability is implemented; no prompts, resources or sampling.
 - stdio transport only. No SSE or HTTP endpoint.
-- `scan_diff` needs `git` on `PATH`.
+- `scan_diff` needs `git` on `PATH` and a sandbox that permits child processes; the plain `scan_path` and `list_rules` tools do not spawn anything.

@@ -8,13 +8,13 @@ Thanks for taking the time. This project has one rule above all others: **a find
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test           # 136 tests, ~0.5s, no network, no subprocesses inside the tests
+npm test           # 166 tests, ~0.5s, no network, no subprocesses inside the tests
 npm run typecheck
 npm run verify     # typecheck + links + tests + build + self-scan + package check
 npm run build      # emits dist/ used by the published package
 ```
 
-Node **23.6+** is required to run the test suite from source (native TypeScript execution). On Node 22.8–3.5 the same suite works if you also pass `--experimental-strip-types`.
+Node **23.6+** is required to run the test suite from source (native TypeScript execution). On Node 22.8–23.5 the same suite works if you also pass `--experimental-strip-types`. The published CLI itself supports Node 20+. The CI `runtime` jobs run it on Node 20 and 22, but the source test suite only runs on Node 24.
 
 If you are running inside a sandbox that blocks child processes (some agent harnesses do), use:
 
@@ -100,7 +100,7 @@ Never raise confidence to make a rule more visible. Lower it, or drop the rule.
 - One rule per PR.
 - Every rule has a negative test.
 - `npm test` and `npm run typecheck` pass, and `node scripts/check-links.mjs` reports no broken links.
-- No new runtime dependency without a discussion in an issue first — the zero-subprocess, offline design is a feature.
+- No new runtime dependency without a discussion in an issue first — the offline, no-subprocess-during-scan design is a feature (`git` is only invoked by `--diff` and the MCP `scan_diff` tool).
 - Update `CHANGELOG.md`.
 
 ## Regenerating the demo GIF

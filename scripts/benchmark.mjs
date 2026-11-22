@@ -7,6 +7,7 @@
  *
  * Requires `npm run build` first: it measures the artifact users actually run.
  */
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -45,6 +46,7 @@ const SOURCE_EXT = /\.(py|pyi|ts|tsx|mts|cts|js|jsx|mjs|cjs)$/;
 async function countLines(dir) {
   let files = 0;
   let lines = 0;
+  const hash = createHash('sha256');
   async function walk(current) {
     let entries;
     try {
@@ -66,13 +68,30 @@ async function countLines(dir) {
         const text = await readFile(abs, 'utf8');
         files += 1;
         lines += text.split(/\r?\n/).length;
+        // Identity without leaking absolute paths: same tree => same digest.
+        hash.update(path.relative(dir, abs).replace(/\\/g, '/'));
+        hash.update('\0');
+        hash.update(text);
+        hash.update('\0');
       } catch {
         continue;
       }
     }
   }
   await walk(dir);
-  return { files, lines };
+  return { files, lines, digest: hash.digest('hex').slice(0, 16) };
+}
+
+async function readPackage(dir) {
+  try {
+    const parsed = JSON.parse(await readFile(path.join(dir, 'package.json'), 'utf8'));
+    if (typeof parsed.name === 'string' && typeof parsed.version === 'string') {
+      return { name: parsed.name, version: parsed.version };
+    }
+  } catch {
+    // Not a Node package (the CPython corpus is the common case).
+  }
+  return undefined;
 }
 
 function loadJson(file, fallback) {
@@ -124,16 +143,26 @@ async function main() {
   }
   const labels = loadJson(options.labels, {});
   const seeded = loadJson(options.seeded, undefined);
-  const report = { generatedAt: new Date().toISOString(), corpora: [] };
+  const packageJson = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const report = {
+    schemaVersion: 2,
+    generatedAt: new Date().toISOString(),
+    slopgateVersion: packageJson.version,
+    nodeVersion: process.version,
+    corpora: [],
+  };
 
   for (const corpus of options.corpora) {
     const started = performance.now();
     const scan = await scanProject({ root: corpus.dir, config: { ...DEFAULT_CONFIG } });
     const durationMs = Math.round(performance.now() - started);
     const loc = await countLines(corpus.dir);
+    const pkg = await readPackage(corpus.dir);
     const high = scan.findings.filter((finding) => finding.confidence === 'high');
     report.corpora.push({
       name: corpus.name,
+      ...(pkg ? { package: pkg } : {}),
+      digest: loc.digest,
       files: scan.stats.files,
       lines: loc.lines,
       durationMs,
@@ -154,6 +183,12 @@ async function main() {
     });
   }
 
+  const labeledHigh = new Set(
+    report.corpora.flatMap((corpus) => (corpus.findingsList ?? []).map((finding) => finding.fingerprint)),
+  );
+  report.staleLabels = Object.keys(labels).filter((fingerprint) => !labeledHigh.has(fingerprint));
+  report.unlabeledHigh = [...labeledHigh].filter((fingerprint) => !(fingerprint in labels));
+
   if (seeded) report.recall = await recallAgainstSeeded(seeded);
 
   const outPath = path.resolve(ROOT, options.out);
@@ -170,6 +205,12 @@ async function main() {
   }
   if (report.recall) console.log(`recall (seeded): ${report.recall.detected}/${report.recall.total}`);
   console.log(`wrote ${path.relative(ROOT, outPath)} and ${path.relative(ROOT, reportPath)}`);
+  if (report.staleLabels.length > 0) {
+    console.warn(`stale labels (no matching high finding): ${report.staleLabels.length}`);
+  }
+  if (report.unlabeledHigh.length > 0) {
+    console.warn(`high findings without a label: ${report.unlabeledHigh.length}`);
+  }
 }
 
 function percent(value) {
@@ -179,17 +220,23 @@ function percent(value) {
 function renderMarkdown(report) {
   const lines = [];
   lines.push('# Benchmark report', '');
-  lines.push(`Generated ${report.generatedAt} by \`scripts/benchmark.mjs\`.`, '');
+  lines.push(`Generated ${report.generatedAt} by \`scripts/benchmark.mjs\` (slopgate ${report.slopgateVersion}, Node ${report.nodeVersion}).`, '');
   lines.push('## Summary', '');
-  lines.push('| Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) |');
-  lines.push('| --- | ---: | ---: | ---: | ---: | ---: |');
+  lines.push('| Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest |');
+  lines.push('| --- | ---: | ---: | ---: | ---: | ---: | --- |');
   for (const corpus of report.corpora) {
     const perKloc = corpus.lines > 0 ? ((corpus.high / corpus.lines) * 1000).toFixed(2) : '—';
     lines.push(
-      `| ${corpus.name} | ${corpus.files} | ${corpus.lines} | ${corpus.high} | ${perKloc} | ${percent(corpus.precision.overall.precision)} |`,
+      `| ${corpus.name} | ${corpus.files} | ${corpus.lines} | ${corpus.high} | ${perKloc} | ${percent(corpus.precision.overall.precision)} | \`${corpus.digest}\` |`,
     );
   }
   lines.push('');
+  if (report.staleLabels.length > 0 || report.unlabeledHigh.length > 0) {
+    lines.push(
+      `Label reconciliation: **${report.staleLabels.length}** stale label(s), **${report.unlabeledHigh.length}** high finding(s) without a label.`,
+      '',
+    );
+  }
   if (report.recall) {
     lines.push('## Recall (seeded defects)', '');
     lines.push(`Detected **${report.recall.detected}/${report.recall.total}** seeded defects.`);
@@ -202,6 +249,8 @@ function renderMarkdown(report) {
   for (const corpus of report.corpora) {
     lines.push(`## ${corpus.name}`, '');
     lines.push(`Scanned **${corpus.files}** files (**${corpus.lines}** lines) in ${corpus.durationMs} ms.`);
+    if (corpus.package) lines.push('', `Package: \`${corpus.package.name}@${corpus.package.version}\`.`);
+    lines.push('', `Corpus digest: \`${corpus.digest}\`.`);
     lines.push('');
     lines.push('| Rule | high | medium | low | Labeled | Precision |');
     lines.push('| --- | ---: | ---: | ---: | ---: | ---: |');
@@ -216,7 +265,15 @@ function renderMarkdown(report) {
   }
   lines.push('## Method', '');
   lines.push(
-    'Corpora are pinned checkouts of real repositories. Every finding at `high` confidence is labeled in `benchmark/labels.json` as `tp` (the described pattern is present in the code as written) or `fp` (the report is misleading). Precision is `tp / (tp + fp)` over labeled findings; unlabeled findings are excluded from the ratio but shown in the counts.',
+    'Corpora are real checkouts identified by a SHA-256 digest over their scanned files, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.',
+  );
+  lines.push('');
+  lines.push(
+    'Every distinct `high` fingerprint is labeled in `benchmark/labels.json` as `tp` (the described pattern is present in the code as written) or `fp` (the report is misleading). Labels are per fingerprint, not per occurrence: identical snippets in one file share a label. Precision is `tp / (tp + fp)` over labeled findings; the report also states how many high findings are unlabeled and how many labels are stale.',
+  );
+  lines.push('');
+  lines.push(
+    'These labels were produced while iterating on the same corpus, so precision is a development-set measurement, not a held-out estimate. The labels and the harness are published so a reviewer can dispute any of them; label removals and additions are recorded in the changelog.',
   );
   lines.push('');
   lines.push(

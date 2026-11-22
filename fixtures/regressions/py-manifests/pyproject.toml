@@ -1,0 +1,16 @@
+[project]
+name = "case-manifests"
+version = "0.1.0"
+dependencies = ["requests"]
+
+[project.optional-dependencies]
+cli = ["click"]
+
+[dependency-groups]
+dev = ["moto"]
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.0"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^7.0"

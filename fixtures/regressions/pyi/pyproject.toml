@@ -1,0 +1,4 @@
+[project]
+name = "case-pyi"
+version = "0.1.0"
+dependencies = []

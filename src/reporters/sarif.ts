@@ -8,6 +8,12 @@ const SARIF_LEVEL: Record<Finding['severity'], 'error' | 'warning' | 'note'> = {
   info: 'note',
 };
 
+function encodeUriPath(file: string): string {
+  // Each segment is encoded separately so `/` stays a path separator while
+  // spaces, `#`, `?` and non-ASCII characters become valid URI references.
+  return file.split('/').map(encodeURIComponent).join('/');
+}
+
 export function renderSarif(findings: readonly Finding[], version: string): string {
   const usedRules = new Map<string, Finding>();
   for (const finding of findings) {
@@ -49,7 +55,7 @@ export function renderSarif(findings: readonly Finding[], version: string): stri
           locations: [
             {
               physicalLocation: {
-                artifactLocation: { uri: finding.file },
+                artifactLocation: { uri: encodeUriPath(finding.file) },
                 region: {
                   startLine: finding.start.line,
                   startColumn: finding.start.column,

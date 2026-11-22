@@ -59,6 +59,20 @@ test('renderSarif emits a valid SARIF 2.1.0 skeleton', () => {
   assert.ok(parsed.runs[0]?.results[0]?.partialFingerprints.primaryLocationLineHash);
 });
 
+test('renderSarif percent-encodes artifact URIs', () => {
+  const [finding] = findings;
+  assert.ok(finding);
+  const parsed = JSON.parse(renderSarif([{ ...finding, file: 'src/brand new#1.py' }], '0.1.0')) as {
+    runs: Array<{
+      results: Array<{ locations: Array<{ physicalLocation: { artifactLocation: { uri: string } } }> }>;
+    }>;
+  };
+  assert.equal(
+    parsed.runs[0]?.results[0]?.locations[0]?.physicalLocation.artifactLocation.uri,
+    'src/brand%20new%231.py',
+  );
+});
+
 test('renderPretty shows location, message and summary', () => {
   const output = renderPretty({
     findings,

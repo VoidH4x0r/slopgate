@@ -1,5 +1,5 @@
 import type { AstNode } from '../ast.ts';
-import type { Position, RuleContext } from '../types.ts';
+import type { CommentRange, Position, RuleContext } from '../types.ts';
 
 export function startOf(node: AstNode): Position {
   return { line: node.startPosition.row + 1, column: node.startPosition.column + 1 };
@@ -68,33 +68,28 @@ export function ancestorOfType(node: AstNode, types: readonly string[]): AstNode
 }
 
 /**
- * Comments before the first statement of a block are often attached to the
- * parent node instead of the block, so fall back to scanning the source lines.
+ * Real comment nodes in the tree. A `//` inside a string or a `#` inside a URL
+ * is not a comment, so rules must not scan raw source text for these markers.
+ */
+export function collectCommentRanges(root: AstNode): CommentRange[] {
+  return descendantsOfType(root, ['comment', 'line_comment', 'block_comment']).map((node) => ({
+    startLine: node.startPosition.row + 1,
+    endLine: node.endPosition.row + 1,
+  }));
+}
+
+/**
+ * True when a real comment overlaps the given line range. Comments before the
+ * first statement of a block are often attached to the parent node, so callers
+ * pass the enclosing statement's range (for example the whole `try`, not just
+ * the `except` clause).
  */
 export function hasCommentBetween(ctx: RuleContext, fromLine: number, toLine: number): boolean {
-  for (let line = fromLine; line <= toLine; line += 1) {
-    const text = ctx.lines[line - 1] ?? '';
-    if (/(^|\s)#/.test(text) || text.includes('//') || text.trimStart().startsWith('/*')) {
-      return true;
-    }
-  }
-  return false;
+  return ctx.comments.some((comment) => comment.startLine <= toLine && comment.endLine >= fromLine);
 }
 
 export function collapseWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
-}
-
-/**
- * Callee name of a call expression, normalised to the final segment:
- * `foo.bar.baz(...)` -> `baz`, `expect(...)` -> `expect`.
- */
-export function calleeName(callNode: AstNode): string | undefined {
-  const fn = callNode.childForFieldName('function') ?? callNode.namedChildren[0];
-  if (!fn) return undefined;
-  const text = collapseWhitespace(fn.text);
-  const segments = text.split('.');
-  return segments[segments.length - 1];
 }
 
 export function truncate(value: string, max: number): string {
@@ -109,11 +104,32 @@ export function truncate(value: string, max: number): string {
  * that look at tests themselves.
  */
 export function isTestPath(file: string): boolean {
-  const parts = file.toLowerCase().split('/');
+  const lower = file.toLowerCase();
+  const parts = lower.split('/');
   const base = parts[parts.length - 1] ?? '';
   if (/^test_.*\.pyi?$/.test(base) || /_tests?\.pyi?$/.test(base)) return true;
   if (/\.(test|spec)\.(ts|tsx|js|jsx|mts|cts|mjs|cjs)$/.test(base)) return true;
+  // Test/build infrastructure that pytest, nox and Sphinx import directly.
+  if (base === 'conftest.py' || base === 'noxfile.py') return true;
+  if (lower === 'docs/conf.py' || lower.endsWith('/docs/conf.py')) return true;
   return parts.some((part) => part === 'test' || part === 'tests' || part === '__tests__');
+}
+
+/** Type stubs declare every function with `...`; stub rules must not fire. */
+export function isStubFile(file: string): boolean {
+  return file.toLowerCase().endsWith('.pyi');
+}
+
+/**
+ * Modules whose whole purpose is to provide no-op stand-ins (CPython's
+ * `multiprocessing/dummy`, single-threaded shims). Their empty bodies are the
+ * implementation, not an unfinished one.
+ */
+export function isNoopModulePath(file: string): boolean {
+  return file
+    .toLowerCase()
+    .split('/')
+    .some((part) => /dummy|noop|no-op|shims?/.test(part));
 }
 
 /** True when the file name follows a test-module convention. */

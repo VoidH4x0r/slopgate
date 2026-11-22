@@ -13,6 +13,8 @@ import {
   insideCleanupFunction,
   insideMainGuard,
   isComment,
+  isNoopModulePath,
+  isStubFile,
   isTestPath,
   looksLikeTestModule,
   snippetOf,
@@ -29,25 +31,25 @@ const TERMINATORS = new Set([
   'continue_statement',
 ]);
 
-function pythonImports(root: AstNode): Array<{ node: AstNode; module: string }> {
-  const imports: Array<{ node: AstNode; module: string }> = [];
+function pythonImports(root: AstNode): Array<{ node: AstNode; module: string; root: string }> {
+  const imports: Array<{ node: AstNode; module: string; root: string }> = [];
   for (const node of descendantsOfType(root, ['import_statement', 'import_from_statement'])) {
     if (node.type === 'import_statement') {
       for (const child of node.namedChildren) {
         if (isComment(child)) continue;
         const target = child.type === 'aliased_import' ? child.childForFieldName('name') : child;
-        const rootName = target?.namedChildren.find((part) => part.type === 'identifier')?.text;
-        if (rootName) imports.push({ node, module: rootName });
+        const full = collapseWhitespace(target?.text ?? '');
+        const first = full.split('.')[0];
+        if (first) imports.push({ node, module: full, root: first });
       }
       continue;
     }
     // `from .x import y` and `from . import y` are local by construction.
     if (node.namedChildren.some((child) => child.type === 'relative_import')) continue;
     const moduleNode = node.namedChildren.find((child) => child.type === 'dotted_name');
-    const rootName =
-      moduleNode?.namedChildren.find((part) => part.type === 'identifier')?.text ??
-      moduleNode?.text.split('.')[0];
-    if (rootName) imports.push({ node, module: rootName });
+    const full = collapseWhitespace(moduleNode?.text ?? '');
+    const first = full.split('.')[0];
+    if (first) imports.push({ node, module: full, root: first });
   }
   return imports;
 }
@@ -59,11 +61,30 @@ function isOptionalImport(node: AstNode): boolean {
   return /ImportError|ModuleNotFoundError/.test(tryNode.text);
 }
 
+const DISTRIBUTION_PREFIXES = Object.keys(IMPORT_TO_DISTRIBUTION).sort(
+  (a, b) => b.length - a.length,
+);
+
+/** Longest dotted import prefix that has an explicit distribution mapping. */
+function distributionFor(module: string): string | undefined {
+  for (const prefix of DISTRIBUTION_PREFIXES) {
+    if (module === prefix || module.startsWith(`${prefix}.`)) {
+      return IMPORT_TO_DISTRIBUTION[prefix];
+    }
+  }
+  return undefined;
+}
+
 function isDeclaredPython(module: string, ctx: RuleContext): boolean {
   const deps = ctx.deps.python;
-  const normalized = normalizePythonName(module);
-  if (deps.declared.has(normalized)) return true;
-  const distribution = IMPORT_TO_DISTRIBUTION[module];
+  const parts = module.split('.');
+  // A manifest declares distributions, but same-name packages (`requests`)
+  // and dotted namespace packages (`google.protobuf`) both appear here.
+  for (let index = parts.length; index > 0; index -= 1) {
+    const candidate = parts.slice(0, index).join('.');
+    if (deps.declared.has(normalizePythonName(candidate))) return true;
+  }
+  const distribution = distributionFor(module);
   if (distribution && deps.declared.has(normalizePythonName(distribution))) return true;
   return false;
 }
@@ -188,6 +209,19 @@ function insideAbstractMethod(node: AstNode): boolean {
   return false;
 }
 
+/** `if sys.platform == "java": from java.lang import System` is platform-specific. */
+function insidePlatformGuard(node: AstNode): boolean {
+  let current = node.parent;
+  while (current) {
+    if (current.type === 'if_statement') {
+      const condition = current.childForFieldName('condition')?.text ?? '';
+      if (/sys\.platform|platform\.system\s*\(/.test(condition)) return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
 const phantomImport: Rule = {
   meta: {
     id: 'py/phantom-import',
@@ -204,16 +238,17 @@ const phantomImport: Rule = {
     const drafts: RuleDraft[] = [];
     const manifests = ctx.deps.python.manifests;
 
-    for (const { node, module } of pythonImports(ctx.root)) {
-      if (PYTHON_STDLIB.has(module)) continue;
-      if (IMPLICIT_MODULES.has(module)) continue;
-      if (ctx.deps.ignoredModules.has(module)) continue;
+    for (const { node, module, root } of pythonImports(ctx.root)) {
+      if (PYTHON_STDLIB.has(root)) continue;
+      if (IMPLICIT_MODULES.has(root)) continue;
+      if (ctx.deps.ignoredModules.has(root) || ctx.deps.ignoredModules.has(module)) continue;
       // Private C-extension modules (`_socket`, `_decimal`, `_winapi`, ...) are
       // builtins; no project declares them in a manifest.
-      if (module.startsWith('_')) continue;
+      if (root.startsWith('_')) continue;
       if (isDeclaredPython(module, ctx)) continue;
-      if (ctx.deps.python.localModules.has(module)) continue;
+      if (ctx.deps.python.localModules.has(root)) continue;
       if (isOptionalImport(node)) continue;
+      if (insidePlatformGuard(node)) continue;
 
       drafts.push({
         message: `\`${module}\` is imported but not declared in any manifest and not present in this repository`,
@@ -249,6 +284,7 @@ const noopTest: Rule = {
   },
   run(ctx) {
     if (ctx.language !== 'python') return [];
+    if (isStubFile(ctx.file)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
@@ -298,7 +334,11 @@ const noopTest: Rule = {
         const helperDecorator = /contextmanager|staticmethod|classmethod|lru_cache|cached_property/.test(decoratorText);
         // Module-level `test_*` functions that take several parameters, or that
         // are wrapped by a helper decorator, are usually functions *for* tests.
-        const likelyHelper = !inClass && (parameterCount >= 2 || helperDecorator);
+        // camelCase `testR(r)` is a helper convention too; pytest's own tests
+        // use `test_` or test classes.
+        const camelCase = !name.startsWith('test_');
+        const likelyHelper =
+          !inClass && (parameterCount >= 2 || helperDecorator || (camelCase && parameterCount >= 1));
         // unittest-style methods routinely delegate assertions to helpers.
         const confidence: Confidence = inClass || delegatesToSelf || likelyHelper ? 'medium' : 'high';
         drafts.push({
@@ -377,6 +417,8 @@ const stubBody: Rule = {
   run(ctx) {
     if (ctx.language !== 'python') return [];
     if (isTestPath(ctx.file)) return [];
+    // Type stubs and deliberate no-op shims are made of `pass`/`...`.
+    if (isStubFile(ctx.file) || isNoopModulePath(ctx.file)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
@@ -462,7 +504,9 @@ const swallowedException: Rule = {
         // Optional-dependency idiom: swallowing a missing import is the point.
         if (/ImportError|ModuleNotFoundError/.test(typeText)) continue;
 
-        const commented = hasCommentBetween(ctx, clause.startPosition.row + 1, body.endPosition.row + 1);
+        // Explain-the-suppression comments usually sit between the `try` body
+        // and the `except`, so the window starts at the whole statement.
+        const commented = hasCommentBetween(ctx, tryNode.startPosition.row + 1, body.endPosition.row + 1);
         const bare = typeText.length === 0;
         const broad = bare || /^(\(?\s*)?(Exception|BaseException)(\s*\))?$/.test(typeText);
         const cleanup = insideCleanupFunction(clause);

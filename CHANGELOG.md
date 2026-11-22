@@ -9,10 +9,32 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.1] - 2026-11-22
+
+### Fixed
+- `.pyi` type stubs and deliberate no-op shim modules (for example `multiprocessing/dummy`) are no longer reported as unfinished stubs.
+- `pyproject.toml` parsing now understands `[project.optional-dependencies]`, `[dependency-groups]` (PEP 735, including `include-group`), `[tool.uv] dev-dependencies`, and every `[tool.poetry.group.<name>.dependencies]` group.
+- Import-name to distribution-name mapping now covers `docx`, `pptx`, `grpc`, `git`, `nacl`, `jose`, `fitz`, `ldap`, `rest_framework` and others, and resolves dotted prefixes (`google.protobuf`) without mapping every `google.*` import to `protobuf`.
+- `ts/noop-test` recognises `node:assert` method assertions (`assert.strictEqual`, `assert.ok`, `assert.deepStrictEqual`, `assert.match`, …), `t.ok`/`t.assert.*`, and no longer mistakes `test.valid.forEach(...)` for a test declaration.
+- `py/swallowed-exception` counts explanatory comments between the `try` body and `except`; comment detection now uses real comment nodes instead of scanning for `#`/`//` in strings.
+- `conftest.py`, `noxfile.py` and `docs/conf.py` are treated as test/build infrastructure, so their imports are demoted instead of failing CI.
+- Imports under `sys.platform` / `platform.system()` guards are ignored (platform-specific modules).
+- `confidence: "toString"` (or any other `Object.prototype` key) is rejected instead of silently hiding every finding.
+- Scanning zero files exits 2 with a message instead of reporting a clean run.
+- `--fail-on medium` (or `low`) no longer acts as a no-op when `--confidence` is higher: the display threshold is lowered so failing findings are visible.
+- A `.js`/`.mjs`/`.cjs` file is parsed with the TSX grammar, so JSX in `.js` no longer forces every finding down to `medium`.
+- The unified-diff parser tracks hunk state, so a content line such as `++ x;` can no longer be mistaken for a `+++` file header.
+- A UTF-8 BOM is stripped before parsing, so line 1 columns are no longer off by one.
+- Glob patterns support `{a,b}` alternatives (including nesting), so `**/*.{ts,tsx}` works.
+- SARIF artifact URIs are percent-encoded (spaces, `#`, non-ASCII).
+- `--write-baseline` records all current findings even when `--diff` is also set.
+- A failed grammar load is no longer cached forever, and ignored directories no longer inflate `stats.skipped`.
+- `slopgate init` pins the installed version instead of `@latest`, and reports relative paths consistently.
+
 ### Changed
-- The README now leads with what the defects cost, documents `.slopgate.json`, lists exit codes, and explains the scoped npm name.
-- The demo GIF is rendered at 1440px with vectorised monospace text instead of a blurry 720px raster.
-- The npm package is published as `@voidh4x0r/slopgate`: npm rejects the unscoped name as too similar to the existing `slop-gate` package. The CLI command remains `slopgate`.
+- 166 tests, including regression fixtures for every fix above.
+- Benchmark re-run after the fixes: **26 high-confidence findings across 991,705 lines of CPython, 96.2% labeled precision (25/26), 14/14 seeded defects detected, 0 high findings across 601 JavaScript files.** The labels now cover every high finding, stale labels are zero, and the results carry a corpus digest so the run can be verified without absolute paths.
+- Docs now state that `--diff` and MCP `scan_diff` invoke `git` (and therefore need a sandbox that permits child processes), that labels are per fingerprint and come from a development set, and that the benchmark has no minimum-sample exclusion.
 
 ## [0.1.0] - 2026-11-22
 

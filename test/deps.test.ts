@@ -57,6 +57,62 @@ test('parsePythonManifestText reads pyproject project.dependencies and poetry', 
   assert.ok(!names.includes('python'));
 });
 
+test('parsePythonManifestText reads extras, dependency-groups and every poetry group', () => {
+  const pyproject = [
+    '[project]',
+    'name = "x"',
+    'dependencies = [',
+    '  "requests>=2 ; python_version < \'3.12\'",',
+    ']',
+    '',
+    '[project.optional-dependencies]',
+    'cli = ["click"]',
+    'docs = ["sphinx"]',
+    '',
+    '[dependency-groups]',
+    'dev = ["moto", {include-group = "lint"}]',
+    'lint = ["ruff"]',
+    '',
+    '[tool.poetry.group.test.dependencies]',
+    'pytest = "^8.0"',
+    '',
+    '[tool.poetry.group.docs.dependencies]',
+    'mkdocs = "^1.6"',
+    '',
+    '[tool.uv]',
+    'dev-dependencies = ["pytest-cov"]',
+    '',
+    '[build-system]',
+    'requires = ["hatchling"]',
+  ].join('\n');
+  const names = parsePythonManifestText('pyproject.toml', pyproject);
+  for (const expected of [
+    'requests',
+    'click',
+    'sphinx',
+    'moto',
+    'ruff',
+    'pytest',
+    'mkdocs',
+    'pytest-cov',
+    'hatchling',
+  ]) {
+    assert.ok(names.includes(expected), `expected ${expected} in ${names.join(', ')}`);
+  }
+  assert.ok(!names.includes('python'));
+  assert.ok(!names.includes('3-12'), 'environment markers must not become package names');
+});
+
+test('parsePythonManifestText resolves include-group cycles without hanging', () => {
+  const pyproject = [
+    '[dependency-groups]',
+    'a = ["one", {include-group = "b"}]',
+    'b = ["two", {include-group = "a"}]',
+  ].join('\n');
+  const names = parsePythonManifestText('pyproject.toml', pyproject).sort();
+  assert.deepEqual(names, ['one', 'two']);
+});
+
 test('parsePythonManifestText reads setup.py and Pipfile', () => {
   const setup = ['setup(', '  install_requires=["requests>=2", "click"],', ')'].join('\n');
   assert.deepEqual(parsePythonManifestText('setup.py', setup).sort(), ['click', 'requests']);

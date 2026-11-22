@@ -43,6 +43,94 @@ function quotedStrings(text: string): string[] {
   return out;
 }
 
+/** Split an array body on commas outside quotes and inline tables. */
+function splitTopLevel(value: string): string[] {
+  const parts: string[] = [];
+  let quote: string | undefined;
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i];
+    if (quote) {
+      if (ch === quote && value[i - 1] !== '\\') quote = undefined;
+    } else if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (ch === '{') {
+      depth += 1;
+    } else if (ch === '}') {
+      depth -= 1;
+    } else if (ch === ',' && depth === 0) {
+      parts.push(value.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(value.slice(start));
+  return parts;
+}
+
+/** True when the (possibly multi-line) array body contains its closing `]`. */
+function closesArray(value: string): boolean {
+  let quote: string | undefined;
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value[i];
+    if (quote) {
+      if (ch === quote && value[i - 1] !== '\\') quote = undefined;
+    } else if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (ch === ']') {
+      return true;
+    }
+  }
+  return false;
+}
+
+interface ArrayEntries {
+  requirements: string[];
+  includes: string[];
+}
+
+/**
+ * PEP 621 / PEP 735 arrays contain requirement strings and
+ * `{ include-group = "name" }` tables. Taking the first quoted token of each
+ * entry avoids treating environment markers as package names.
+ */
+function arrayEntries(body: string): ArrayEntries {
+  const requirements: string[] = [];
+  const includes: string[] = [];
+  for (const entry of splitTopLevel(body)) {
+    const trimmed = entry.trim();
+    if (trimmed.length === 0) continue;
+    const include = /include-group\s*=\s*["']([^"']+)["']/.exec(trimmed);
+    if (include?.[1]) {
+      includes.push(include[1]);
+      continue;
+    }
+    const first = /^"([^"\\]*(?:\\.[^"\\]*)*)"|^'([^'\\]*(?:\\.[^'\\]*)*)'/.exec(trimmed);
+    const value = first?.[1] ?? first?.[2];
+    if (!value) continue;
+    const name = requirementName(value);
+    if (name) requirements.push(name);
+  }
+  return { requirements, includes };
+}
+
+const POETRY_GROUP = /^tool\.poetry\.group\.([^.]+)\.dependencies$/;
+
+/** Key of a simple `key = value` / `key = [` line, including quoted keys. */
+function tomlKey(line: string): string | undefined {
+  const match = /^\s*(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_.-]+))\s*=/.exec(line);
+  return match?.[1] ?? match?.[2] ?? match?.[3];
+}
+
+function isPyprojectArraySection(section: string, key: string): boolean {
+  if (section === 'project') return key === 'dependencies';
+  if (section === 'project.optional-dependencies') return true;
+  if (section === 'dependency-groups') return true;
+  if (section === 'tool.uv') return key === 'dev-dependencies';
+  if (section === 'build-system') return key === 'requires';
+  return false;
+}
+
 /** Best-effort parse of the Python dependency declarations we can see. */
 export function parsePythonManifestText(fileName: string, text: string): string[] {
   const names: string[] = [];
@@ -58,51 +146,72 @@ export function parsePythonManifestText(fileName: string, text: string): string[
   }
 
   if (base === 'pyproject.toml') {
-    const lines = text.split(/\r?\n/);
+    const names: string[] = [];
+    const groups = new Map<string, ArrayEntries>();
     let section = '';
-    let arrayRemaining = 0;
-    for (const rawLine of lines) {
+    let pending: { section: string; key: string; buffer: string } | undefined;
+
+    const collect = (targetSection: string, key: string, body: string): void => {
+      const entries = arrayEntries(body);
+      if (targetSection === 'dependency-groups') {
+        const group = groups.get(key) ?? { requirements: [], includes: [] };
+        group.requirements.push(...entries.requirements);
+        group.includes.push(...entries.includes);
+        groups.set(key, group);
+      } else {
+        names.push(...entries.requirements);
+      }
+    };
+
+    for (const rawLine of text.split(/\r?\n/)) {
       const line = stripTomlComments(rawLine);
+      if (pending) {
+        pending.buffer += '\n' + line;
+        if (closesArray(line)) {
+          collect(pending.section, pending.key, pending.buffer);
+          pending = undefined;
+        }
+        continue;
+      }
       const sectionMatch = /^\s*\[([^\]]+)\]\s*$/.exec(line);
       if (sectionMatch?.[1]) {
         section = sectionMatch[1].trim();
         continue;
       }
-      if (arrayRemaining > 0) {
-        for (const value of quotedStrings(line)) {
-          const name = requirementName(value);
-          if (name) names.push(name);
-        }
-        if (line.includes(']')) arrayRemaining = 0;
-        continue;
-      }
-      const arrayStart = /^\s*(dependencies|requires)\s*=\s*\[(.*)$/.exec(line);
+      const arrayStart = /^\s*(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_.-]+))\s*=\s*\[(.*)$/.exec(line);
       if (arrayStart) {
-        const inline = arrayStart[2] ?? '';
-        for (const value of quotedStrings(inline)) {
-          const name = requirementName(value);
-          if (name) names.push(name);
+        const key = arrayStart[1] ?? arrayStart[2] ?? arrayStart[3] ?? '';
+        const rest = arrayStart[4] ?? '';
+        if (isPyprojectArraySection(section, key)) {
+          if (closesArray(rest)) collect(section, key, rest);
+          else pending = { section, key, buffer: rest };
         }
-        if (!inline.includes(']')) arrayRemaining = 1;
         continue;
       }
-      if (section === 'tool.poetry.dependencies' || section === 'tool.poetry.dev-dependencies' || section === 'tool.poetry.group.dev.dependencies') {
-        const kv = /^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*=/.exec(line);
-        if (kv?.[1] && kv[1].toLowerCase() !== 'python') {
-          names.push(normalizePythonName(kv[1]));
-        }
-      }
-      if (section === 'build-system') {
-        const requires = /^\s*requires\s*=\s*\[(.*)/.exec(line);
-        if (requires?.[1] !== undefined) {
-          for (const value of quotedStrings(requires[1])) {
-            const name = requirementName(value);
-            if (name) names.push(name);
-          }
-        }
+      if (
+        section === 'tool.poetry.dependencies' ||
+        section === 'tool.poetry.dev-dependencies' ||
+        POETRY_GROUP.test(section)
+      ) {
+        const key = tomlKey(line);
+        if (key && key.toLowerCase() !== 'python') names.push(normalizePythonName(key));
       }
     }
-    return names;
+
+    // Resolve PEP 735 include-group references (with cycle protection).
+    const resolved = new Set<string>();
+    const resolveGroup = (name: string, seen: Set<string>): void => {
+      if (seen.has(name)) return;
+      seen.add(name);
+      const group = groups.get(name);
+      if (!group) return;
+      for (const requirement of group.requirements) resolved.add(requirement);
+      for (const include of group.includes) resolveGroup(include, seen);
+    };
+    for (const name of groups.keys()) resolveGroup(name, new Set());
+    names.push(...resolved);
+
+    return [...new Set(names)];
   }
 
   if (base === 'setup.py') {

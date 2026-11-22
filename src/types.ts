@@ -14,6 +14,12 @@ export interface Position {
   column: number;
 }
 
+/** A comment node's line span, used for "a comment explains this" decisions. */
+export interface CommentRange {
+  startLine: number;
+  endLine: number;
+}
+
 export interface Finding {
   ruleId: string;
   message: string;
@@ -85,6 +91,8 @@ export interface RuleContext {
   root: AstNode;
   language: LanguageId;
   deps: ProjectDeps;
+  /** Real comment nodes in this file; strings and regexes are not comments. */
+  comments: readonly CommentRange[];
 }
 
 export interface Rule {

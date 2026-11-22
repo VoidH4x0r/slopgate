@@ -1,0 +1,12 @@
+[project]
+name = "case-dist"
+version = "0.1.0"
+dependencies = [
+  "python-docx",
+  "grpcio",
+  "GitPython",
+  "python-pptx",
+  "python-dateutil",
+  "beautifulsoup4",
+  "scikit-learn",
+]

@@ -82,7 +82,10 @@ export function normalizeConfig(raw: unknown): Config {
   }
 
   if (input.confidence !== undefined) {
-    if (typeof input.confidence !== 'string' || !(input.confidence in CONFIDENCE_RANK)) {
+    if (
+      typeof input.confidence !== 'string' ||
+      !Object.hasOwn(CONFIDENCE_RANK, input.confidence)
+    ) {
       throw new Error('config field "confidence" must be "high", "medium" or "low"');
     }
     config.confidence = input.confidence as Confidence;

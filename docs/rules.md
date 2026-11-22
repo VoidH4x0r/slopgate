@@ -3,7 +3,7 @@
 Every rule runs on a real AST (tree-sitter), reports a **confidence**, and has at least one negative test that proves it does *not* fire on legitimate code.
 
 - **Severity** is what the finding means; **confidence** is how sure we are. Only `high` is shown by default and fails CI.
-- **Test files**: rules about dead code, stubs and swallowed errors skip test files (`test/`, `tests/`, `__tests__/`, `test_*.py`, `*_test.py`, `*.test.ts`, `*.spec.ts`), because test scaffolding is full of intentional stubs. `noop-test` and `tautological-assert` are the rules that look *at* tests.
+- **Test files**: rules about dead code, stubs and swallowed errors skip test files (`test/`, `tests/`, `__tests__/`, `test_*.py`, `*_test.py`, `*.test.ts`, `*.spec.ts`) and test/build infrastructure (`conftest.py`, `noxfile.py`, `docs/conf.py`), because that scaffolding is full of intentional stubs. `noop-test` and `tautological-assert` are the rules that look *at* tests.
 - **Parse errors**: a file that did not parse cleanly can never produce a `high` finding; its findings are demoted to `medium` with an evidence line explaining why.
 - Rule ids are stable; use them in `slopgate-ignore-*` directives and `.slopgate.json`.
 
@@ -94,7 +94,7 @@ def sync_accounts(self):
 
 **Confidence.** `high` only for a module-level, public, undocumented function whose body is `pass`/`...`. Everything else is `medium` (`raise NotImplementedError`, documented functions, methods, private helpers, `return None` → `low`), because interface placeholders and abstract hooks look identical to abandoned stubs.
 
-**Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, test files, and anything named `test_*` (handled by `py/noop-test`).
+**Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op shim modules (`dummy/`, `noop/`, `shims/`), test files, and anything named `test_*` (handled by `py/noop-test`).
 
 ---
 
@@ -112,7 +112,7 @@ except Exception:
 **Confidence.**
 
 - `high` only for a bare `except:` or `except Exception` / `BaseException`, with no comment, outside a cleanup function.
-- `medium` when the caught type is specific (`except KeyError`), when a comment explains it, or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
+- `medium` when the caught type is specific (`except KeyError`), when a comment explains it (anywhere from the `try` statement to the end of the handler, including the line between `try` and `except`), or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
 
 **Not reported.** `except ImportError` / `ModuleNotFoundError` (the optional-dependency idiom), `try` blocks with an `else` clause (the `try/except: pass/else: fail` assertion idiom), test files, and handlers that log or re-raise.
 

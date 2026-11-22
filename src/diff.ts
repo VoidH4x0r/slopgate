@@ -7,7 +7,7 @@ const exec = promisify(execFile);
 
 const DIFF_HEADER = /^diff --git (.+)$/;
 const NEW_FILE = /^\+\+\+ (.+)$/;
-const HUNK = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/;
+const HUNK = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/;
 
 export interface DiffSet {
   /** Files with per-line additions. */
@@ -100,8 +100,40 @@ export function parseUnifiedDiff(stdout: string): DiffSet {
   const set: DiffSet = { lines: new Map(), full: new Set() };
   let currentFile: string | undefined;
   let previousWasDevNull = false;
+  /** Content lines left in the current hunk, tracked per side. */
+  let oldRemaining = 0;
+  let newRemaining = 0;
+  /** Next line number in the new file. */
+  let newLine = 0;
+  let store: Set<number> | undefined;
 
   for (const line of stdout.split(/\r?\n/)) {
+    // Inside a hunk every line is content, even one that looks like a header:
+    // JavaScript `++ x;` produces a `+++ x;` line. Consume by hunk counts.
+    if (oldRemaining > 0 || newRemaining > 0) {
+      if (line.startsWith('\\')) continue; // "\ No newline at end of file"
+      if (line.startsWith('+')) {
+        if (newRemaining > 0) {
+          store?.add(newLine);
+          newLine += 1;
+          newRemaining -= 1;
+        }
+      } else if (line.startsWith('-')) {
+        if (oldRemaining > 0) oldRemaining -= 1;
+      } else if (line.startsWith(' ')) {
+        if (oldRemaining > 0) oldRemaining -= 1;
+        if (newRemaining > 0) {
+          newLine += 1;
+          newRemaining -= 1;
+        }
+      } else {
+        // Malformed hunk: consume defensively rather than parsing it as a header.
+        if (oldRemaining > 0) oldRemaining -= 1;
+        if (newRemaining > 0) newRemaining -= 1;
+      }
+      continue;
+    }
+
     if (line.startsWith('--- ')) {
       previousWasDevNull = line.trim() === '--- /dev/null';
       continue;
@@ -123,16 +155,16 @@ export function parseUnifiedDiff(stdout: string): DiffSet {
     }
     if (!currentFile) continue;
     const hunk = HUNK.exec(line);
-    if (!hunk?.[1]) continue;
-    const start = Number.parseInt(hunk[1], 10);
-    const count = hunk[2] === undefined ? 1 : Number.parseInt(hunk[2], 10);
-    if (!Number.isFinite(start)) continue;
-    let store = set.lines.get(currentFile);
+    if (!hunk?.[1] || !hunk[3]) continue;
+    oldRemaining = hunk[2] === undefined ? 1 : Number.parseInt(hunk[2], 10);
+    newRemaining = hunk[4] === undefined ? 1 : Number.parseInt(hunk[4], 10);
+    newLine = Number.parseInt(hunk[3], 10);
+    if (!Number.isFinite(newLine)) continue;
+    store = set.lines.get(currentFile);
     if (!store) {
       store = new Set<number>();
       set.lines.set(currentFile, store);
     }
-    for (let offset = 0; offset < count; offset += 1) store.add(start + offset);
   }
   return set;
 }

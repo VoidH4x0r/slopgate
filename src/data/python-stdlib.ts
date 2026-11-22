@@ -42,9 +42,11 @@ export const PYTHON_STDLIB: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Import name -> distribution name, for packages whose import name differs
- * from the name you put in a manifest. Without this map the dependency check
- * would produce false positives on very common packages.
+ * Import path -> distribution name, for packages whose import name differs
+ * from the name you put in a manifest. Keys are case-sensitive and may be
+ * dotted; the longest matching prefix wins (`google.protobuf` before `google`).
+ * Without this map the dependency check would produce false positives on very
+ * common packages.
  */
 export const IMPORT_TO_DISTRIBUTION: Readonly<Record<string, string>> = {
   attr: 'attrs',
@@ -52,18 +54,33 @@ export const IMPORT_TO_DISTRIBUTION: Readonly<Record<string, string>> = {
   cv2: 'opencv-python',
   Crypto: 'pycryptodome',
   dateutil: 'python-dateutil',
+  docx: 'python-docx',
   dotenv: 'python-dotenv',
-  google: 'protobuf',
+  fitz: 'pymupdf',
+  git: 'gitpython',
+  grpc: 'grpcio',
+  'google.protobuf': 'protobuf',
+  googleapiclient: 'google-api-python-client',
+  jose: 'python-jose',
   jwt: 'pyjwt',
+  ldap: 'python-ldap',
   magic: 'python-magic',
   MySQLdb: 'mysqlclient',
+  nacl: 'pynacl',
   OpenSSL: 'pyopenssl',
   PIL: 'pillow',
   pkg_resources: 'setuptools',
+  pptx: 'python-pptx',
   psycopg2: 'psycopg2-binary',
+  rest_framework: 'djangorestframework',
   serial: 'pyserial',
-  sklearn: 'scikit-learn',
   skimage: 'scikit-image',
+  sklearn: 'scikit-learn',
+  slugify: 'python-slugify',
+  socks: 'pysocks',
+  win32api: 'pywin32',
+  win32com: 'pywin32',
+  Xlib: 'python-xlib',
   yaml: 'pyyaml',
   zmq: 'pyzmq',
 };

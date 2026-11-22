@@ -2,9 +2,9 @@
 
 The release workflow (`.github/workflows/release.yml`) publishes on a `v*` tag. Nothing is published from a laptop.
 
-## 0. One-time: point the project at its repository
+## 0. Repository slug (already done for this repository)
 
-The repository URL is a placeholder (`slopgate/slopgate`) until this runs:
+This repository already points at `https://github.com/VoidH4x0r/slopgate`; `package.json`, badges, CLI help, SARIF metadata and README links are absolute. The step below is only needed for a fork or a fresh scaffold:
 
 ```bash
 node scripts/set-repo.mjs https://github.com/<owner>/slopgate --write

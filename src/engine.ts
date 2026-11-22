@@ -5,6 +5,7 @@ import { loadProjectDeps } from './deps.ts';
 import { discoverFiles, type SourceFile } from './files.ts';
 import { getParser } from './parser.ts';
 import { ALL_RULES, RULE_BY_ID } from './rules/index.ts';
+import { collectCommentRanges } from './rules/helpers.ts';
 import { isSuppressed, readSuppressions } from './suppress.ts';
 import type { Config } from './config.ts';
 import type {
@@ -61,21 +62,6 @@ function toFinding(ruleId: string, draft: RuleDraft, defaults: { severity: Findi
   };
 }
 
-function commentLinesOf(root: AstNode): Set<number> {
-  const lines = new Set<number>();
-  const stack: AstNode[] = [root];
-  while (stack.length > 0) {
-    const node = stack.pop();
-    if (!node) break;
-    if (node.type === 'comment' || node.type === 'line_comment' || node.type === 'block_comment') {
-      lines.add(node.startPosition.row + 1);
-      continue;
-    }
-    for (const child of node.namedChildren) stack.push(child);
-  }
-  return lines;
-}
-
 export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   const started = performance.now();
   const target = path.resolve(options.root);
@@ -126,7 +112,9 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
       skipped += 1;
       continue;
     }
-    const source = buffer.toString('utf8');
+    // Editors on Windows write a UTF-8 BOM; it must not shift line/column
+    // numbers in findings.
+    const source = buffer.toString('utf8').replace(/^\uFEFF/, '');
     byLanguage[file.language] += 1;
 
     const parser = await getParser(file.language);
@@ -138,14 +126,17 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     const hadParseError = tree.rootNode.hasError;
     if (hadParseError) parseErrors += 1;
 
+    const root = asAst(tree.rootNode);
+    const comments = collectCommentRanges(root);
     const ctx: RuleContext = {
       file: file.rel,
       lines: source.split(/\r?\n/),
-      root: asAst(tree.rootNode),
+      root,
       language: file.language,
       deps,
+      comments,
     };
-    const suppressions = readSuppressions(source, commentLinesOf(ctx.root));
+    const suppressions = readSuppressions(source, new Set(comments.map((comment) => comment.startLine)));
 
     for (const rule of enabled) {
       if (!rule.meta.languages.includes(file.language)) continue;

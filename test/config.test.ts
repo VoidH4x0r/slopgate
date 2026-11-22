@@ -20,6 +20,12 @@ test('normalizeConfig accepts rule severities and "off"', () => {
   assert.equal(config.rules['ts/stub-function'], 'error');
 });
 
+test('normalizeConfig rejects values inherited from Object.prototype', () => {
+  for (const value of ['toString', 'constructor', '__proto__', 'hasOwnProperty']) {
+    assert.throws(() => normalizeConfig({ confidence: value }), /confidence/);
+  }
+});
+
 test('normalizeConfig rejects invalid values', () => {
   assert.throws(() => normalizeConfig({ confidence: 'certain' }), /confidence/);
   assert.throws(() => normalizeConfig({ rules: { 'py/noop-test': 'loud' } }), /must be/);
