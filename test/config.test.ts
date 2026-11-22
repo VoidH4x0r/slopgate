@@ -32,6 +32,12 @@ test('normalizeConfig rejects values inherited from Object.prototype', () => {
   }
 });
 
+test('normalizeConfig accepts and ignores a $schema meta key', () => {
+  const config = normalizeConfig({ $schema: 'https://example.test/slopgate.schema.json' });
+  assert.equal(config.confidence, DEFAULT_CONFIG.confidence);
+  assert.throws(() => normalizeConfig({ typo: true }), /unknown config field "typo"/);
+});
+
 test('normalizeConfig rejects invalid values', () => {
   assert.throws(() => normalizeConfig({ confidence: 'certain' }), /confidence/);
   assert.throws(() => normalizeConfig({ rules: { 'py/noop-test': 'loud' } }), /must be/);

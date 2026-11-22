@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.2.4  ·  4 files  ·  50ms
+slopgate 0.2.5  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -150,7 +150,7 @@ slopgate [path] [options]
 - `ignoreModules` — top-level modules to always treat as declared (dynamic imports, private packages).
 - `rules` — `"off"` or an explicit severity (`"error"`, `"warning"`, `"info"`). Severity changes display and annotation level only; **CI failure is controlled by confidence and `--fail-on`**. A rule set to `"info"` stays visible and still fails when its confidence meets `--fail-on`; use `"off"` or a baseline to exempt it.
 - `confidence` / `failOn` — same meaning as the CLI flags; CLI flags win.
-- Unknown config keys are rejected (exit 2) instead of being silently ignored.
+- Unknown config keys are rejected (exit 2) instead of being silently ignored; the standard `$schema` meta key is accepted and ignored.
 
 For example, `{"include": ["src/**"]}` scans only files under `src/`; it does **not** keep the default Python/TS/JS coverage. Add the patterns you need, or use the CLI flag to append one pattern to the defaults.
 
@@ -233,7 +233,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.2.4 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.2.5 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -241,7 +241,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.2.4 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.2.5 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -311,6 +311,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.2.2 — operator-complete duplicate signatures, per-file representatives, SARIF metadata, stale-autofix guard
 - [x] v0.2.3 — UTF-8 documentation repair and markdown mojibake guard
 - [x] v0.2.4 — strict config keys, pyusb mapping, language-aware documentation guard
+- [x] v0.2.5 — `$schema` allowance and CJK-run encoding guard
 - [ ] v0.3 — Go and Rust grammars, VS Code diagnostics
 - [ ] v0.4 — expanded published false-positive benchmark, duplicate-block semantic clones
 
@@ -341,7 +342,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 342 tests; the tests themselves make no network or child-process calls
+npm test            # 343 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

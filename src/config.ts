@@ -82,6 +82,7 @@ const CONFIDENCE_RANK: Record<Confidence, number> = { low: 0, medium: 1, high: 2
 const SEVERITIES: readonly Severity[] = ['error', 'warning', 'info'];
 const FAIL_ON: readonly FailOn[] = ['high', 'medium', 'low', 'none'];
 const CONFIG_FIELDS = new Set([
+  '$schema',
   'include',
   'exclude',
   'ignoreModules',

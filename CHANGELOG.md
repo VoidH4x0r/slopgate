@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-11-23
+
+### Fixed
+- `.slopgate.json` accepts and ignores the standard `$schema` meta key while still rejecting genuinely unknown fields.
+- Markdown encoding detection now requires a continuous CJK run (four or more characters), so five isolated mojibake characters cannot masquerade as a Chinese document.
+
+### Changed
+- 343 tests.
+- Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**.
+
 ## [0.2.4] - 2026-11-23
 
 ### Fixed
