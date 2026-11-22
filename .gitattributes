@@ -1,0 +1,11 @@
+# Normalise text files to LF so the repository is identical on every platform.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending converted.
+*.wasm binary
+*.gif binary
+*.png binary
+*.tgz binary
+
+# Lockfiles are generated; diffs are noise in review.
+package-lock.json -diff

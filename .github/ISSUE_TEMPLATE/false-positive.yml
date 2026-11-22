@@ -1,0 +1,47 @@
+name: False positive
+description: slopgate reported something that is actually fine. These reports feed the precision benchmark.
+title: "[false positive] <rule id>: <one line>"
+labels: ["false-positive", "precision"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you — a false positive is the most valuable bug report this project can get.
+        Please keep the snippet as small as possible; the benchmark labels are built from these reports.
+  - type: input
+    id: rule
+    attributes:
+      label: Rule id
+      description: The `ruleId` from the finding (e.g. `py/phantom-import`).
+    validations:
+      required: true
+  - type: textarea
+    id: snippet
+    attributes:
+      label: Minimal reproducing snippet
+      description: The smallest file that still triggers the finding, plus the manifest it depends on.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What slopgate reported
+      description: Paste the finding, including the evidence lines.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is this legitimate?
+      description: One or two sentences is enough.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: slopgate version
+      description: Output of `npx slopgate --version`.
+    validations:
+      required: false

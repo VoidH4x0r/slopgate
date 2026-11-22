@@ -1,0 +1,243 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { makeDeps, runRule, runRuleOnFile } from './helpers.ts';
+
+test('py/phantom-import flags an import that is neither declared nor local', async () => {
+  const drafts = await runRule('py/phantom-import', 'import numpy_extra\n', 'python');
+  assert.equal(drafts.length, 1);
+  assert.match(drafts[0]?.message ?? '', /numpy_extra/);
+  assert.equal(drafts[0]?.confidence, undefined);
+});
+
+test('py/phantom-import stays quiet for stdlib, declared, local and optional imports', async () => {
+  const source = [
+    'import os',
+    'import requests',
+    'import mymodule',
+    'from . import sibling',
+    'try:',
+    '    import ujson',
+    'except ImportError:',
+    '    ujson = None',
+  ].join('\n');
+  const deps = makeDeps({ pythonDeclared: ['requests'], pythonLocal: ['mymodule'] });
+  const drafts = await runRule('py/phantom-import', source, 'python', deps);
+  assert.deepEqual(drafts, []);
+});
+
+test('py/phantom-import understands import-name to distribution-name mappings', async () => {
+  const deps = makeDeps({ pythonDeclared: ['pyyaml'] });
+  const drafts = await runRule('py/phantom-import', 'import yaml\n', 'python', deps);
+  assert.deepEqual(drafts, []);
+});
+
+test('py/noop-test flags tests without assertions', async () => {
+  const drafts = await runRuleOnFile('py/noop-test', 'def test_add():\n    add(1, 2)\n', 'python', 'tests/test_app.py');
+  assert.equal(drafts.length, 1);
+  assert.match(drafts[0]?.message ?? '', /makes no assertions/);
+});
+
+test('py/noop-test flags empty tests and accepts real assertions', async () => {
+  const empty = await runRuleOnFile('py/noop-test', 'def test_add():\n    """later"""\n', 'python', 'tests/test_app.py');
+  assert.equal(empty.length, 1);
+  assert.match(empty[0]?.message ?? '', /empty body/);
+
+  const real = await runRuleOnFile(
+    'py/noop-test',
+    'def test_add():\n    assert add(1, 2) == 3\n',
+    'python',
+    'tests/test_app.py',
+  );
+  assert.deepEqual(real, []);
+
+  const mock = await runRuleOnFile(
+    'py/noop-test',
+    'def test_calls():\n    client.send.assert_called_once()\n',
+    'python',
+    'tests/test_app.py',
+  );
+  assert.deepEqual(mock, []);
+});
+
+test('py/noop-test ignores functions that are not tests', async () => {
+  const drafts = await runRule('py/noop-test', 'def testing_helpers():\n    pass\n', 'python');
+  assert.deepEqual(drafts, []);
+});
+
+test('py/noop-test only trusts real test modules or test classes', async () => {
+  const moduleLevel = 'def test_helper():\n    go()\n';
+  assert.deepEqual(await runRuleOnFile('py/noop-test', moduleLevel, 'python', 'support/tools.py'), []);
+  assert.equal((await runRuleOnFile('py/noop-test', moduleLevel, 'python', 'tests/test_tools.py')).length, 1);
+
+  const inClass = 'class TestThing:\n    def test_x(self):\n        go()\n';
+  const drafts = await runRuleOnFile('py/noop-test', inClass, 'python', 'support/tools.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('py/tautological-assert finds constant and self comparisons', async () => {
+  assert.equal((await runRule('py/tautological-assert', 'assert True\n', 'python')).length, 1);
+  assert.equal((await runRule('py/tautological-assert', 'assert 1 == 1\n', 'python')).length, 1);
+  assert.equal((await runRule('py/tautological-assert', 'def f(x):\n    assert x == x\n', 'python')).length, 1);
+});
+
+test('py/tautological-assert accepts real assertions', async () => {
+  assert.deepEqual(await runRule('py/tautological-assert', 'def f(x):\n    assert x > 0\n', 'python'), []);
+  assert.deepEqual(await runRule('py/tautological-assert', 'def f(x):\n    assert x != x\n', 'python'), []);
+  assert.deepEqual(await runRule('py/tautological-assert', 'assert False\n', 'python'), []);
+});
+
+test('py/stub-body flags placeholder bodies', async () => {
+  const bodies = [
+    'def f():\n    pass\n',
+    'def f():\n    """doc"""\n    ...\n',
+    'def f():\n    return None\n',
+    'def f():\n    raise NotImplementedError()\n',
+  ];
+  for (const source of bodies) {
+    const drafts = await runRule('py/stub-body', source, 'python');
+    assert.equal(drafts.length, 1, source);
+  }
+});
+
+test('py/stub-body ignores abstract, protocol, dunder and real bodies', async () => {
+  const abstract = [
+    'from abc import abstractmethod',
+    '',
+    'class Base:',
+    '    @abstractmethod',
+    '    def run(self):',
+    '        pass',
+  ].join('\n');
+  assert.deepEqual(await runRule('py/stub-body', abstract, 'python'), []);
+
+  const protocol = ['from typing import Protocol', '', 'class P(Protocol):', '    def run(self) -> None:', '        ...'].join('\n');
+  assert.deepEqual(await runRule('py/stub-body', protocol, 'python'), []);
+
+  assert.deepEqual(await runRule('py/stub-body', 'def __init__(self):\n    pass\n', 'python'), []);
+  assert.deepEqual(await runRule('py/stub-body', 'def f():\n    return 1\n', 'python'), []);
+});
+
+test('py/stub-body does not double-report test functions', async () => {
+  assert.deepEqual(await runRule('py/stub-body', 'def test_x():\n    pass\n', 'python'), []);
+});
+
+test('py/swallowed-exception flags silent handlers', async () => {
+  const source = ['try:', '    work()', 'except Exception:', '    pass'].join('\n');
+  const drafts = await runRule('py/swallowed-exception', source, 'python');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('py/swallowed-exception lowers confidence when a comment explains it', async () => {
+  const source = ['try:', '    work()', 'except Exception:', '    # best effort', '    pass'].join('\n');
+  const drafts = await runRule('py/swallowed-exception', source, 'python');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('py/swallowed-exception ignores handlers that log', async () => {
+  const source = ['try:', '    work()', 'except Exception as exc:', '    logger.warning("failed: %s", exc)'].join('\n');
+  assert.deepEqual(await runRule('py/swallowed-exception', source, 'python'), []);
+});
+
+test('py/dead-branch flags constant conditions but keeps while True', async () => {
+  assert.equal((await runRule('py/dead-branch', 'if False:\n    x = 1\n', 'python')).length, 1);
+  assert.equal((await runRule('py/dead-branch', 'if True:\n    x = 1\n', 'python'))[0]?.confidence, 'medium');
+  assert.deepEqual(await runRule('py/dead-branch', 'while True:\n    pass\n', 'python'), []);
+  assert.deepEqual(await runRule('py/dead-branch', 'def f(flag):\n    if flag:\n        x = 1\n', 'python'), []);
+});
+
+test('py/unreachable flags statements after exits', async () => {
+  assert.equal((await runRule('py/unreachable', 'def f():\n    return 1\n    x = 2\n', 'python')).length, 1);
+  assert.equal((await runRule('py/unreachable', 'def f():\n    raise RuntimeError()\n    x = 2\n', 'python')).length, 1);
+  assert.deepEqual(await runRule('py/unreachable', 'def f():\n    return 1\n', 'python'), []);
+});
+
+test('py/phantom-import ignores private C-extension modules and __main__', async () => {
+  const source = ['import _socket', 'import _winapi', 'import __main__'].join('\n');
+  assert.deepEqual(await runRule('py/phantom-import', source, 'python'), []);
+});
+
+test('py/stub-body: methods and private functions are only medium confidence', async () => {
+  const method = await runRule('py/stub-body', 'class A:\n    def run(self):\n        pass\n', 'python');
+  assert.equal(method[0]?.confidence, 'medium');
+
+  const privateFn = await runRule('py/stub-body', 'def _f():\n    pass\n', 'python');
+  assert.equal(privateFn[0]?.confidence, 'medium');
+
+  const documented = await runRule('py/stub-body', 'def f():\n    """Do it."""\n    pass\n', 'python');
+  assert.equal(documented[0]?.confidence, 'medium');
+
+  const publicFn = await runRule('py/stub-body', 'def f():\n    pass\n', 'python');
+  assert.equal(publicFn[0]?.confidence, 'high');
+});
+
+test('py/stub-body skips test files entirely', async () => {
+  const source = 'def helper():\n    pass\n';
+  assert.deepEqual(await runRuleOnFile('py/stub-body', source, 'python', 'tests/test_app.py'), []);
+  const inApp = await runRuleOnFile('py/stub-body', source, 'python', 'app.py');
+  assert.equal(inApp.length, 1);
+});
+
+test('py/noop-test skips demo code under __main__ guards', async () => {
+  const source = ['if __name__ == "__main__":', '    def test_demo():', '        run_demo()'].join('\n');
+  assert.deepEqual(await runRuleOnFile('py/noop-test', source, 'python', 'tests/test_demo.py'), []);
+});
+
+test('py/noop-test lowers confidence when the test delegates to self helpers', async () => {
+  const source = [
+    'class TestThing:',
+    '    def test_log(self):',
+    '        self._test_log("log", 1)',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/noop-test', source, 'python', 'tests/test_thing.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('py/swallowed-exception lowers confidence for specific exception types', async () => {
+  const source = ['try:', '    close()', 'except OSError:', '    pass'].join('\n');
+  const drafts = await runRule('py/swallowed-exception', source, 'python');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('py/swallowed-exception skips optional-import and assertion idioms', async () => {
+  const optionalImport = ['try:', '    import ujson', 'except ImportError:', '    pass'].join('\n');
+  assert.deepEqual(await runRule('py/swallowed-exception', optionalImport, 'python'), []);
+
+  const assertionIdiom = [
+    'try:',
+    '    value = obj.attr',
+    'except AttributeError:',
+    '    pass',
+    'else:',
+    '    raise AssertionError("should not have an attribute")',
+  ].join('\n');
+  assert.deepEqual(await runRule('py/swallowed-exception', assertionIdiom, 'python'), []);
+});
+
+test('py/swallowed-exception skips test files', async () => {
+  const source = ['try:', '    go()', 'except Exception:', '    pass'].join('\n');
+  assert.deepEqual(await runRuleOnFile('py/swallowed-exception', source, 'python', 'tests/test_app.py'), []);
+});
+
+test('py/dead-branch skips test files and abstract method stubs', async () => {
+  assert.deepEqual(await runRuleOnFile('py/dead-branch', 'if False:\n    x = 1\n', 'python', 'test_app.py'), []);
+
+  const abstract = [
+    'from abc import abstractmethod',
+    'class Base:',
+    '    @abstractmethod',
+    '    def __iter__(self):',
+    '        while False:',
+    '            yield None',
+  ].join('\n');
+  assert.deepEqual(await runRule('py/dead-branch', abstract, 'python'), []);
+});
+
+test('py/unreachable skips test files', async () => {
+  const source = 'def f():\n    return 1\n    x = 2\n';
+  assert.deepEqual(await runRuleOnFile('py/unreachable', source, 'python', 'tests/test_app.py'), []);
+});

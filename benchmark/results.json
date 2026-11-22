@@ -1,0 +1,571 @@
+{
+  "generatedAt": "2026-11-22T04:04:36.780Z",
+  "corpora": [
+    {
+      "name": "cpython-stdlib",
+      "files": 1845,
+      "lines": 991705,
+      "durationMs": 12069,
+      "findings": 6818,
+      "high": 35,
+      "suppressed": 0,
+      "parseErrors": 9,
+      "byRule": {
+        "py/stub-body": {
+          "high": 2,
+          "medium": 283,
+          "low": 33
+        },
+        "py/swallowed-exception": {
+          "high": 27,
+          "medium": 420,
+          "low": 0
+        },
+        "py/dead-branch": {
+          "high": 0,
+          "medium": 4,
+          "low": 0
+        },
+        "py/noop-test": {
+          "high": 2,
+          "medium": 5933,
+          "low": 0
+        },
+        "py/phantom-import": {
+          "high": 1,
+          "medium": 105,
+          "low": 0
+        },
+        "py/tautological-assert": {
+          "high": 3,
+          "medium": 5,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 32,
+          "fp": 3,
+          "precision": 0.9142857142857143
+        },
+        "byRule": {
+          "py/swallowed-exception": {
+            "tp": 27,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/stub-body": {
+            "tp": 2,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/phantom-import": {
+            "tp": 0,
+            "fp": 1,
+            "precision": 0
+          },
+          "py/tautological-assert": {
+            "tp": 3,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/noop-test": {
+            "tp": 0,
+            "fp": 2,
+            "precision": 0
+          }
+        }
+      },
+      "findingsList": [
+        {
+          "fingerprint": "d8e897c1e58a4ae6",
+          "ruleId": "py/swallowed-exception",
+          "file": "_pyrepl/reader.py",
+          "line": 692,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "d8e897c1e58a4ae6",
+          "ruleId": "py/swallowed-exception",
+          "file": "_pyrepl/reader.py",
+          "line": 699,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "b38c94da5e487d08",
+          "ruleId": "py/swallowed-exception",
+          "file": "_pyrepl/simple_interact.py",
+          "line": 137,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "d5a26a54eb9e9312",
+          "ruleId": "py/swallowed-exception",
+          "file": "_sitebuiltins.py",
+          "line": 24,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "789fd5e5b8e54677",
+          "ruleId": "py/swallowed-exception",
+          "file": "curses/__init__.py",
+          "line": 91,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "94bb1860c88c8c10",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/debugger.py",
+          "line": 266,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "815c91cc58f96bae",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/debugobj.py",
+          "line": 102,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "e598848ed8006a4c",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/pyshell.py",
+          "line": 200,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "e598848ed8006a4c",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/pyshell.py",
+          "line": 207,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "e598848ed8006a4c",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/pyshell.py",
+          "line": 222,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "e598848ed8006a4c",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/pyshell.py",
+          "line": 509,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "e598848ed8006a4c",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/pyshell.py",
+          "line": 1217,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "e598848ed8006a4c",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/pyshell.py",
+          "line": 1270,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "a2466de075c3bb04",
+          "ruleId": "py/swallowed-exception",
+          "file": "imaplib.py",
+          "line": 1535,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "c0b8395fe4e0d495",
+          "ruleId": "py/swallowed-exception",
+          "file": "logging/__init__.py",
+          "line": 384,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "8b3bfafc5964c0fa",
+          "ruleId": "py/stub-body",
+          "file": "multiprocessing/dummy/__init__.py",
+          "line": 75,
+          "confidence": "high",
+          "snippet": "def freeze_support():"
+        },
+        {
+          "fingerprint": "4ea0fe68407152a4",
+          "ruleId": "py/stub-body",
+          "file": "multiprocessing/dummy/__init__.py",
+          "line": 119,
+          "confidence": "high",
+          "snippet": "def shutdown():"
+        },
+        {
+          "fingerprint": "6dbead5f4586824b",
+          "ruleId": "py/swallowed-exception",
+          "file": "multiprocessing/managers.py",
+          "line": 224,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "6dbead5f4586824b",
+          "ruleId": "py/swallowed-exception",
+          "file": "multiprocessing/managers.py",
+          "line": 676,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "04f955297bbd0003",
+          "ruleId": "py/swallowed-exception",
+          "file": "multiprocessing/resource_tracker.py",
+          "line": 240,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "04f955297bbd0003",
+          "ruleId": "py/swallowed-exception",
+          "file": "multiprocessing/resource_tracker.py",
+          "line": 432,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "15781f099d869458",
+          "ruleId": "py/swallowed-exception",
+          "file": "multiprocessing/resource_tracker.py",
+          "line": 462,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "04f955297bbd0003",
+          "ruleId": "py/swallowed-exception",
+          "file": "multiprocessing/resource_tracker.py",
+          "line": 480,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "43215991ab4b349e",
+          "ruleId": "py/swallowed-exception",
+          "file": "pdb.py",
+          "line": 633,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "43215991ab4b349e",
+          "ruleId": "py/swallowed-exception",
+          "file": "pdb.py",
+          "line": 2272,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "43215991ab4b349e",
+          "ruleId": "py/swallowed-exception",
+          "file": "pdb.py",
+          "line": 2280,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "209edb6a378f76c2",
+          "ruleId": "py/phantom-import",
+          "file": "platform.py",
+          "line": 544,
+          "confidence": "high",
+          "snippet": "from java.lang import System"
+        },
+        {
+          "fingerprint": "7bbe6aa7dfe2aa6f",
+          "ruleId": "py/tautological-assert",
+          "file": "test/_code_definitions.py",
+          "line": 3,
+          "confidence": "high",
+          "snippet": "assert True"
+        },
+        {
+          "fingerprint": "4a3eacd0bab8df74",
+          "ruleId": "py/tautological-assert",
+          "file": "test/test_import/__init__.py",
+          "line": 2813,
+          "confidence": "high",
+          "snippet": "assert mod.__dict__ == mod.__dict__"
+        },
+        {
+          "fingerprint": "b57ec4b25feca2c7",
+          "ruleId": "py/noop-test",
+          "file": "test/test_itertools.py",
+          "line": 73,
+          "confidence": "high",
+          "snippet": "def testR(r):"
+        },
+        {
+          "fingerprint": "2678e33cbb07507d",
+          "ruleId": "py/noop-test",
+          "file": "test/test_itertools.py",
+          "line": 76,
+          "confidence": "high",
+          "snippet": "def testR2(r):"
+        },
+        {
+          "fingerprint": "61ab19eec2f04703",
+          "ruleId": "py/tautological-assert",
+          "file": "test/test_zipfile/_path/test_path.py",
+          "line": 543,
+          "confidence": "high",
+          "snippet": "assert (root / \"a.txt\") == (root / \"a.txt\")"
+        },
+        {
+          "fingerprint": "67061844d588a19a",
+          "ruleId": "py/swallowed-exception",
+          "file": "turtle.py",
+          "line": 658,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "c8ca13215b952bce",
+          "ruleId": "py/swallowed-exception",
+          "file": "turtledemo/lindenmayer.py",
+          "line": 42,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "1a50ea445e9655bb",
+          "ruleId": "py/swallowed-exception",
+          "file": "typing.py",
+          "line": 1243,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        }
+      ]
+    },
+    {
+      "name": "express",
+      "files": 7,
+      "lines": 2783,
+      "durationMs": 39,
+      "findings": 0,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {},
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    },
+    {
+      "name": "chalk",
+      "files": 2,
+      "lines": 799,
+      "durationMs": 7,
+      "findings": 0,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {},
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    },
+    {
+      "name": "execa",
+      "files": 111,
+      "lines": 8363,
+      "durationMs": 158,
+      "findings": 11,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {
+        "ts/swallowed-exception": {
+          "high": 0,
+          "medium": 11,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    },
+    {
+      "name": "semver",
+      "files": 49,
+      "lines": 3166,
+      "durationMs": 63,
+      "findings": 0,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {},
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    },
+    {
+      "name": "commander",
+      "files": 7,
+      "lines": 4225,
+      "durationMs": 46,
+      "findings": 0,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {},
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    },
+    {
+      "name": "debug",
+      "files": 4,
+      "lines": 841,
+      "durationMs": 10,
+      "findings": 4,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {
+        "ts/swallowed-exception": {
+          "high": 0,
+          "medium": 4,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    },
+    {
+      "name": "eslint",
+      "files": 409,
+      "lines": 100880,
+      "durationMs": 852,
+      "findings": 3,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {
+        "ts/swallowed-exception": {
+          "high": 0,
+          "medium": 2,
+          "low": 0
+        },
+        "ts/stub-function": {
+          "high": 0,
+          "medium": 1,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    },
+    {
+      "name": "glob",
+      "files": 7,
+      "lines": 2217,
+      "durationMs": 22,
+      "findings": 0,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {},
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    },
+    {
+      "name": "yargs",
+      "files": 5,
+      "lines": 198,
+      "durationMs": 6,
+      "findings": 0,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {},
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    }
+  ],
+  "recall": {
+    "total": 14,
+    "detected": 14,
+    "missed": []
+  }
+}

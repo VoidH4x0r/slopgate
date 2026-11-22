@@ -1,0 +1,199 @@
+import { readdir, stat } from 'node:fs/promises';
+import * as path from 'node:path';
+import type { LanguageId } from './types.ts';
+
+/** Directories that never contain code we want to lint. */
+export const DEFAULT_IGNORE_DIRS: ReadonlySet<string> = new Set([
+  '.git', '.hg', '.svn', '.idea', '.vscode',
+  'node_modules', 'bower_components',
+  'dist', 'build', 'out', 'target', 'bin', 'obj',
+  'vendor', 'third_party', 'external',
+  '.venv', 'venv', 'env', 'virtualenv', '.tox', '.eggs',
+  'site-packages', 'dist-packages',
+  '__pycache__', '.mypy_cache', '.pytest_cache', '.ruff_cache', '.pytype',
+  '.next', '.nuxt', '.svelte-kit', '.turbo', '.cache', 'coverage',
+  '.slopgate-cache',
+]);
+
+export const DEFAULT_INCLUDE: readonly string[] = [
+  '**/*.py', '**/*.pyi',
+  '**/*.ts', '**/*.mts', '**/*.cts', '**/*.tsx',
+  '**/*.js', '**/*.mjs', '**/*.cjs', '**/*.jsx',
+];
+
+const EXTENSION_LANGUAGE: Readonly<Record<string, LanguageId>> = {
+  '.py': 'python',
+  '.pyi': 'python',
+  '.ts': 'typescript',
+  '.mts': 'typescript',
+  '.cts': 'typescript',
+  '.tsx': 'tsx',
+  '.jsx': 'tsx',
+  '.js': 'typescript',
+  '.mjs': 'typescript',
+  '.cjs': 'typescript',
+};
+
+const MAX_FILE_BYTES = 1024 * 1024;
+
+export interface SourceFile {
+  /** Absolute path on disk. */
+  abs: string;
+  /** Repository-relative path with forward slashes. */
+  rel: string;
+  language: LanguageId;
+  size: number;
+}
+
+export interface DiscoverOptions {
+  root: string;
+  include?: readonly string[];
+  exclude?: readonly string[];
+  ignoreDirs?: readonly string[];
+  maxBytes?: number;
+}
+
+export interface DiscoverResult {
+  files: SourceFile[];
+  skipped: number;
+}
+
+export function toPosix(p: string): string {
+  return p.replace(/\\/g, '/');
+}
+
+/**
+ * Translate a small glob dialect into a RegExp anchored at the whole path.
+ * Supported: `**` (any depth), `*` (within one segment), `?`.
+ */
+export function globToRegExp(glob: string): RegExp {
+  const normalized = toPosix(glob).replace(/^\.\//, '');
+  let re = '';
+  for (let i = 0; i < normalized.length; i += 1) {
+    const ch = normalized[i] ?? '';
+    if (ch === '*') {
+      if (normalized[i + 1] === '*') {
+        i += 1;
+        if (normalized[i + 1] === '/') {
+          i += 1;
+          re += '(?:[^/]+/)*';
+        } else {
+          re += '.*';
+        }
+      } else {
+        re += '[^/]*';
+      }
+    } else if (ch === '?') {
+      re += '[^/]';
+    } else if ('\\^$.|+()[]{}'.includes(ch)) {
+      re += '\\' + ch;
+    } else {
+      re += ch;
+    }
+  }
+  return new RegExp('^' + re + '$');
+}
+
+export function matchesAny(relPath: string, patterns: readonly RegExp[]): boolean {
+  return patterns.some((re) => re.test(relPath));
+}
+
+export function languageFor(fileName: string): LanguageId | undefined {
+  if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.mts') || fileName.endsWith('.d.cts')) {
+    return undefined;
+  }
+  const ext = path.extname(fileName).toLowerCase();
+  return EXTENSION_LANGUAGE[ext];
+}
+
+export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverResult> {
+  const root = path.resolve(options.root);
+  const includeRe = (options.include ?? DEFAULT_INCLUDE).map(globToRegExp);
+  const excludeRe = (options.exclude ?? []).map(globToRegExp);
+  const ignoreDirs = new Set([...DEFAULT_IGNORE_DIRS, ...(options.ignoreDirs ?? [])]);
+  const maxBytes = options.maxBytes ?? MAX_FILE_BYTES;
+
+  const files: SourceFile[] = [];
+  let skipped = 0;
+
+  // `slopgate src/app.py` scans a single file, not an empty directory walk.
+  let rootInfo;
+  try {
+    rootInfo = await stat(root);
+  } catch {
+    return { files, skipped: 1 };
+  }
+  if (rootInfo.isFile()) {
+    const name = path.basename(root);
+    const language = languageFor(name);
+    if (!language || !matchesAny(name, includeRe) || matchesAny(name, excludeRe)) {
+      return { files, skipped: 1 };
+    }
+    if (rootInfo.size > maxBytes || rootInfo.size === 0) {
+      return { files, skipped: 1 };
+    }
+    files.push({ abs: root, rel: name, language, size: rootInfo.size });
+    return { files, skipped };
+  }
+
+  async function walk(dir: string): Promise<void> {
+    let entries;
+    try {
+      entries = await readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    entries.sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const entry of entries) {
+      const abs = path.join(dir, entry.name);
+      const rel = toPosix(path.relative(root, abs));
+
+      if (entry.isSymbolicLink()) {
+        skipped += 1;
+        continue;
+      }
+      if (entry.isDirectory()) {
+        if (ignoreDirs.has(entry.name) || matchesAny(rel + '/', excludeRe)) {
+          skipped += 1;
+          continue;
+        }
+        await walk(abs);
+        continue;
+      }
+      if (!entry.isFile()) {
+        skipped += 1;
+        continue;
+      }
+      if (matchesAny(rel, excludeRe)) {
+        skipped += 1;
+        continue;
+      }
+      const language = languageFor(entry.name);
+      if (!language || !matchesAny(rel, includeRe)) {
+        continue;
+      }
+      if (entry.name.endsWith('.min.js') || entry.name.endsWith('.min.mjs')) {
+        skipped += 1;
+        continue;
+      }
+
+      let info;
+      try {
+        info = await stat(abs);
+      } catch {
+        skipped += 1;
+        continue;
+      }
+      if (info.size > maxBytes || info.size === 0) {
+        skipped += 1;
+        continue;
+      }
+      files.push({ abs, rel, language, size: info.size });
+    }
+  }
+
+  await walk(root);
+  files.sort((a, b) => a.rel.localeCompare(b.rel));
+  return { files, skipped };
+}

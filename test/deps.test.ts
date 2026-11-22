@@ -1,0 +1,74 @@
+import assert from 'node:assert/strict';
+import * as path from 'node:path';
+import test from 'node:test';
+import {
+  loadProjectDeps,
+  normalizePythonName,
+  parsePythonManifestText,
+  requirementName,
+} from '../src/deps.ts';
+import { FIXTURES } from './helpers.ts';
+
+test('normalizePythonName applies PEP 503 rules', () => {
+  assert.equal(normalizePythonName('Requests'), 'requests');
+  assert.equal(normalizePythonName('python_dateutil'), 'python-dateutil');
+  assert.equal(normalizePythonName('zope.interface'), 'zope-interface');
+});
+
+test('requirementName extracts the distribution name', () => {
+  assert.equal(requirementName('requests>=2.31'), 'requests');
+  assert.equal(requirementName('requests[socks]>=2.0 ; python_version > "3.8"'), 'requests');
+  assert.equal(requirementName('  PyYAML == 6.0  '), 'pyyaml');
+  assert.equal(requirementName('-e .'), undefined);
+  assert.equal(requirementName('git+https://example.com/x.git'), undefined);
+  assert.equal(requirementName('# just a comment'), undefined);
+  assert.equal(requirementName(''), undefined);
+});
+
+test('parsePythonManifestText reads requirements.txt', () => {
+  const names = parsePythonManifestText(
+    'requirements.txt',
+    ['# deps', 'requests>=2', 'flask[async]  # web', '-r other.txt', 'uvicorn'].join('\n'),
+  );
+  assert.deepEqual(names.sort(), ['flask', 'requests', 'uvicorn']);
+});
+
+test('parsePythonManifestText reads pyproject project.dependencies and poetry', () => {
+  const pyproject = [
+    '[project]',
+    'name = "x"',
+    'dependencies = [',
+    '  "requests>=2.0",',
+    '  "pydantic[email]",',
+    ']',
+    '',
+    '[tool.poetry.dependencies]',
+    'python = "^3.11"',
+    'httpx = "^0.27"',
+    '',
+    '[build-system]',
+    'requires = ["hatchling"]',
+  ].join('\n');
+  const names = parsePythonManifestText('pyproject.toml', pyproject);
+  assert.ok(names.includes('requests'));
+  assert.ok(names.includes('pydantic'));
+  assert.ok(names.includes('httpx'));
+  assert.ok(names.includes('hatchling'));
+  assert.ok(!names.includes('python'));
+});
+
+test('parsePythonManifestText reads setup.py and Pipfile', () => {
+  const setup = ['setup(', '  install_requires=["requests>=2", "click"],', ')'].join('\n');
+  assert.deepEqual(parsePythonManifestText('setup.py', setup).sort(), ['click', 'requests']);
+
+  const pipfile = ['[packages]', 'requests = "*"', 'flask = { version = "2.0" }'].join('\n');
+  assert.deepEqual(parsePythonManifestText('Pipfile', pipfile).sort(), ['flask', 'requests']);
+});
+
+test('loadProjectDeps reads the demo fixture', async () => {
+  const deps = await loadProjectDeps(path.join(FIXTURES, 'demo'));
+  assert.ok(deps.python.declared.has('requests-v2'));
+  assert.deepEqual(deps.python.manifests, ['pyproject.toml']);
+  assert.ok(deps.node.declared.has('left-pad'));
+  assert.equal(deps.node.hasPackageJson, true);
+});

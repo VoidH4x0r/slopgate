@@ -1,0 +1,122 @@
+{
+  "d8e897c1e58a4ae6": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "b38c94da5e487d08": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "d5a26a54eb9e9312": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "789fd5e5b8e54677": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "94bb1860c88c8c10": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "815c91cc58f96bae": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "e598848ed8006a4c": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "a2466de075c3bb04": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "c0b8395fe4e0d495": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "8b3bfafc5964c0fa": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "4ea0fe68407152a4": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "6dbead5f4586824b": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "04f955297bbd0003": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "15781f099d869458": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "43215991ab4b349e": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "209edb6a378f76c2": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "7bbe6aa7dfe2aa6f": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "d3042165c32e231c": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "1a06cd79a9bdb4e5": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "ba537601ab2a4b2a": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "d88f2493d732c7fe": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "618cad01c0391dc6": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "4a3eacd0bab8df74": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "b57ec4b25feca2c7": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "2678e33cbb07507d": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "8c52a88bb06ef5d3": {
+    "label": "fp",
+    "note": "helper/context-specific code, the report is misleading here"
+  },
+  "61ab19eec2f04703": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "67061844d588a19a": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "c8ca13215b952bce": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  },
+  "1a50ea445e9655bb": {
+    "label": "tp",
+    "note": "the described pattern is present in the code as written"
+  }
+}

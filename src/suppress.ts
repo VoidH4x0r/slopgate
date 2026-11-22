@@ -1,0 +1,59 @@
+import type { Finding } from './types.ts';
+
+const NEXT_LINE = /slopgate-ignore-next-line\b(.*)$/;
+const SAME_LINE = /slopgate-ignore-line\b(.*)$/;
+const FILE = /slopgate-disable-file\b/;
+
+export interface Suppressions {
+  fileDisabled: boolean;
+  /** 1-based line -> rule ids, or 'all'. */
+  lineRules: Map<number, Set<string> | 'all'>;
+}
+
+function ruleList(raw: string): Set<string> | 'all' {
+  const cleaned = raw.replace(/^[:\s]+/, '').replace(/[*/-]+\/?\s*$/, '').trim();
+  if (!cleaned || cleaned === '*' || cleaned === 'all') return 'all';
+  const ids = cleaned
+    .split(/[,\s]+/)
+    .map((part) => part.trim())
+    .filter((part) => /^[a-z]{2}\/[a-z0-9-]+$/.test(part));
+  return ids.length > 0 ? new Set(ids) : 'all';
+}
+
+/**
+ * @param commentLines 1-based lines that actually contain a comment node.
+ *   When supplied, directives inside string literals or docs are ignored.
+ */
+export function readSuppressions(source: string, commentLines?: ReadonlySet<number>): Suppressions {
+  const suppressions: Suppressions = { fileDisabled: false, lineRules: new Map() };
+  const lines = source.split(/\r?\n/);
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const lineNumber = index + 1;
+    if (commentLines && !commentLines.has(lineNumber)) continue;
+    const line = lines[index] ?? '';
+    if (FILE.test(line)) {
+      suppressions.fileDisabled = true;
+      continue;
+    }
+    const next = NEXT_LINE.exec(line);
+    if (next) {
+      const target = index + 2;
+      suppressions.lineRules.set(target, ruleList(next[1] ?? ''));
+      continue;
+    }
+    const same = SAME_LINE.exec(line);
+    if (same && !next) {
+      suppressions.lineRules.set(index + 1, ruleList(same[1] ?? ''));
+    }
+  }
+  return suppressions;
+}
+
+export function isSuppressed(finding: Finding, suppressions: Suppressions): boolean {
+  if (suppressions.fileDisabled) return true;
+  const rules = suppressions.lineRules.get(finding.start.line);
+  if (!rules) return false;
+  if (rules === 'all') return true;
+  return rules.has(finding.ruleId);
+}

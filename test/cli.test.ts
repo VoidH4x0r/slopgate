@@ -1,0 +1,174 @@
+import assert from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import * as path from 'node:path';
+import test from 'node:test';
+import { main } from '../src/cli.ts';
+import { ROOT } from './helpers.ts';
+
+interface CliResult {
+  status: number;
+  stdout: string;
+  stderr: string;
+}
+
+/**
+ * Runs the CLI in-process. Spawning a child process would be closer to the
+ * real thing, but it also makes the suite fail under sandboxes that block
+ * piped stdio, so we capture the streams ourselves.
+ */
+async function run(args: readonly string[]): Promise<CliResult> {
+  const stdoutChunks: string[] = [];
+  const stderrChunks: string[] = [];
+  const stdout = process.stdout as unknown as { write: (chunk: unknown) => boolean };
+  const stderr = process.stderr as unknown as { write: (chunk: unknown) => boolean };
+  const originalOut = stdout.write;
+  const originalErr = stderr.write;
+
+  stdout.write = (chunk: unknown) => {
+    stdoutChunks.push(String(chunk));
+    return true;
+  };
+  stderr.write = (chunk: unknown) => {
+    stderrChunks.push(String(chunk));
+    return true;
+  };
+
+  try {
+    const status = await main(args);
+    return { status, stdout: stdoutChunks.join(''), stderr: stderrChunks.join('') };
+  } finally {
+    stdout.write = originalOut;
+    stderr.write = originalErr;
+  }
+}
+
+test('cli: json output exits 1 when findings exist', async () => {
+  const result = await run(['fixtures/demo', '--format', 'json']);
+  assert.equal(result.status, 1, result.stderr);
+  const payload = JSON.parse(result.stdout) as { tool: string; findings: unknown[] };
+  assert.equal(payload.tool, 'slopgate');
+  assert.ok(payload.findings.length > 0);
+});
+
+test('cli: clean fixture exits 0', async () => {
+  const result = await run(['fixtures/clean', '--no-color']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /no findings/);
+});
+
+test('cli: --fail-on none exits 0 even with findings', async () => {
+  const result = await run(['fixtures/demo', '--fail-on', 'none', '--no-color']);
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('cli: --version prints the package version', async () => {
+  const result = await run(['--version']);
+  assert.equal(result.status, 0);
+  assert.match(result.stdout.trim(), /^\d+\.\d+\.\d+$/);
+});
+
+test('cli: rules lists every rule id', async () => {
+  const result = await run(['rules']);
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /py\/phantom-import/);
+  assert.match(result.stdout, /ts\/stub-function/);
+});
+
+test('cli: unknown options exit 2 with a helpful message', async () => {
+  const result = await run(['fixtures/demo', '--nope']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /unknown option: --nope/);
+});
+
+test('cli: a missing path exits 2 instead of silently scanning nothing', async () => {
+  const result = await run(['this-path-does-not-exist-42']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /path not found/);
+});
+
+test('cli: more than one path is rejected instead of silently ignored', async () => {
+  const result = await run(['fixtures/demo', 'fixtures/clean']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /only one path is supported/);
+});
+
+test('cli: an unknown --rule id exits 2 and lists the rule count', async () => {
+  const result = await run(['fixtures/demo', '--rule', 'py/nope']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /unknown rule id: py\/nope/);
+  assert.match(result.stderr, /14 rule ids/);
+});
+
+test('cli: confidence filter hides medium findings', async () => {
+  const result = await run(['fixtures/demo', '--format', 'json', '--confidence', 'high']);
+  assert.equal(result.status, 1);
+  const payload = JSON.parse(result.stdout) as { findings: Array<{ confidence: string }> };
+  assert.ok(payload.findings.length > 0);
+  assert.ok(payload.findings.every((finding) => finding.confidence === 'high'));
+});
+
+test('cli: sarif output is machine readable', async () => {
+  const result = await run(['fixtures/demo', '--format', 'sarif']);
+  assert.equal(result.status, 1);
+  const payload = JSON.parse(result.stdout) as { version: string; runs: unknown[] };
+  assert.equal(payload.version, '2.1.0');
+  assert.equal(payload.runs.length, 1);
+});
+
+test('cli: github annotations are emitted and the exit code is honoured', async () => {
+  const failing = await run(['fixtures/demo', '--format', 'github']);
+  assert.equal(failing.status, 1);
+  assert.match(failing.stdout, /^::error file=/m);
+  assert.match(failing.stdout, /^::notice title=slopgate::/m);
+
+  const passing = await run(['fixtures/demo', '--format', 'github', '--fail-on', 'none']);
+  assert.equal(passing.status, 0);
+});
+
+test('cli: an explicitly requested baseline that does not exist exits 2', async () => {
+  const result = await run(['fixtures/demo', '--baseline', 'no-such-baseline.json']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /baseline file not found/);
+});
+
+test('cli: scanning zero files warns instead of failing silently', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-empty-'));
+  try {
+    const result = await run([dir, '--no-color']);
+    assert.equal(result.status, 0);
+    assert.match(result.stderr, /no files matched/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: a diff ref that looks like a git option is rejected before git runs', async () => {
+  const result = await run(['fixtures/demo', '--diff=--output=pwned.txt']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /invalid git ref/);
+});
+
+test('cli: mcp refuses a root that is not a directory', async () => {
+  const result = await run(['mcp', 'fixtures/demo/app.py']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /MCP root is not a directory/);
+});
+
+test('cli: a single file argument scans just that file', async () => {
+  const result = await run(['fixtures/demo/app.py', '--format', 'json']);
+  assert.equal(result.status, 1, result.stderr);
+  const payload = JSON.parse(result.stdout) as {
+    stats: { files: number };
+    findings: Array<{ file: string }>;
+  };
+  assert.equal(payload.stats.files, 1);
+  assert.ok(payload.findings.length > 0);
+  assert.ok(payload.findings.every((finding) => finding.file === 'app.py'));
+});
+
+test('cli: --rule restricts the run to one rule', async () => {
+  const result = await run(['fixtures/demo', '--format', 'json', '--rule', 'py/phantom-import']);
+  const payload = JSON.parse(result.stdout) as { findings: Array<{ ruleId: string }> };
+  assert.ok(payload.findings.length > 0);
+  assert.ok(payload.findings.every((finding) => finding.ruleId === 'py/phantom-import'));
+});

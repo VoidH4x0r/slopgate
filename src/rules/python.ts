@@ -1,0 +1,604 @@
+import type { AstNode } from '../ast.ts';
+import { normalizePythonName } from '../deps.ts';
+import { IMPLICIT_MODULES, IMPORT_TO_DISTRIBUTION, PYTHON_STDLIB } from '../data/python-stdlib.ts';
+import type { Confidence, Rule, RuleContext, RuleDraft } from '../types.ts';
+import {
+  ancestorOfType,
+  collapseWhitespace,
+  descendantsOfType,
+  endOf,
+  hasCommentBetween,
+  hasDocstring,
+  docstringOf,
+  insideCleanupFunction,
+  insideMainGuard,
+  isComment,
+  isTestPath,
+  looksLikeTestModule,
+  snippetOf,
+  startOf,
+  statementsOf,
+  truncate,
+  walk,
+} from './helpers.ts';
+
+const TERMINATORS = new Set([
+  'return_statement',
+  'raise_statement',
+  'break_statement',
+  'continue_statement',
+]);
+
+function pythonImports(root: AstNode): Array<{ node: AstNode; module: string }> {
+  const imports: Array<{ node: AstNode; module: string }> = [];
+  for (const node of descendantsOfType(root, ['import_statement', 'import_from_statement'])) {
+    if (node.type === 'import_statement') {
+      for (const child of node.namedChildren) {
+        if (isComment(child)) continue;
+        const target = child.type === 'aliased_import' ? child.childForFieldName('name') : child;
+        const rootName = target?.namedChildren.find((part) => part.type === 'identifier')?.text;
+        if (rootName) imports.push({ node, module: rootName });
+      }
+      continue;
+    }
+    // `from .x import y` and `from . import y` are local by construction.
+    if (node.namedChildren.some((child) => child.type === 'relative_import')) continue;
+    const moduleNode = node.namedChildren.find((child) => child.type === 'dotted_name');
+    const rootName =
+      moduleNode?.namedChildren.find((part) => part.type === 'identifier')?.text ??
+      moduleNode?.text.split('.')[0];
+    if (rootName) imports.push({ node, module: rootName });
+  }
+  return imports;
+}
+
+/** `try: import ujson except ImportError: ...` is an optional dependency. */
+function isOptionalImport(node: AstNode): boolean {
+  const tryNode = ancestorOfType(node, ['try_statement']);
+  if (!tryNode) return false;
+  return /ImportError|ModuleNotFoundError/.test(tryNode.text);
+}
+
+function isDeclaredPython(module: string, ctx: RuleContext): boolean {
+  const deps = ctx.deps.python;
+  const normalized = normalizePythonName(module);
+  if (deps.declared.has(normalized)) return true;
+  const distribution = IMPORT_TO_DISTRIBUTION[module];
+  if (distribution && deps.declared.has(normalizePythonName(distribution))) return true;
+  return false;
+}
+
+function testFunctionName(fn: AstNode): string | undefined {
+  const name = fn.childForFieldName('name')?.text;
+  if (!name) return undefined;
+  if (name.startsWith('test_') || /^test[A-Z0-9]/.test(name)) return name;
+  return undefined;
+}
+
+const ASSERTION_CALLEE =
+  /(^|\.)(assert\w*|raises|expect|expects|should\w*|fail|check|verify|match_snapshot)$/;
+
+function hasAssertion(body: AstNode): boolean {
+  let found = false;
+  walk(body, (node) => {
+    if (found) return false;
+    if (node.type === 'assert_statement') {
+      found = true;
+      return false;
+    }
+    if (node.type === 'call') {
+      const fnText = collapseWhitespace(node.childForFieldName('function')?.text ?? '');
+      const last = fnText.split('.').pop() ?? '';
+      if (ASSERTION_CALLEE.test(last)) {
+        found = true;
+        return false;
+      }
+    }
+    return true;
+  });
+  return found;
+}
+
+function bodyCallsSelf(body: AstNode): boolean {
+  let found = false;
+  walk(body, (node) => {
+    if (found) return false;
+    if (node.type === 'call') {
+      const fnText = collapseWhitespace(node.childForFieldName('function')?.text ?? '');
+      if (/^(self|cls)\./.test(fnText)) {
+        found = true;
+        return false;
+      }
+    }
+    return true;
+  });
+  return found;
+}
+
+function placeholderForm(block: AstNode): string | undefined {
+  const statements = statementsOf(block);
+  const afterDocstring =
+    statements[0]?.type === 'expression_statement' &&
+    statements[0].namedChildren[0]?.type === 'string'
+      ? statements.slice(1)
+      : statements;
+  if (afterDocstring.length !== 1) return undefined;
+  const only = afterDocstring[0];
+  if (!only) return undefined;
+
+  if (only.type === 'pass_statement') return 'pass';
+  if (only.type === 'expression_statement') {
+    const text = collapseWhitespace(only.text);
+    if (text === '...') return '...';
+    return undefined;
+  }
+  if (only.type === 'return_statement') {
+    const text = collapseWhitespace(only.text);
+    if (text === 'return' || text === 'return None') return text;
+    return undefined;
+  }
+  if (only.type === 'raise_statement' && /NotImplementedError/.test(only.text)) {
+    return 'raise NotImplementedError';
+  }
+  return undefined;
+}
+
+const NEVER_STUBS = new Set([
+  '__init__',
+  '__new__',
+  '__post_init__',
+  '__enter__',
+  '__exit__',
+  'setUp',
+  'tearDown',
+  'setUpClass',
+  'tearDownClass',
+]);
+
+function isAbstractMember(fn: AstNode): boolean {
+  const decorated = fn.parent;
+  if (decorated && decorated.type === 'decorated_definition') {
+    const decorators = decorated.namedChildren
+      .filter((child) => child.type === 'decorator')
+      .map((child) => child.text);
+    if (decorators.some((text) => /abstractmethod|abstractproperty|overload|override/.test(text))) {
+      return true;
+    }
+  }
+  const cls = ancestorOfType(fn, ['class_definition']);
+  if (cls) {
+    const bases = cls.childForFieldName('superclasses')?.text ?? '';
+    if (/Protocol|ABC|ABCMeta/.test(bases)) return true;
+  }
+  const ifNode = ancestorOfType(fn, ['if_statement']);
+  if (ifNode) {
+    const condition = ifNode.childForFieldName('condition')?.text ?? '';
+    if (condition.includes('TYPE_CHECKING')) return true;
+  }
+  return false;
+}
+
+function insideAbstractMethod(node: AstNode): boolean {
+  const fn = ancestorOfType(node, ['function_definition']);
+  if (!fn) return false;
+  const parent = fn.parent;
+  if (parent && parent.type === 'decorated_definition') {
+    return parent.namedChildren.some((child) => child.type === 'decorator' && /abstractmethod/.test(child.text));
+  }
+  return false;
+}
+
+const phantomImport: Rule = {
+  meta: {
+    id: 'py/phantom-import',
+    title: 'Import is neither declared nor present',
+    summary:
+      'Adds an import that no manifest declares and no file in the repository provides. The classic signature of a package the model invented.',
+    severity: 'error',
+    confidence: 'high',
+    languages: ['python'],
+    tags: ['dependencies', 'hallucination'],
+  },
+  run(ctx) {
+    if (ctx.language !== 'python') return [];
+    const drafts: RuleDraft[] = [];
+    const manifests = ctx.deps.python.manifests;
+
+    for (const { node, module } of pythonImports(ctx.root)) {
+      if (PYTHON_STDLIB.has(module)) continue;
+      if (IMPLICIT_MODULES.has(module)) continue;
+      if (ctx.deps.ignoredModules.has(module)) continue;
+      // Private C-extension modules (`_socket`, `_decimal`, `_winapi`, ...) are
+      // builtins; no project declares them in a manifest.
+      if (module.startsWith('_')) continue;
+      if (isDeclaredPython(module, ctx)) continue;
+      if (ctx.deps.python.localModules.has(module)) continue;
+      if (isOptionalImport(node)) continue;
+
+      drafts.push({
+        message: `\`${module}\` is imported but not declared in any manifest and not present in this repository`,
+        start: startOf(node),
+        end: endOf(node),
+        snippet: snippetOf(ctx, node),
+        // Test suites monkey-patch sys.path; keep the fact but do not fail CI.
+        ...(isTestPath(ctx.file) ? { confidence: 'medium' as const } : {}),
+        evidence: [
+          `import: ${truncate(node.text, 100)}`,
+          manifests.length > 0
+            ? `manifests checked: ${manifests.join(', ')}`
+            : 'no Python dependency manifest found (pyproject.toml, requirements*.txt, setup.py, Pipfile)',
+        ],
+        help:
+          'Add it to your manifest, remove the import, or wrap it in try/except ImportError if it is optional.',
+      });
+    }
+    return drafts;
+  },
+};
+
+const noopTest: Rule = {
+  meta: {
+    id: 'py/noop-test',
+    title: 'Test does not assert anything',
+    summary:
+      'Finds `test_*` functions whose body has no assertion, no `pytest.raises`, and no mock verification. They pass no matter what the code does.',
+    severity: 'warning',
+    confidence: 'high',
+    languages: ['python'],
+    tags: ['tests', 'theater'],
+  },
+  run(ctx) {
+    if (ctx.language !== 'python') return [];
+    const drafts: RuleDraft[] = [];
+
+    for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
+      const name = testFunctionName(fn);
+      if (!name) continue;
+      if (insideMainGuard(fn)) continue;
+      const inClass = ancestorOfType(fn, ['class_definition']) !== undefined;
+      // `test_*` helpers exist in test-support tooling; only trust real test
+      // modules, or methods of a test class.
+      if (!looksLikeTestModule(ctx.file) && !inClass) continue;
+      const body = fn.childForFieldName('body');
+      if (!body) continue;
+      const docstring = docstringOf(fn);
+      // Doctest-style tests keep their expectations in the docstring.
+      if (docstring?.includes('>>>')) continue;
+      // `def test_suite(): return DocTestSuite()` is a suite factory.
+      if (/TestSuite|load_tests/.test(body.text)) continue;
+      const statements = statementsOf(body).filter(
+        (statement) =>
+          !(statement.type === 'expression_statement' && statement.namedChildren[0]?.type === 'string'),
+      );
+      if (statements.length === 0) {
+        drafts.push({
+          message: `test \`${name}\` has an empty body`,
+          start: startOf(fn),
+          end: endOf(body),
+          snippet: snippetOf(ctx, fn),
+          confidence: docstring === undefined ? 'high' : 'medium',
+          evidence: [`test: ${name}`, 'body contains only a docstring or nothing'],
+          help: 'Add an assertion, or delete the test.',
+        });
+        continue;
+      }
+      if (!hasAssertion(body)) {
+        const delegatesToSelf = bodyCallsSelf(body);
+        const parameters = fn.childForFieldName('parameters');
+        const parameterCount = parameters
+          ? parameters.namedChildren.filter((child) => child.type !== 'comment').length
+          : 0;
+        const decorated = fn.parent?.type === 'decorated_definition';
+        const decoratorText = decorated
+          ? fn.parent?.namedChildren
+              .filter((child) => child.type === 'decorator')
+              .map((child) => child.text)
+              .join(' ') ?? ''
+          : '';
+        const helperDecorator = /contextmanager|staticmethod|classmethod|lru_cache|cached_property/.test(decoratorText);
+        // Module-level `test_*` functions that take several parameters, or that
+        // are wrapped by a helper decorator, are usually functions *for* tests.
+        const likelyHelper = !inClass && (parameterCount >= 2 || helperDecorator);
+        // unittest-style methods routinely delegate assertions to helpers.
+        const confidence: Confidence = inClass || delegatesToSelf || likelyHelper ? 'medium' : 'high';
+        drafts.push({
+          message: `test \`${name}\` makes no assertions`,
+          start: startOf(fn),
+          end: endOf(body),
+          snippet: snippetOf(ctx, fn),
+          confidence,
+          evidence: [
+            `test: ${name}`,
+            `statements: ${statements.length}`,
+            'no assert / raises / mock assertion found',
+            ...(delegatesToSelf ? ['the body calls a self.* helper, which may contain the assertions'] : []),
+            ...(inClass && !delegatesToSelf ? ['defined inside a test class, where helpers often hold the assertions'] : []),
+            ...(likelyHelper ? ['takes several parameters or uses a helper decorator, so it may be a test helper'] : []),
+          ],
+          help: 'Every test should be able to fail. Add an assertion that depends on the behaviour under test.',
+        });
+      }
+    }
+    return drafts;
+  },
+};
+
+const tautologicalAssert: Rule = {
+  meta: {
+    id: 'py/tautological-assert',
+    title: 'Assertion cannot fail',
+    summary: 'Finds `assert True`, `assert 1`, and `x == x` comparisons: assertions that hold regardless of the code.',
+    severity: 'warning',
+    confidence: 'high',
+    languages: ['python'],
+    tags: ['tests', 'theater'],
+  },
+  run(ctx) {
+    if (ctx.language !== 'python') return [];
+    const drafts: RuleDraft[] = [];
+
+    for (const node of descendantsOfType(ctx.root, ['assert_statement'])) {
+      const expression = node.namedChildren[0];
+      if (!expression) continue;
+      const text = collapseWhitespace(expression.text);
+      const literalNoop = text === 'True' || text === '1';
+      const negativeComparison = /(?:!=| is not | not in )/.test(` ${text} `);
+      const selfComparison =
+        !negativeComparison &&
+        expression.type === 'comparison_operator' &&
+        expression.namedChildren.length === 2 &&
+        expression.namedChildren[0]?.text === expression.namedChildren[1]?.text;
+      if (!literalNoop && !selfComparison) continue;
+
+      drafts.push({
+        message: `assertion can never fail: \`${truncate(text, 60)}\``,
+        start: startOf(node),
+        end: endOf(node),
+        snippet: snippetOf(ctx, node),
+        evidence: [`expression: ${truncate(text, 100)}`],
+        help: 'Assert on the actual behaviour (a return value, a raised error, a call) instead of a constant.',
+      });
+    }
+    return drafts;
+  },
+};
+
+const stubBody: Rule = {
+  meta: {
+    id: 'py/stub-body',
+    title: 'Function body is a placeholder',
+    summary:
+      'Finds functions whose entire body is `pass`, `...`, `return None` or `raise NotImplementedError`, outside of abstract/Protocol declarations.',
+    severity: 'warning',
+    confidence: 'high',
+    languages: ['python'],
+    tags: ['stubs', 'completeness'],
+  },
+  run(ctx) {
+    if (ctx.language !== 'python') return [];
+    if (isTestPath(ctx.file)) return [];
+    const drafts: RuleDraft[] = [];
+
+    for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
+      const name = fn.childForFieldName('name')?.text;
+      if (!name) continue;
+      if (testFunctionName(fn)) continue;
+      if (NEVER_STUBS.has(name)) continue;
+      if (name.startsWith('__') && name.endsWith('__')) continue;
+      const body = fn.childForFieldName('body');
+      if (!body) continue;
+      if (isAbstractMember(fn)) continue;
+      const form = placeholderForm(body);
+      if (!form) continue;
+
+      const moduleLevel = fn.parent?.type === 'module';
+      const documented = hasDocstring(fn);
+      const publicName = !name.startsWith('_');
+      let confidence: Confidence = 'medium';
+      if (moduleLevel && publicName && !documented && (form === 'pass' || form === '...')) {
+        confidence = 'high';
+      } else if (form === 'return' || form === 'return None') {
+        confidence = 'low';
+      }
+
+      drafts.push({
+        message: `function \`${name}\` is a stub (body is \`${form}\`)`,
+        start: startOf(fn),
+        end: endOf(body),
+        snippet: snippetOf(ctx, fn),
+        confidence,
+        evidence: [
+          `function: ${name}`,
+          `body: ${form}`,
+          ...(documented ? ['the function has a docstring, which suggests a documented interface'] : []),
+          ...(moduleLevel ? [] : ['defined inside a class or another function']),
+        ],
+        help:
+          form === 'raise NotImplementedError'
+            ? 'If this is intentional, make sure callers handle the error; otherwise implement it.'
+            : 'Implement it, or raise NotImplementedError with a message so callers fail loudly instead of silently returning None.',
+      });
+    }
+    return drafts;
+  },
+};
+
+const swallowedException: Rule = {
+  meta: {
+    id: 'py/swallowed-exception',
+    title: 'Exception is swallowed silently',
+    summary: 'Finds `except` handlers whose whole body is `pass` or `...`, so failures disappear without a trace.',
+    severity: 'warning',
+    confidence: 'high',
+    languages: ['python'],
+    tags: ['errors', 'reliability'],
+  },
+  run(ctx) {
+    if (ctx.language !== 'python') return [];
+    if (isTestPath(ctx.file)) return [];
+    const drafts: RuleDraft[] = [];
+
+    for (const tryNode of descendantsOfType(ctx.root, ['try_statement'])) {
+      // `try: ... except X: pass else: fail()` is an assertion idiom, not a bug.
+      if (tryNode.namedChildren.some((child) => child.type === 'else_clause')) continue;
+      for (const clause of tryNode.namedChildren) {
+        if (clause.type !== 'except_clause' && clause.type !== 'except_group_clause') continue;
+        const body = clause.namedChildren.filter((child) => child.type === 'block').pop();
+        if (!body) continue;
+        const statements = statementsOf(body);
+        const silent =
+          statements.length === 0 ||
+          (statements.length === 1 &&
+            (statements[0]?.type === 'pass_statement' ||
+              (statements[0]?.type === 'expression_statement' &&
+                collapseWhitespace(statements[0].text) === '...')));
+        if (!silent) continue;
+
+        const typeText = clause.namedChildren
+          .filter((child) => child.type !== 'block')
+          .map((child) => collapseWhitespace(child.text))
+          .join(' ')
+          .trim();
+        // Optional-dependency idiom: swallowing a missing import is the point.
+        if (/ImportError|ModuleNotFoundError/.test(typeText)) continue;
+
+        const commented = hasCommentBetween(ctx, clause.startPosition.row + 1, body.endPosition.row + 1);
+        const bare = typeText.length === 0;
+        const broad = bare || /^(\(?\s*)?(Exception|BaseException)(\s*\))?$/.test(typeText);
+        const cleanup = insideCleanupFunction(clause);
+        const confidence: Confidence = broad && !commented && !cleanup ? 'high' : 'medium';
+
+        drafts.push({
+          message: commented
+            ? '`except` swallows the error (a comment explains why)'
+            : broad
+              ? '`except` swallows the error silently'
+              : '`except` swallows a specific error type silently',
+          start: startOf(clause),
+          end: endOf(body),
+          snippet: snippetOf(ctx, clause),
+          confidence,
+          evidence: [
+            `handler: ${truncate(collapseWhitespace(clause.text.split(/\r?\n/)[0] ?? ''), 100)}`,
+            ...(bare ? ['bare except: catches every exception, including KeyboardInterrupt'] : []),
+            ...(cleanup ? ['inside a cleanup/finaliser function, where this is often intentional'] : []),
+            ...(commented ? ['a comment explains the suppression'] : []),
+          ],
+          help: 'Log it, re-raise it, or narrow the exception type and add a comment explaining why it is safe to ignore.',
+        });
+      }
+    }
+    return drafts;
+  },
+};
+
+const deadBranch: Rule = {
+  meta: {
+    id: 'py/dead-branch',
+    title: 'Constant condition',
+    summary: 'Finds `if False:`, `if 0:`, `while False:` and `if True:` branches that can never behave as written.',
+    severity: 'warning',
+    confidence: 'medium',
+    languages: ['python'],
+    tags: ['control-flow', 'dead-code'],
+  },
+  run(ctx) {
+    if (ctx.language !== 'python') return [];
+    if (isTestPath(ctx.file)) return [];
+    const drafts: RuleDraft[] = [];
+
+    for (const node of descendantsOfType(ctx.root, ['if_statement', 'while_statement'])) {
+      if (insideAbstractMethod(node)) continue;
+      const condition = node.childForFieldName('condition');
+      if (!condition) continue;
+      const text = collapseWhitespace(condition.text);
+      const isDeadFalse = text === 'False' || text === '0' || text === 'None';
+      // `while True:` is a legitimate event loop; `if True:` is not.
+      const isDeadTrue = text === 'True' || text === '1';
+      if (!isDeadFalse && !isDeadTrue) continue;
+      if (isDeadTrue && node.type === 'while_statement') continue;
+
+      // `if False:` around imports is the type-checking idiom:
+      //   if False:  # or if TYPE_CHECKING:
+      //       from foo import Bar
+      const block = node.childForFieldName('consequence');
+      const statements = block ? statementsOf(block) : [];
+      const onlyImports =
+        statements.length > 0 &&
+        statements.every(
+          (statement) => statement.type === 'import_statement' || statement.type === 'import_from_statement',
+        );
+      if (onlyImports) continue;
+
+      const commented = hasCommentBetween(
+        ctx,
+        Math.max(1, node.startPosition.row),
+        node.endPosition.row + 1,
+      );
+
+      drafts.push({
+        message: isDeadFalse
+          ? `\`${node.type === 'while_statement' ? 'while' : 'if'} ${text}:\` is dead code`
+          : `\`if ${text}:\` makes the else-branch unreachable`,
+        start: startOf(node),
+        end: endOf(condition),
+        snippet: snippetOf(ctx, node),
+        confidence: isDeadFalse && !commented ? 'high' : 'medium',
+        evidence: [`condition: ${text}`, ...(commented ? ['a nearby comment suggests this is a deliberate switch'] : [])],
+        help: 'Replace the constant with the flag or configuration value it is standing in for.',
+      });
+    }
+    return drafts;
+  },
+};
+
+const unreachable: Rule = {
+  meta: {
+    id: 'py/unreachable',
+    title: 'Statement after an unconditional exit',
+    summary: 'Finds statements placed after `return`, `raise`, `break` or `continue` in the same block.',
+    severity: 'error',
+    confidence: 'high',
+    languages: ['python'],
+    tags: ['control-flow', 'dead-code'],
+  },
+  run(ctx) {
+    if (ctx.language !== 'python') return [];
+    if (isTestPath(ctx.file)) return [];
+    const drafts: RuleDraft[] = [];
+    const seen = new Set<AstNode>();
+
+    for (const block of descendantsOfType(ctx.root, ['block'])) {
+      const statements = statementsOf(block);
+      const index = statements.findIndex((statement) => TERMINATORS.has(statement.type));
+      if (index === -1) continue;
+      const firstUnreachable = statements[index + 1];
+      if (!firstUnreachable || seen.has(firstUnreachable)) continue;
+      seen.add(firstUnreachable);
+      const terminator = statements[index];
+      if (!terminator) continue;
+      const count = statements.length - index - 1;
+      const keyword = terminator.type.replace('_statement', '');
+
+      drafts.push({
+        message: `code after \`${keyword}\` is unreachable`,
+        start: startOf(firstUnreachable),
+        end: endOf(firstUnreachable),
+        snippet: snippetOf(ctx, firstUnreachable),
+        evidence: [`${count} statement(s) follow the \`${keyword}\` at line ${terminator.startPosition.row + 1}`],
+        help: 'Delete the unreachable code, or move it before the exit if it was meant to run.',
+      });
+    }
+    return drafts;
+  },
+};
+
+export const pythonRules: Rule[] = [
+  phantomImport,
+  noopTest,
+  tautologicalAssert,
+  stubBody,
+  swallowedException,
+  deadBranch,
+  unreachable,
+];

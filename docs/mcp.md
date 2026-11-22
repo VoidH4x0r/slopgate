@@ -1,0 +1,79 @@
+# MCP server
+
+`slopgate mcp` speaks the [Model Context Protocol](https://modelcontextprotocol.io) over stdio, so a coding agent can lint its own work instead of waiting for a human review.
+
+## Add it to a client
+
+Claude Code (`~/.claude.json` or project `.mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "slopgate": { "command": "npx", "args": ["-y", "slopgate", "mcp"] }
+  }
+}
+```
+
+Codex and other MCP clients use the same `command` + `args` pair. The optional argument after `mcp` is the repository root; it defaults to the current working directory.
+
+The server prints a single line to stderr on startup (`slopgate mcp 0.1.0 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
+
+## Tools
+
+### `scan_diff`
+
+```json
+{ "name": "scan_diff", "arguments": { "base": "origin/main", "confidence": "high", "maxFindings": 20 } }
+```
+
+Scans the repository and keeps only findings that start on a line added since `base` (default `HEAD`). Untracked files count as fully changed. This is the tool an agent should call before finishing a task.
+
+### `scan_path`
+
+```json
+{ "name": "scan_path", "arguments": { "path": "src/", "confidence": "medium" } }
+```
+
+Scans a file or directory relative to the repository root. Paths that escape the root are refused.
+
+### `list_rules`
+
+Returns the rule table (id, severity, default confidence, languages, title) so the agent can reason about what was checked.
+
+## Response format
+
+`tools/call` returns a standard MCP text result:
+
+```text
+Diff since origin/main: 2 finding(s) on changed lines.
+slopgate 0.1.0 · 2 finding(s) (1 error) · 38 files scanned in 214ms
+src/users.py:12:5  error  high  py/phantom-import  `requests_v2` is imported but not declared…
+    import requests_v2
+    - no Python dependency manifest found
+```
+
+Output is capped at 50 findings per call (`maxFindings`), configurable down to 1.
+
+## Behaviour
+
+- **Configuration**: `.slopgate.json` is loaded once at startup.
+- **Baseline**: if `.slopgate-baseline.json` exists, findings recorded in it are not returned, so an agent is not nagged about accepted debt.
+- **Confidence**: defaults to `high`; `medium` and `low` are opt-in per call.
+- **Failures**: a scan error becomes a tool result with `isError: true`, never a crashed server.
+- **Exit code**: the process exits 0 when stdin closes.
+
+## Manual test
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"scan_path","arguments":{}}}' \
+  | npx slopgate mcp .
+```
+
+## Limitations
+
+- Only the `tools` capability is implemented; no prompts, resources or sampling.
+- stdio transport only. No SSE or HTTP endpoint.
+- `scan_diff` needs `git` on `PATH`.

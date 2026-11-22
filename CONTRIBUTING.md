@@ -1,0 +1,116 @@
+# Contributing
+
+Thanks for taking the time. This project has one rule above all others: **a finding must be worth a human's attention.** A new rule that produces one false positive per hundred true positives is a net negative, no matter how clever it is.
+
+## Setup
+
+```bash
+git clone https://github.com/VoidH4x0r/slopgate
+cd slopgate
+npm install
+npm test           # 136 tests, ~0.5s, no network, no subprocesses inside the tests
+npm run typecheck
+npm run verify     # typecheck + links + tests + build + self-scan + package check
+npm run build      # emits dist/ used by the published package
+```
+
+Node **23.6+** is required to run the test suite from source (native TypeScript execution). On Node 22.8–3.5 the same suite works if you also pass `--experimental-strip-types`.
+
+If you are running inside a sandbox that blocks child processes (some agent harnesses do), use:
+
+```bash
+npm run test:sandbox
+```
+
+It runs the same files with `--test-isolation=none`, in a single process.
+
+## Architecture
+
+```
+src/
+  cli.ts            argument parsing, exit codes, output selection
+  engine.ts         file discovery → parse → run rules → filter → sort
+  parser.ts         tree-sitter runtime + bundled grammars (WASM)
+  ast.ts            the non-null AST shape every rule sees
+  files.ts          walking, ignore defaults, glob matcher
+  deps.ts           manifest parsing (Python + Node), alias/workspace resolution
+  config.ts         .slopgate.json schema and defaults
+  suppress.ts       slopgate-ignore-* directives
+  baseline.ts       stable fingerprints for "new findings only"
+  diff.ts           git diff → changed lines
+  mcp.ts            Model Context Protocol server (stdio, JSON-RPC)
+  rules/
+    python.ts       seven Python rules
+    typescript.ts   seven TS/JS rules
+    helpers.ts      shared AST utilities
+  reporters/        pretty, json, sarif, github annotations
+grammars/           bundled tree-sitter WASM (python, typescript, tsx)
+fixtures/           small repositories used by the integration tests
+```
+
+## Adding a rule
+
+1. Add the rule to `src/rules/python.ts` or `src/rules/typescript.ts`.
+
+```ts
+const noReturnValue: Rule = {
+  meta: {
+    id: 'py/no-return-value',
+    title: 'Function returns nothing',
+    summary: 'One sentence explaining what this catches and why it matters.',
+    severity: 'warning',
+    confidence: 'high',      // see the policy below
+    languages: ['python'],
+    tags: ['completeness'],
+  },
+  run(ctx) {
+    if (ctx.language !== 'python') return [];
+    const drafts: RuleDraft[] = [];
+    // walk ctx.root, push drafts
+    return drafts;
+  },
+};
+```
+
+2. Register it in the exported array at the bottom of the file.
+3. Add **both** a positive and a negative test to `test/rules-python.test.ts` or `test/rules-typescript.test.ts`. The negative test is the important one.
+4. Document it in `docs/rules.md` with a bad example and a good example.
+5. If it changes the demo output, update the table in `README.md`.
+
+## Confidence policy
+
+| Level | Use it when |
+| --- | --- |
+| `high` | The finding states a verifiable fact ("this package is not in the manifest", "this test has no assertion"). A reviewer can confirm it in one glance. |
+| `medium` | The fact holds but intent may explain it ("empty catch with a comment", "installed but undeclared dependency"). |
+| `low` | You are pattern-matching on style. If you are not sure, do not ship the rule. |
+
+Never raise confidence to make a rule more visible. Lower it, or drop the rule.
+
+## Tests
+
+- Tests must not touch the network and must not spawn processes; they run in-process in milliseconds.
+- Use `runRule(ruleId, source, language, deps)` for unit tests and `scanFixture(name)` for integration tests.
+- MCP tools are tested by calling `createMcpServer({...}).handle(line)` with injected `scan`/`diff` functions — see `test/mcp.test.ts`.
+- Fixtures live in `fixtures/`; a fixture is a miniature repository with manifests, not just source files.
+
+## Pull requests
+
+- One rule per PR.
+- Every rule has a negative test.
+- `npm test` and `npm run typecheck` pass, and `node scripts/check-links.mjs` reports no broken links.
+- No new runtime dependency without a discussion in an issue first — the zero-subprocess, offline design is a feature.
+- Update `CHANGELOG.md`.
+
+## Regenerating the demo GIF
+
+```bash
+npm install --no-save sharp gifenc
+npm run demo:gif          # writes docs/demo.gif
+```
+
+`sharp` and `gifenc` are optional: contributors never need them, and the generated GIF is committed.
+
+## Reporting false positives
+
+Open an issue with the smallest source snippet that reproduces it and the rule id. False-positive reports are the most valuable contribution this project can receive; they feed the benchmark.

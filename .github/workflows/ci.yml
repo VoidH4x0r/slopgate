@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (node 24)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: node scripts/check-links.mjs
+      - run: node scripts/set-repo.mjs --self-test
+      - run: npm test
+      - run: npm run build
+      - name: Lint itself
+        run: node dist/cli.js . --fail-on high
+
+  runtime:
+    name: runtime (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: node dist/cli.js --version
+      - run: node dist/cli.js fixtures/demo --format json --fail-on none
+
+  package:
+    name: package contents
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Verify the tarball ships the grammars
+        run: npm pack --dry-run
+      - name: Install the packed tarball and run it
+        run: |
+          set -euo pipefail
+          npm pack
+          mkdir -p /tmp/smoke && cd /tmp/smoke
+          npm init -y > /dev/null
+          npm install "${GITHUB_WORKSPACE}"/slopgate-*.tgz
+          printf 'import requests_v2\n\n\ndef handler():\n    pass\n' > sample.py
+          ./node_modules/.bin/slopgate --version
+          set +e
+          ./node_modules/.bin/slopgate sample.py --fail-on high --no-color
+          status=$?
+          set -e
+          test "$status" -eq 1
+

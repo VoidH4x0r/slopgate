@@ -1,0 +1,19 @@
+{
+  "fixture": "fixtures/demo",
+  "expected": [
+    { "file": "app.py", "ruleId": "py/phantom-import" },
+    { "file": "app.py", "ruleId": "py/stub-body" },
+    { "file": "app.py", "ruleId": "py/swallowed-exception" },
+    { "file": "app.py", "ruleId": "py/dead-branch" },
+    { "file": "app.py", "ruleId": "py/unreachable" },
+    { "file": "app.py", "ruleId": "py/tautological-assert" },
+    { "file": "tests/test_users.py", "ruleId": "py/noop-test" },
+    { "file": "src/agent.ts", "ruleId": "ts/phantom-import" },
+    { "file": "src/agent.ts", "ruleId": "ts/stub-function" },
+    { "file": "src/agent.ts", "ruleId": "ts/swallowed-exception" },
+    { "file": "src/agent.ts", "ruleId": "ts/dead-branch" },
+    { "file": "src/agent.ts", "ruleId": "ts/unreachable" },
+    { "file": "src/agent.ts", "ruleId": "ts/noop-test" },
+    { "file": "src/agent.ts", "ruleId": "ts/tautological-assert" }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "exclude": ["fixtures/**", "test/**", "dist/**", "node_modules/**"],
+  "ignoreModules": [],
+  "rules": {},
+  "confidence": "high",
+  "failOn": "high"
+}
