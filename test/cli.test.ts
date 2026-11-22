@@ -486,6 +486,29 @@ test('cli: a nested package does not hide ancestor manifests or sibling modules'
   }
 });
 
+test('cli: a non-git package sees sibling modules from a workspace cwd', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cwd-crosspkg-'));
+  const previousCwd = process.cwd();
+  try {
+    await mkdir(path.join(dir, 'lib'), { recursive: true });
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await writeFile(path.join(dir, 'lib', 'util.py'), 'def f():\n    return 1\n');
+    await writeFile(
+      path.join(dir, 'packages', 'app', 'pyproject.toml'),
+      '[project]\nname = "app"\nversion = "0.0.0"\ndependencies = []\n',
+    );
+    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'from lib.util import f\n');
+
+    process.chdir(dir);
+    const result = await run([path.join(dir, 'packages', 'app'), '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.doesNotMatch(result.stdout, /phantom-import/);
+  } finally {
+    process.chdir(previousCwd);
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: a subdirectory scan sees Python modules outside the target', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-local-modules-'));
   try {

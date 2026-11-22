@@ -154,7 +154,7 @@ Only the same-block case is reported. Test files are skipped — generators ther
 
 - a Node builtin (`fs`, `node:fs`, …)
 - relative (`./`, `../`, `/`)
-- a path alias from `tsconfig.json`, `tsconfig.app.json`, `tsconfig.base.json`, `tsconfig.node.json` or `jsconfig.json` (including `extends` and project references)
+- a path alias from `tsconfig.json`, `tsconfig.app.json`, `tsconfig.base.json`, `tsconfig.node.json` or `jsconfig.json` (including relative `extends` chains and project references)
 - a familiar virtual prefix (`@/`, `~/`, `$lib/`, `$app/`, `$env/`, `npm:`, `jsr:`) even when no config was parsed
 - a workspace package
 - an asset (`.css`, `.svg`, `.json`, …)

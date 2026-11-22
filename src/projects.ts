@@ -98,24 +98,33 @@ export async function loadProjectRegistry(
     projectDirs.add(fallbackDir);
   }
 
-  // In non-git layouts the index stays at the package, but a sibling/ancestor
-  // module still needs a cheap top-level entry (`lib/`, `newlib/`).
+  // Non-git scans keep the recursive index at the package, but every ancestor
+  // up to the lookup boundary contributes its top-level modules (`lib/`).
   if (lookup !== scope) {
-    try {
-      const outer = await readdir(lookup, { withFileTypes: true });
-      for (const entry of outer) {
-        if (entry.isSymbolicLink() || entry.name.startsWith('.')) continue;
-        const abs = path.join(lookup, entry.name);
-        if (DEFAULT_IGNORE_DIRS.has(entry.name) || isExcluded(abs, entry.isDirectory())) continue;
-        if (entry.isDirectory() && VALID_MODULE.test(entry.name)) {
-          localModules.add(entry.name);
-        } else if (entry.isFile() && PYTHON_FILE.test(entry.name)) {
-          const stem = entry.name.replace(PYTHON_FILE, '');
-          if (VALID_MODULE.test(stem)) localModules.add(stem);
+    let dir = scope;
+    for (;;) {
+      try {
+        const outer = await readdir(dir, { withFileTypes: true });
+        for (const entry of outer) {
+          if (entry.isSymbolicLink() || entry.name.startsWith('.')) continue;
+          const abs = path.join(dir, entry.name);
+          if (DEFAULT_IGNORE_DIRS.has(entry.name) || isExcluded(abs, entry.isDirectory())) continue;
+          if (entry.isDirectory() && VALID_MODULE.test(entry.name)) {
+            localModules.add(entry.name);
+          } else if (entry.isFile() && PYTHON_FILE.test(entry.name)) {
+            const stem = entry.name.replace(PYTHON_FILE, '');
+            if (VALID_MODULE.test(stem)) localModules.add(stem);
+          }
         }
+      } catch {
+        // The lookup boundary may disappear between scans.
       }
-    } catch {
-      // The lookup boundary may disappear between scans.
+      if (dir === lookup) break;
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      const relative = path.relative(lookup, parent);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) break;
+      dir = parent;
     }
   }
 

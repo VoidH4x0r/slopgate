@@ -176,7 +176,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
       try {
         drafts = rule.run(ctx);
       } catch (error) {
-      warnings.push(`${rule.meta.id} crashed on ${file.rel}: ${(error as Error).message}`);
+        warnings.push(`${rule.meta.id} crashed on ${file.rel}: ${(error as Error).message}`);
         continue;
       }
       const configured = config.rules[rule.meta.id];

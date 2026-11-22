@@ -30,7 +30,7 @@ export interface Finding {
   message: string;
   severity: Severity;
   confidence: Confidence;
-  /** Repository-relative path, always with forward slashes. */
+  /** Report-root-relative path, always with forward slashes. */
   file: string;
   start: Position;
   end: Position;
@@ -90,7 +90,7 @@ export interface ProjectDeps {
 }
 
 export interface RuleContext {
-  /** Repository-relative POSIX path. */
+  /** Report-root-relative POSIX path. */
   file: string;
   lines: string[];
   root: AstNode;
