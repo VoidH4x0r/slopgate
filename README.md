@@ -308,6 +308,8 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - Bundled/minified files are only skipped when named `*.min.js` / `*.min.mjs`; exclude hashed chunk directories with your own `exclude` patterns.
 - Modules that only exist on a non-CPython host (Jython's `java.*`, Emscripten's `js` / `pyodide`) are reported unless you add them to `ignoreModules`.
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
+- Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
+- The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
 
 ## When **not** to use it
 
