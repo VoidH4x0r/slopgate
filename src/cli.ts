@@ -503,7 +503,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     if (options.verbose) {
       writeOut(
         io,
-        `  config: ${configFile ?? '(none)'}  baseline: ${baseline ? path.relative(process.cwd(), baselinePath) : '(none)'}` +
+        `  config: ${configFile ?? '(none)'}  include: ${merged.include.length} pattern(s)  baseline: ${baseline ? path.relative(process.cwd(), baselinePath) : '(none)'}` +
           (onlyDiff > 0 ? `  diff-only: ${onlyDiff} finding(s) outside the diff were ignored` : '') +
           '\n',
       );

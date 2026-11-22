@@ -90,6 +90,20 @@ test('scanProject rejects unknown rule ids in the config', async () => {
   );
 });
 
+test('config include replaces the default pattern set', async () => {
+  const root = path.join(FIXTURES, 'regressions', 'include-semantics');
+  const defaults = await scanProject({ root, config: { ...DEFAULT_CONFIG, rules: {} } });
+  assert.equal(defaults.stats.files, 3);
+  assert.ok(defaults.findings.some((finding) => finding.file === 'app.py'));
+
+  const replaced = await scanProject({
+    root,
+    config: { ...DEFAULT_CONFIG, include: ['src/**'], rules: {} },
+  });
+  assert.equal(replaced.stats.files, 2);
+  assert.ok(!replaced.findings.some((finding) => finding.file === 'app.py'));
+});
+
 test('scanProject accepts a single file and still resolves project manifests', async () => {
   const root = path.join(FIXTURES, 'demo', 'app.py');
   const result = await scanProject({ root, config: { ...DEFAULT_CONFIG, rules: {} } });

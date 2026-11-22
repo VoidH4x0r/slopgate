@@ -138,9 +138,9 @@ function bodyCallsSelf(body: AstNode): boolean {
 }
 
 /** Lightweight name → node index; assertion checks happen on demand. */
-function localFunctionDefinitions(root: AstNode): Map<string, AstNode> {
+function localFunctionDefinitions(functions: readonly AstNode[]): Map<string, AstNode> {
   const definitions = new Map<string, AstNode>();
-  for (const fn of descendantsOfType(root, ['function_definition'])) {
+  for (const fn of functions) {
     if (fn.parent?.type === 'class_definition') continue;
     const name = fn.childForFieldName('name')?.text;
     if (!name || testFunctionName(fn)) continue;
@@ -341,16 +341,18 @@ const noopTest: Rule = {
     if (ctx.language !== 'python') return [];
     if (isStubFile(ctx.file)) return [];
     const drafts: RuleDraft[] = [];
-    // A test-dense file may have thousands of assertion-free tests. Build the
-    // name index once, and only assert-check the helper actually called.
+    // A test-dense file may have thousands of assertion-free tests. Reuse the
+    // function list the rule already collected; build the name index once, and
+    // only assert-check the helper actually called.
+    const functions = descendantsOfType(ctx.root, ['function_definition']);
     let definitionIndex: Map<string, AstNode> | undefined;
     const definitions = (): Map<string, AstNode> => {
-      definitionIndex ??= localFunctionDefinitions(ctx.root);
+      definitionIndex ??= localFunctionDefinitions(functions);
       return definitionIndex;
     };
     const helperAssertions = new Map<string, boolean>();
 
-    for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
+    for (const fn of functions) {
       const name = testFunctionName(fn);
       if (!name) continue;
       if (insideMainGuard(fn)) continue;

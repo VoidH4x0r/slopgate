@@ -144,6 +144,35 @@ test('cli: an unknown rule id in config exits 2 even with --quiet', async () => 
   assert.match(result.stderr, /unknown rule in config: py\/does-not-exist/);
 });
 
+test('cli: --include appends to the default pattern set', async () => {
+  const result = await run([
+    'fixtures/regressions/include-semantics',
+    '--include',
+    'src/**',
+    '--format',
+    'json',
+    '--fail-on',
+    'none',
+  ]);
+  assert.equal(result.status, 0, result.stderr);
+  const payload = JSON.parse(result.stdout) as { stats: { files: number } };
+  assert.equal(payload.stats.files, 3);
+});
+
+test('cli: --verbose shows the effective include count', async () => {
+  const result = await run([
+    'fixtures/regressions/include-semantics',
+    '--include',
+    'src/**',
+    '--verbose',
+    '--no-color',
+    '--fail-on',
+    'none',
+  ]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /include: 11 pattern\(s\)/);
+});
+
 test('cli: --fail-on medium lowers the display threshold and fails the run', async () => {
   const result = await run(['fixtures/regressions/failon', '--fail-on', 'medium', '--format', 'json']);
   assert.equal(result.status, 1, result.stderr);

@@ -9,6 +9,18 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.9] - 2026-11-22
+
+### Changed
+- Documented that a config `include` replaces the default Python/TS/JS pattern set, while CLI `--include` appends to it. `--verbose` now prints the effective include count so a reduced file set is visible.
+- `py/noop-test` reuses the `function_definition` list already collected by the rule instead of walking the tree a second time for the helper index.
+- Added `include-semantics` coverage: default 3 files, config `src/**` 2 files, CLI `--include src/**` 3 files, and verbose shows 11 patterns.
+
+### Unchanged
+- No runtime behavior change to include handling; this is documentation and visibility only.
+- Benchmark remains **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+- 255 tests.
+
 ## [0.1.8] - 2026-11-22
 
 ### Fixed
