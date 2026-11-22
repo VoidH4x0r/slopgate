@@ -9,6 +9,9 @@ const SKIP = new Set(['node_modules', '.git', 'dist', '.tmp']);
 // Known GBK/CP936 double-decodes and Latin-1/CP1252 mojibake. Legitimate CJK
 // text is allowed so the project can add translated docs later.
 const MOJIBAKE = /[\u9225\u922b\u9239\u9241\u9242\u923f\u95f3]|â€|Ã|Â|ð/;
+// `路` is a legitimate Chinese character, but a whitespace-delimited `路`
+// is the CP936 double-decode of `·`.
+const MOJIBAKE_AROUND_ASCII = /(?:^|\s)路(?:\s|$)/u;
 
 async function markdownFiles(dir: string): Promise<string[]> {
   const out: string[] = [];
@@ -32,6 +35,11 @@ test('docs: markdown files contain no mojibake or replacement characters', async
     const relative = path.relative(ROOT, file);
     assert.doesNotMatch(text, /\uFFFD/, `${relative} contains U+FFFD`);
     assert.doesNotMatch(text, MOJIBAKE, `${relative} contains known mojibake markers`);
+    assert.doesNotMatch(
+      text,
+      MOJIBAKE_AROUND_ASCII,
+      `${relative} contains whitespace-delimited 路 (mojibake for ·)`,
+    );
   }
 
   // Guard the guard: legitimate CJK must pass, common mojibake must not.
@@ -39,4 +47,6 @@ test('docs: markdown files contain no mojibake or replacement characters', async
   assert.equal(MOJIBAKE.test('鈥淎uditing'), true);
   assert.equal(MOJIBAKE.test('â€”'), true);
   assert.equal(MOJIBAKE.test('Ã©'), true);
+  assert.equal(MOJIBAKE_AROUND_ASCII.test('slopgate 0.2.3 路 4 files'), true);
+  assert.equal(MOJIBAKE_AROUND_ASCII.test('道路工程'), false);
 });
