@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import test from 'node:test';
 import { main } from '../src/cli.ts';
@@ -210,15 +211,59 @@ test('cli: mcp refuses a root that is not a directory', async () => {
 });
 
 test('cli: a single file argument scans just that file', async () => {
-  const result = await run(['fixtures/demo/app.py', '--format', 'json']);
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-single-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'));
+    await writeFile(path.join(dir, 'src', 'app.py'), 'def root_stub():\n    pass\n');
+    const result = await run([path.join(dir, 'src', 'app.py'), '--format', 'json']);
+    assert.equal(result.status, 1, result.stderr);
+    const payload = JSON.parse(result.stdout) as {
+      stats: { files: number };
+      findings: Array<{ file: string }>;
+    };
+    assert.equal(payload.stats.files, 1);
+    assert.ok(payload.findings.length > 0);
+    assert.ok(payload.findings.every((finding) => finding.file === 'src/app.py'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: reports from a subdirectory use repo-relative paths', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-paths-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'));
+    await writeFile(path.join(dir, 'src', 'a.py'), 'def root_stub():\n    pass\n');
+    const target = path.join(dir, 'src');
+
+    const json = await run([target, '--format', 'json', '--fail-on', 'none']);
+    assert.equal(json.status, 0, json.stderr);
+    const payload = JSON.parse(json.stdout) as { findings: Array<{ file: string }> };
+    assert.ok(payload.findings.length > 0);
+    assert.ok(payload.findings.every((finding) => finding.file === 'src/a.py'));
+
+    const sarif = await run([target, '--format', 'sarif', '--fail-on', 'none']);
+    assert.equal(sarif.status, 0, sarif.stderr);
+    const sarifPayload = JSON.parse(sarif.stdout) as {
+      runs: Array<{ results: Array<{ locations: Array<{ physicalLocation: { artifactLocation: { uri: string } } }> }> }>;
+    };
+    assert.equal(sarifPayload.runs[0]?.results[0]?.locations[0]?.physicalLocation.artifactLocation.uri, 'src/a.py');
+
+    const github = await run([target, '--format', 'github', '--fail-on', 'none']);
+    assert.equal(github.status, 0, github.stderr);
+    assert.match(github.stdout, /file=src\/a\.py/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: severity info stays visible but still fails CI', async () => {
+  const result = await run(['fixtures/regressions/severity-override', '--format', 'json']);
   assert.equal(result.status, 1, result.stderr);
-  const payload = JSON.parse(result.stdout) as {
-    stats: { files: number };
-    findings: Array<{ file: string }>;
-  };
-  assert.equal(payload.stats.files, 1);
-  assert.ok(payload.findings.length > 0);
-  assert.ok(payload.findings.every((finding) => finding.file === 'app.py'));
+  const payload = JSON.parse(result.stdout) as { findings: Array<{ severity: string }> };
+  assert.ok(payload.findings.some((finding) => finding.severity === 'info'));
 });
 
 test('cli: --rule restricts the run to one rule', async () => {

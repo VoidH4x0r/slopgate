@@ -251,6 +251,25 @@ function warn(io: CliIo, options: Options, message: string): void {
   if (!options.quiet) io.err(`slopgate: ${message}\n`);
 }
 
+/**
+ * Nearest ancestor containing `.git`, without spawning git. A `.git` file
+ * (worktree/submodule) counts as a repository marker too.
+ */
+async function findGitRoot(start: string): Promise<string | undefined> {
+  let dir = path.resolve(start);
+  for (;;) {
+    try {
+      await stat(path.join(dir, '.git'));
+      return dir;
+    } catch {
+      // keep walking towards the filesystem root
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) return undefined;
+    dir = parent;
+  }
+}
+
 async function runRules(options: Options, io: CliIo): Promise<number> {
   const rows = ALL_RULES.map((rule) => ({
     id: rule.meta.id,
@@ -459,8 +478,24 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const visible = fresh.filter((finding) => meetsConfidence(finding.confidence, displayConfidence));
   const hidden = fresh.length - visible.length;
 
+  // Reporters (SARIF, GitHub workflow commands) resolve paths from the repo
+  // root, not from the scan target. Prefix output findings only: baseline
+  // fingerprints and diff filtering keep using the raw target-relative paths.
+  const scanBase = targetInfo.isFile() ? path.dirname(target) : target;
+  const outputRoot = await findGitRoot(scanBase);
+  let outputPrefix = '';
+  if (outputRoot) {
+    const relative = path.relative(outputRoot, scanBase);
+    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+      outputPrefix = relative.replace(/\\/g, '/');
+    }
+  }
+  const outputVisible = outputPrefix
+    ? visible.map((finding) => ({ ...finding, file: `${outputPrefix}/${finding.file}` }))
+    : visible;
+
   const run: ScanRun = {
-    visible,
+    visible: outputVisible,
     stats: result.stats,
     suppressed: result.suppressedCount,
     baselined: known.length,
@@ -474,7 +509,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     writeOut(
       io,
       renderJson({
-        findings: visible,
+        findings: outputVisible,
         stats: run.stats,
         version,
         suppressedByComment: run.suppressed,
@@ -483,14 +518,14 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
       }),
     );
   } else if (options.format === 'sarif') {
-    writeOut(io, renderSarif(visible, version));
+    writeOut(io, renderSarif(outputVisible, version));
   } else if (options.format === 'github') {
-    writeOut(io, renderGithub(visible, run.stats));
+    writeOut(io, renderGithub(outputVisible, run.stats));
   } else {
     writeOut(
       io,
       renderPretty({
-        findings: visible,
+        findings: outputVisible,
         stats: run.stats,
         suppressedByComment: run.suppressed,
         baselined: run.baselined,

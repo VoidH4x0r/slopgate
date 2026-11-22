@@ -9,6 +9,16 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.10] - 2026-11-22
+
+### Fixed
+- Reporter output paths are repository-relative when the scan target is inside a git repository. `slopgate src`, `slopgate src/a.py` and absolute targets now emit `src/a.py` in JSON, pretty, SARIF and GitHub annotations instead of `a.py`. The prefix comes from the nearest `.git` marker (filesystem walk, no subprocess); non-git targets keep target-relative paths. Baseline fingerprints and diff filtering continue to use the raw target-relative paths.
+- Documented and tested that a rule set to `severity: "info"` stays visible but still fails CI; `off` or a baseline is the exemption mechanism.
+
+### Changed
+- 257 tests, including single-file/subdirectory reporter paths, SARIF/GitHub annotations, and the `severity-override` fixture.
+- Benchmark findings unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.9] - 2026-11-22
 
 ### Changed
