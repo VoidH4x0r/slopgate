@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import { DEFAULT_INCLUDE } from './files.ts';
 import type { Confidence, Severity } from './types.ts';
@@ -24,6 +24,50 @@ export interface LoadedConfig {
 }
 
 export const CONFIG_FILENAMES = ['.slopgate.json', 'slopgate.config.json'] as const;
+
+/** Nearest ancestor containing `.git`, without spawning git. */
+export async function findGitRoot(start: string): Promise<string | undefined> {
+  let dir = path.resolve(start);
+  for (;;) {
+    try {
+      await stat(path.join(dir, '.git'));
+      return dir;
+    } catch {
+      // keep walking towards the filesystem root
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) return undefined;
+    dir = parent;
+  }
+}
+
+export async function hasConfig(dir: string): Promise<boolean> {
+  for (const name of CONFIG_FILENAMES) {
+    try {
+      await stat(path.join(dir, name));
+      return true;
+    } catch {
+      // try the next config filename
+    }
+  }
+  return false;
+}
+
+/**
+ * Nearest config wins: target → ancestors → repository root. Outside git,
+ * only the target directory is considered.
+ */
+export async function findConfigRoot(start: string, repoRoot: string | undefined): Promise<string> {
+  const target = path.resolve(start);
+  let dir = target;
+  for (;;) {
+    if (await hasConfig(dir)) return dir;
+    if (repoRoot === undefined || dir === repoRoot) return repoRoot ?? target;
+    const parent = path.dirname(dir);
+    if (parent === dir) return repoRoot;
+    dir = parent;
+  }
+}
 
 export const DEFAULT_CONFIG: Config = {
   include: [...DEFAULT_INCLUDE],

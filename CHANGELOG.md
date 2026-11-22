@@ -9,6 +9,18 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.14] - 2026-11-22
+
+### Fixed
+- MCP `scan_path` resolves config for the requested target with the same nearest-config search as the CLI (package config wins, root config falls back). Configs are cached per resolved config root.
+- MCP findings are reported relative to the MCP server root (`packages/app/app.py`), not relative to the scan target (`app.py`).
+- MCP uses the target config’s `confidence` as the default when a call omits `confidence`.
+- `findGitRoot` / `hasConfig` / `findConfigRoot` moved from `cli.ts` to `config.ts`, shared by CLI and MCP.
+
+### Changed
+- 266 tests, including MCP package-vs-root config parity, root-relative paths, and target-confidence behavior.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.13] - 2026-11-22
 
 ### Added

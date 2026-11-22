@@ -5,8 +5,9 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { loadBaseline, partitionByBaseline, writeBaseline } from './baseline.ts';
 import {
-  CONFIG_FILENAMES,
   confidenceRank,
+  findConfigRoot,
+  findGitRoot,
   loadConfig,
   meetsConfidence,
   type Config,
@@ -256,53 +257,6 @@ function writeOut(io: CliIo, text: string): void {
 
 function warn(io: CliIo, options: Options, message: string): void {
   if (!options.quiet) io.err(`slopgate: ${message}\n`);
-}
-
-/**
- * Nearest ancestor containing `.git`, without spawning git. A `.git` file
- * (worktree/submodule) counts as a repository marker too.
- */
-async function findGitRoot(start: string): Promise<string | undefined> {
-  let dir = path.resolve(start);
-  for (;;) {
-    try {
-      await stat(path.join(dir, '.git'));
-      return dir;
-    } catch {
-      // keep walking towards the filesystem root
-    }
-    const parent = path.dirname(dir);
-    if (parent === dir) return undefined;
-    dir = parent;
-  }
-}
-
-async function hasConfig(dir: string): Promise<boolean> {
-  for (const name of CONFIG_FILENAMES) {
-    try {
-      await stat(path.join(dir, name));
-      return true;
-    } catch {
-      // try the next config filename
-    }
-  }
-  return false;
-}
-
-/**
- * Nearest config wins: target → ancestors → repository root. Outside git,
- * only the target directory is considered.
- */
-async function findConfigRoot(start: string, repoRoot: string | undefined): Promise<string> {
-  const target = path.resolve(start);
-  let dir = target;
-  for (;;) {
-    if (await hasConfig(dir)) return dir;
-    if (repoRoot === undefined || dir === repoRoot) return repoRoot ?? target;
-    const parent = path.dirname(dir);
-    if (parent === dir) return repoRoot;
-    dir = parent;
-  }
 }
 
 async function runRules(options: Options, io: CliIo): Promise<number> {

@@ -1,8 +1,15 @@
 import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import test from 'node:test';
-import { createMcpServer, isInsideRoot, type McpDeps } from '../src/mcp.ts';
-import type { Config } from '../src/config.ts';
+import {
+  createMcpServer,
+  defaultMcpDeps,
+  isInsideRoot,
+  type McpDeps,
+} from '../src/mcp.ts';
+import { DEFAULT_CONFIG, type Config } from '../src/config.ts';
 import type { ScanResult } from '../src/engine.ts';
 import type { Finding } from '../src/types.ts';
 import type { DiffSet } from '../src/diff.ts';
@@ -259,4 +266,106 @@ test('mcp: a throwing scan becomes a tool error instead of crashing the server',
   const result = response.result as { isError?: boolean; content: Array<{ text: string }> };
   assert.equal(result.isError, true);
   assert.match(result.content[0]?.text ?? '', /boom/);
+});
+
+test('mcp: scan_path uses the nearest package config, like the CLI', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-config-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await writeFile(
+      path.join(dir, '.slopgate.json'),
+      '{"rules":{"py/stub-body":"error"}}',
+    );
+    await writeFile(
+      path.join(dir, 'packages', 'app', '.slopgate.json'),
+      '{"rules":{"py/stub-body":"off"}}',
+    );
+    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'def stubbed():\n    pass\n');
+
+    const deps = defaultMcpDeps(dir, '0.1.0');
+    const server = createMcpServer({ ...deps, config: DEFAULT_CONFIG });
+    const packageResponse = await call(server, {
+      jsonrpc: '2.0',
+      id: 11,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: 'packages/app' } },
+    });
+    const packageText =
+      (packageResponse.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+    assert.match(packageText, /0 finding\(s\)/);
+    assert.doesNotMatch(packageText, /py\/stub-body/);
+
+    const rootResponse = await call(server, {
+      jsonrpc: '2.0',
+      id: 12,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: '.' } },
+    });
+    const rootText =
+      (rootResponse.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+    assert.match(rootText, /py\/stub-body/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('mcp: scan_path reports paths relative to the MCP root', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-paths-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'def stubbed():\n    pass\n');
+
+    const deps = defaultMcpDeps(dir, '0.1.0');
+    const server = createMcpServer({ ...deps, config: DEFAULT_CONFIG });
+    const response = await call(server, {
+      jsonrpc: '2.0',
+      id: 13,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: 'packages/app' } },
+    });
+    const text =
+      (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+    assert.match(text, /packages\/app\/app\.py:1:1/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('mcp: the target config confidence is the default for scan_path', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-confidence-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'packages', 'app', '.slopgate.json'),
+      '{"confidence":"medium"}',
+    );
+    await writeFile(
+      path.join(dir, 'packages', 'app', 'app.py'),
+      [
+        'def f():',
+        '    try:',
+        '        run()',
+        '    # best effort; ignore the error',
+        '    except Exception:',
+        '        pass',
+      ].join('\n'),
+    );
+
+    const deps = defaultMcpDeps(dir, '0.1.0');
+    const server = createMcpServer({ ...deps, config: DEFAULT_CONFIG });
+    const response = await call(server, {
+      jsonrpc: '2.0',
+      id: 14,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: 'packages/app' } },
+    });
+    const text =
+      (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+    assert.match(text, /py\/swallowed-exception/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

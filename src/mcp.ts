@@ -1,9 +1,15 @@
-import { realpath } from 'node:fs/promises';
+import { realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { createInterface } from 'node:readline';
 import { loadBaseline, partitionByBaseline } from './baseline.ts';
-import { loadConfig, meetsConfidence, type Config } from './config.ts';
+import {
+  findConfigRoot,
+  findGitRoot,
+  loadConfig,
+  meetsConfidence,
+  type Config,
+} from './config.ts';
 import { diffSince, isInDiff, type DiffSet } from './diff.ts';
 import { scanProject, type ScanResult } from './engine.ts';
 import { ALL_RULES } from './rules/index.ts';
@@ -40,6 +46,8 @@ export interface McpDeps {
   root: string;
   version: string;
   config: Config;
+  /** Resolve the nearest config for a scan target; falls back to `config`. */
+  configFor?: (root: string) => Promise<Config>;
   scan: (root: string) => Promise<ScanResult>;
   diff: (root: string, base: string) => Promise<DiffSet>;
 }
@@ -151,6 +159,12 @@ function formatFindings(
   return lines.join('\n');
 }
 
+function prefixForRoot(root: string, base: string): string {
+  const relative = path.relative(root, base);
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) return '';
+  return relative.replace(/\\/g, '/');
+}
+
 export function createMcpServer(deps: McpDeps) {
   async function callTool(name: string, params: Record<string, unknown>): Promise<unknown> {
     if (name === 'list_rules') {
@@ -163,8 +177,8 @@ export function createMcpServer(deps: McpDeps) {
       return textResult(lines.join('\n'));
     }
 
-    const confidence = coerceConfidence(params.confidence, deps.config.confidence);
     const max = coerceNumber(params.maxFindings, MAX_FINDINGS);
+    const configFor = deps.configFor ?? (async () => deps.config);
 
     if (name === 'scan_path') {
       const target = path.resolve(deps.root, typeof params.path === 'string' ? params.path : '.');
@@ -178,16 +192,26 @@ export function createMcpServer(deps: McpDeps) {
       if (!isInsideRoot(realRoot, realTarget)) {
         return textResult(`Refusing to scan outside the repository root: ${target}`, true);
       }
+      const targetConfig = await configFor(target);
+      const confidence = coerceConfidence(params.confidence, targetConfig.confidence);
       const result = await deps.scan(target);
       if (result.stats.files === 0) {
         return textResult(`No files matched under ${target} (check include/exclude patterns)`, true);
       }
       const visible = result.findings.filter((finding) => meetsConfidence(finding.confidence, confidence));
-      return textResult(formatFindings(visible, result, deps.version, max));
+      const targetInfo = await stat(target).catch(() => undefined);
+      const base = targetInfo?.isFile() ? path.dirname(target) : target;
+      const prefix = prefixForRoot(deps.root, base);
+      const output = prefix
+        ? visible.map((finding) => ({ ...finding, file: `${prefix}/${finding.file}` }))
+        : visible;
+      return textResult(formatFindings(output, result, deps.version, max));
     }
 
     if (name === 'scan_diff') {
       const base = typeof params.base === 'string' && params.base.length > 0 ? params.base : 'HEAD';
+      const rootConfig = await configFor(deps.root);
+      const confidence = coerceConfidence(params.confidence, rootConfig.confidence);
       const result = await deps.scan(deps.root);
       if (result.stats.files === 0) {
         return textResult('No files matched in the repository (check include/exclude patterns)', true);
@@ -259,17 +283,25 @@ export function createMcpServer(deps: McpDeps) {
 }
 
 export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'config'> {
-  let configPromise: Promise<Config> | undefined;
-  const getConfig = async (): Promise<Config> => {
-    configPromise ??= loadConfig(root).then((loaded) => loaded.config);
-    return configPromise;
+  const configCache = new Map<string, Promise<Config>>();
+  const configFor = async (start: string): Promise<Config> => {
+    const target = path.resolve(start);
+    const repoRoot = (await findGitRoot(target)) ?? root;
+    const configRoot = await findConfigRoot(target, repoRoot);
+    let pending = configCache.get(configRoot);
+    if (!pending) {
+      pending = loadConfig(configRoot).then((loaded) => loaded.config);
+      configCache.set(configRoot, pending);
+    }
+    return pending;
   };
 
   return {
     root,
     version,
+    configFor,
     async scan(scanRoot: string) {
-      const config = await getConfig();
+      const config = await configFor(scanRoot);
       const result = await scanProject({ root: scanRoot, config });
       // Respect a baseline if one exists, so agents do not re-report known debt.
       const baseline = await loadBaseline(path.join(root, '.slopgate-baseline.json'));

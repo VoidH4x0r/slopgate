@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.1.13  ·  4 files  ·  39ms
+slopgate 0.1.14  ·  4 files  ·  39ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -190,7 +190,7 @@ npx @voidh4x0r/slopgate . --diff origin/main --fail-on high
 | `scan_path` | findings in a file or directory |
 | `list_rules` | the rule table, so the agent knows what is checked |
 
-Reports are compact text: `file:line:col severity confidence rule-id message`, evidence included, capped at 50 findings per call. The server reads `.slopgate.json` and `.slopgate-baseline.json` like the CLI does, so an agent never re-reports debt you already accepted. It runs locally, makes no network calls, and writes nothing to disk.
+Reports are compact text: `file:line:col severity confidence rule-id message`, evidence included, capped at 50 findings per call. Paths are relative to the MCP server root, and config is resolved per requested path with the same nearest-config rule as the CLI. The server reads `.slopgate.json` and `.slopgate-baseline.json` like the CLI does, so an agent never re-reports debt you already accepted. It runs locally, makes no network calls, and writes nothing to disk.
 
 Full details: [docs/mcp.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/mcp.md).
 
@@ -210,7 +210,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.1.13 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.14 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -218,7 +218,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.1.13 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.14 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -303,7 +303,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 263 tests; the tests themselves make no network or child-process calls
+npm test            # 266 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```
