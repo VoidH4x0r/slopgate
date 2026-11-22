@@ -49,6 +49,8 @@ test('scanProject finds the expected rule set in the demo fixture', async () => 
   assert.equal(result.stats.files, 4);
   assert.equal(result.stats.byLanguage.python, 3);
   assert.equal(result.stats.byLanguage.typescript, 1);
+  assert.equal(result.stats.byLanguage.javascript, 0);
+  assert.equal(result.stats.byLanguage.tsx, 0);
   assert.deepEqual(result.warnings, []);
 });
 

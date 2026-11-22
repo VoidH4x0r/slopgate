@@ -112,6 +112,8 @@ function isAssertionCallee(text: string): boolean {
   if (text.length === 0) return false;
   // node:assert and node:assert/strict: assert(...) plus every method.
   if (text === 'assert' || text.startsWith('assert.')) return true;
+  // Bare helpers such as assertEqual/assertNotNull/assertTruthy.
+  if (/^assert[A-Z][A-Za-z0-9_$]*$/.test(text)) return true;
   // Jest/Vitest/Chai: expect(x).toBe(y), expect(x).not.toEqual(y), expect.soft(...)
   if (text === 'expect' || text === 'expectTypeOf') return true;
   if (text.startsWith('expect(') || text.startsWith('expect.') || text.startsWith('expectTypeOf(')) {
@@ -209,9 +211,12 @@ const TEST_MODIFIERS = new Set([
   'concurrent',
   'sequential',
   'each',
+  'for',
   'fails',
   'failing',
   'serial',
+  'runIf',
+  'skipIf',
 ]);
 
 /**

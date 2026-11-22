@@ -3,6 +3,9 @@ import type { AstNode } from './ast.ts';
 /** Tree-sitter grammars we ship. */
 export type LanguageId = 'python' | 'typescript' | 'tsx';
 
+/** Human-facing source dialect, independent of the grammar used to parse it. */
+export type SourceDialect = 'python' | 'javascript' | 'typescript' | 'tsx';
+
 /** How sure we are that a finding is worth a human's time. */
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -102,7 +105,7 @@ export interface Rule {
 
 export interface ScanStats {
   files: number;
-  byLanguage: Record<LanguageId, number>;
+  byLanguage: Record<SourceDialect, number>;
   skipped: number;
   parseErrors: number;
   durationMs: number;

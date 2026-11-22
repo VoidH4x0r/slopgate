@@ -77,6 +77,48 @@ test('py/swallowed-exception counts a comment between try and except', async () 
   assert.equal(drafts[0]?.confidence, 'medium');
 });
 
+test('py/swallowed-exception ignores a comment inside the try body', async () => {
+  const source = [
+    'def parse(raw):',
+    '    try:',
+    '        # Normalise the payload shape.',
+    '        data = json.loads(raw)',
+    '        return data',
+    '    except Exception:',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('py/swallowed-exception scopes comments to the following handler', async () => {
+  const source = [
+    'def f():',
+    '    try:',
+    '        run()',
+    '    # first handler is intentionally silent',
+    '    except ValueError:',
+    '        pass',
+    '    except Exception:',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 2);
+  assert.equal(drafts[0]?.confidence, 'medium');
+  assert.equal(drafts[1]?.confidence, 'high');
+});
+
+test('py/phantom-import ignores imports under sys.version_info guards', async () => {
+  const source = [
+    'import sys',
+    'if sys.version_info[0] < 3:',
+    '    import urllib2',
+    '    from StringIO import StringIO',
+  ].join('\n');
+  assert.deepEqual(await runRule('py/phantom-import', source, 'python'), []);
+});
+
 test('py/phantom-import treats conftest.py as test infrastructure', async () => {
   const drafts = await runRuleOnFile(
     'py/phantom-import',

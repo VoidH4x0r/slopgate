@@ -10,11 +10,11 @@ import { isSuppressed, readSuppressions } from './suppress.ts';
 import type { Config } from './config.ts';
 import type {
   Finding,
-  LanguageId,
   ProjectDeps,
   RuleContext,
   RuleDraft,
   ScanStats,
+  SourceDialect,
 } from './types.ts';
 
 export interface ScanOptions {
@@ -93,7 +93,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     return true;
   });
 
-  const byLanguage: Record<LanguageId, number> = { python: 0, typescript: 0, tsx: 0 };
+  const byLanguage: Record<SourceDialect, number> = { python: 0, javascript: 0, typescript: 0, tsx: 0 };
   const findings: Finding[] = [];
   const seen = new Set<string>();
   let suppressedCount = 0;
@@ -115,7 +115,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     // Editors on Windows write a UTF-8 BOM; it must not shift line/column
     // numbers in findings.
     const source = buffer.toString('utf8').replace(/^\uFEFF/, '');
-    byLanguage[file.language] += 1;
+    byLanguage[file.dialect] += 1;
 
     const parser = await getParser(file.language);
     const tree = parser.parse(source);
@@ -193,7 +193,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   );
 
   const stats: ScanStats = {
-    files: byLanguage.python + byLanguage.typescript + byLanguage.tsx,
+    files: byLanguage.python + byLanguage.javascript + byLanguage.typescript + byLanguage.tsx,
     byLanguage,
     skipped,
     parseErrors,

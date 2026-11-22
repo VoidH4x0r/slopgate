@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import test from 'node:test';
-import { discoverFiles, globToRegExp, languageFor, toPosix } from '../src/files.ts';
+import { dialectFor, discoverFiles, globToRegExp, languageFor, toPosix } from '../src/files.ts';
 import { FIXTURES, ROOT } from './helpers.ts';
 
 test('globToRegExp: ** matches any depth, * stays in one segment', () => {
@@ -37,6 +37,16 @@ test('languageFor maps JavaScript (including JSX) to the tsx grammar', () => {
   assert.equal(languageFor('a.ts'), 'typescript');
 });
 
+test('dialectFor reports the human-facing language, not the grammar', () => {
+  assert.equal(dialectFor('a.js'), 'javascript');
+  assert.equal(dialectFor('a.jsx'), 'javascript');
+  assert.equal(dialectFor('a.mjs'), 'javascript');
+  assert.equal(dialectFor('a.ts'), 'typescript');
+  assert.equal(dialectFor('a.tsx'), 'tsx');
+  assert.equal(dialectFor('a.pyi'), 'python');
+  assert.equal(dialectFor('a.d.ts'), undefined);
+});
+
 test('languageFor maps extensions and skips declaration files', () => {
   assert.equal(languageFor('a.py'), 'python');
   assert.equal(languageFor('a.pyi'), 'python');
@@ -61,6 +71,10 @@ test('discoverFiles finds python and typescript sources in a fixture', async () 
   );
   assert.deepEqual(
     files.map((file) => file.language),
+    ['python', 'python', 'typescript', 'python'],
+  );
+  assert.deepEqual(
+    files.map((file) => file.dialect),
     ['python', 'python', 'typescript', 'python'],
   );
 });

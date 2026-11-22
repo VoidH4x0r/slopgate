@@ -65,3 +65,53 @@ test('regression: brace globs in config discover both extensions', async () => {
   const result = await scanFixture('regressions/globcase');
   assert.equal(result.stats.files, 2);
 });
+
+test('regression: pyproject extras, groups, include-group, uv and poetry groups', async () => {
+  const result = await scanFixture('regressions/pyproject-edge');
+  assert.deepEqual(ruleFindings(result, 'py/phantom-import'), []);
+});
+
+test('regression: test.runIf/test.skipIf are analysed but assertXxx helpers count', async () => {
+  const result = await scanFixture('regressions/assert-helpers');
+  const findings = ruleFindings(result, 'ts/noop-test');
+  // The three assertEqual/assertNotNull/assertTruthy tests are clean; only the
+  // two conditional-test wrappers have no assertion.
+  assert.equal(findings.length, 2);
+  assert.ok(findings.every((finding) => finding.confidence === 'high'));
+  assert.deepEqual(
+    findings.map((finding) => finding.start.line).sort((a, b) => a - b),
+    [16, 20],
+  );
+});
+
+test('regression: a comment inside the try body does not excuse a bare except', async () => {
+  const result = await scanFixture('regressions/try-comment');
+  const swallowed = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(swallowed.length, 1);
+  assert.equal(swallowed[0]?.confidence, 'high');
+});
+
+test('regression: only exact no-op path segments are skipped', async () => {
+  const result = await scanFixture('regressions/noop-overmatch');
+  const stubs = ruleFindings(result, 'py/stub-body');
+  assert.equal(stubs.length, 2);
+  assert.ok(stubs.every((finding) => finding.confidence === 'high'));
+  assert.deepEqual(
+    stubs.map((finding) => finding.file).sort(),
+    ['dummy_data/loader.py', 'shims/translate.py'],
+  );
+});
+
+test('regression: test.each / it.concurrent / nested it are still analysed', async () => {
+  const result = await scanFixture('regressions/test-call-forms');
+  const findings = ruleFindings(result, 'ts/noop-test');
+  assert.equal(findings.length, 3);
+  assert.ok(findings.every((finding) => finding.confidence === 'high'));
+});
+
+test('regression: .js is counted as javascript, not tsx', async () => {
+  const result = await scanFixture('regressions/js-jsx');
+  assert.equal(result.stats.byLanguage.javascript, 1);
+  assert.equal(result.stats.byLanguage.tsx, 0);
+  assert.equal(result.stats.byLanguage.typescript, 0);
+});

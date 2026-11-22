@@ -146,7 +146,7 @@ export function parsePythonManifestText(fileName: string, text: string): string[
   }
 
   if (base === 'pyproject.toml') {
-    const names: string[] = [];
+    const collected: string[] = [];
     const groups = new Map<string, ArrayEntries>();
     let section = '';
     let pending: { section: string; key: string; buffer: string } | undefined;
@@ -159,7 +159,7 @@ export function parsePythonManifestText(fileName: string, text: string): string[
         group.includes.push(...entries.includes);
         groups.set(key, group);
       } else {
-        names.push(...entries.requirements);
+        collected.push(...entries.requirements);
       }
     };
 
@@ -194,7 +194,7 @@ export function parsePythonManifestText(fileName: string, text: string): string[
         POETRY_GROUP.test(section)
       ) {
         const key = tomlKey(line);
-        if (key && key.toLowerCase() !== 'python') names.push(normalizePythonName(key));
+        if (key && key.toLowerCase() !== 'python') collected.push(normalizePythonName(key));
       }
     }
 
@@ -209,9 +209,9 @@ export function parsePythonManifestText(fileName: string, text: string): string[
       for (const include of group.includes) resolveGroup(include, seen);
     };
     for (const name of groups.keys()) resolveGroup(name, new Set());
-    names.push(...resolved);
+    collected.push(...resolved);
 
-    return [...new Set(names)];
+    return [...new Set(collected)];
   }
 
   if (base === 'setup.py') {

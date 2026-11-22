@@ -1,6 +1,6 @@
 import { readdir, stat } from 'node:fs/promises';
 import * as path from 'node:path';
-import type { LanguageId } from './types.ts';
+import type { LanguageId, SourceDialect } from './types.ts';
 
 /** Directories that never contain code we want to lint. */
 export const DEFAULT_IGNORE_DIRS: ReadonlySet<string> = new Set([
@@ -35,6 +35,19 @@ const EXTENSION_LANGUAGE: Readonly<Record<string, LanguageId>> = {
   '.cjs': 'tsx',
 };
 
+const EXTENSION_DIALECT: Readonly<Record<string, SourceDialect>> = {
+  '.py': 'python',
+  '.pyi': 'python',
+  '.ts': 'typescript',
+  '.mts': 'typescript',
+  '.cts': 'typescript',
+  '.tsx': 'tsx',
+  '.js': 'javascript',
+  '.jsx': 'javascript',
+  '.mjs': 'javascript',
+  '.cjs': 'javascript',
+};
+
 const MAX_FILE_BYTES = 1024 * 1024;
 
 export interface SourceFile {
@@ -43,6 +56,8 @@ export interface SourceFile {
   /** Repository-relative path with forward slashes. */
   rel: string;
   language: LanguageId;
+  /** Human-facing dialect: `.js` is javascript even though it parses as tsx. */
+  dialect: SourceDialect;
   size: number;
 }
 
@@ -154,6 +169,13 @@ export function languageFor(fileName: string): LanguageId | undefined {
   return EXTENSION_LANGUAGE[ext];
 }
 
+export function dialectFor(fileName: string): SourceDialect | undefined {
+  if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.mts') || fileName.endsWith('.d.cts')) {
+    return undefined;
+  }
+  return EXTENSION_DIALECT[path.extname(fileName).toLowerCase()];
+}
+
 export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverResult> {
   const root = path.resolve(options.root);
   const includeRe = (options.include ?? DEFAULT_INCLUDE).map(globToRegExp);
@@ -174,13 +196,14 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
   if (rootInfo.isFile()) {
     const name = path.basename(root);
     const language = languageFor(name);
-    if (!language || !matchesAny(name, includeRe) || matchesAny(name, excludeRe)) {
+    const dialect = dialectFor(name);
+    if (!language || !dialect || !matchesAny(name, includeRe) || matchesAny(name, excludeRe)) {
       return { files, skipped: 1 };
     }
     if (rootInfo.size > maxBytes || rootInfo.size === 0) {
       return { files, skipped: 1 };
     }
-    files.push({ abs: root, rel: name, language, size: rootInfo.size });
+    files.push({ abs: root, rel: name, language, dialect, size: rootInfo.size });
     return { files, skipped };
   }
 
@@ -215,7 +238,8 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
         continue;
       }
       const language = languageFor(entry.name);
-      if (!language || !matchesAny(rel, includeRe)) {
+      const dialect = dialectFor(entry.name);
+      if (!language || !dialect || !matchesAny(rel, includeRe)) {
         continue;
       }
       if (entry.name.endsWith('.min.js') || entry.name.endsWith('.min.mjs')) {
@@ -234,7 +258,7 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
         skipped += 1;
         continue;
       }
-      files.push({ abs, rel, language, size: info.size });
+      files.push({ abs, rel, language, dialect, size: info.size });
     }
   }
 

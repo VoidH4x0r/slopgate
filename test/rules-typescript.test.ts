@@ -97,6 +97,27 @@ test('ts/noop-test still flags a test with no assertion', async () => {
   assert.match(drafts[0]?.message ?? '', /no assertions/);
 });
 
+test('ts/noop-test recognises bare assertXxx helper assertions', async () => {
+  const source = [
+    "import { test } from 'node:test';",
+    "test('helper', () => { assertEqual(2 + 2, 4); });",
+    "test('helper2', () => { assertNotNull('x'); });",
+    "test('helper3', () => { assertTruthy(1); });",
+  ].join('\n');
+  const drafts = await runRule('ts/noop-test', source, 'typescript');
+  assert.deepEqual(drafts, []);
+});
+
+test('ts/noop-test analyses test.runIf and test.skipIf', async () => {
+  const source = [
+    "import { test } from 'node:test';",
+    "test.runIf(process.platform === 'linux')('linux only', () => { doNothing(); });",
+    "test.skipIf(process.platform === 'win32')('not windows', () => { doNothing(); });",
+  ].join('\n');
+  const drafts = await runRule('ts/noop-test', source, 'typescript');
+  assert.equal(drafts.length, 2);
+});
+
 test('ts/noop-test does not treat test.<data>.forEach() as a test', async () => {
   const source = [
     "import { test } from 'node:test';",

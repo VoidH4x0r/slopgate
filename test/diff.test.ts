@@ -76,6 +76,19 @@ test('parseUnifiedDiff tracks context and deletion lines in a hunk', () => {
   assert.deepEqual([...(set.lines.get('app.ts') ?? [])], [2, 5]);
 });
 
+test('parseUnifiedDiff does not create an empty entry for a deletion-only hunk', () => {
+  const diff = [
+    'diff --git a/x.py b/x.py',
+    '--- a/x.py',
+    '+++ b/x.py',
+    '@@ -1,2 +1,0 @@',
+    '-one',
+    '-two',
+  ].join('\n');
+  const set = parseUnifiedDiff(diff);
+  assert.equal(set.lines.size, 0);
+});
+
 test('parseUnifiedDiff records added lines per file', () => {
   const set = parseUnifiedDiff(SAMPLE);
   assert.deepEqual([...(set.lines.get('app.py') ?? [])].sort((a, b) => a - b), [11, 12, 13]);

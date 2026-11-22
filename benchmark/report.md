@@ -1,12 +1,12 @@
 # Benchmark report
 
-Generated 2026-11-22T06:46:22.958Z by `scripts/benchmark.mjs` (slopgate 0.1.1, Node v24.19.0).
+Generated 2026-11-22T07:15:47.679Z by `scripts/benchmark.mjs` (slopgate 0.1.2, Node v24.19.0).
 
 ## Summary
 
-| Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest |
+| Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest (64-bit) |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| cpython-stdlib | 1845 | 991705 | 26 | 0.03 | 96.2% | `027f952580cd6622` |
+| cpython-stdlib | 1845 | 991705 | 29 | 0.03 | 96.6% | `027f952580cd6622` |
 | express | 7 | 2783 | 0 | 0.00 | — | `d2b720bf4294881f` |
 | chalk | 2 | 799 | 0 | 0.00 | — | `7e4d9210a0fc613d` |
 | execa | 111 | 8363 | 0 | 0.00 | — | `4c7472ad58bd8a01` |
@@ -23,7 +23,7 @@ Detected **14/14** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 11673 ms.
+Scanned **1845** files (**991705** lines) in 11121 ms.
 
 Corpus digest: `027f952580cd6622`.
 
@@ -33,12 +33,12 @@ Corpus digest: `027f952580cd6622`.
 | `py/noop-test` | 0 | 5935 | 0 | 0 | — |
 | `py/phantom-import` | 1 | 105 | 0 | 1 | 0.0% |
 | `py/stub-body` | 0 | 281 | 33 | 0 | — |
-| `py/swallowed-exception` | 22 | 425 | 0 | 22 | 100.0% |
+| `py/swallowed-exception` | 25 | 422 | 0 | 25 | 100.0% |
 | `py/tautological-assert` | 3 | 5 | 0 | 3 | 100.0% |
 
 ## express
 
-Scanned **7** files (**2783** lines) in 40 ms.
+Scanned **7** files (**2783** lines) in 34 ms.
 
 Package: `express@5.3.0`.
 
@@ -49,7 +49,7 @@ Corpus digest: `d2b720bf4294881f`.
 
 ## chalk
 
-Scanned **2** files (**799** lines) in 13 ms.
+Scanned **2** files (**799** lines) in 6 ms.
 
 Package: `chalk@6.0.1`.
 
@@ -60,7 +60,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 182 ms.
+Scanned **111** files (**8363** lines) in 129 ms.
 
 Package: `execa@10.2.1`.
 
@@ -72,7 +72,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 48 ms.
+Scanned **49** files (**3166** lines) in 49 ms.
 
 Package: `semver@7.8.6`.
 
@@ -83,7 +83,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 38 ms.
+Scanned **7** files (**4225** lines) in 36 ms.
 
 Package: `commander@15.1.0`.
 
@@ -106,7 +106,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 838 ms.
+Scanned **409** files (**100880** lines) in 789 ms.
 
 Package: `eslint@10.15.0`.
 
@@ -119,7 +119,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 36 ms.
+Scanned **7** files (**2217** lines) in 33 ms.
 
 Package: `glob@14.0.6`.
 
@@ -130,7 +130,7 @@ Corpus digest: `dc4dc56c06b64fb8`.
 
 ## yargs
 
-Scanned **5** files (**198** lines) in 8 ms.
+Scanned **5** files (**198** lines) in 6 ms.
 
 Package: `yargs@18.2.0`.
 

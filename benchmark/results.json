@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-22T06:46:22.958Z",
-  "slopgateVersion": "0.1.1",
+  "generatedAt": "2026-11-22T07:15:47.679Z",
+  "slopgateVersion": "0.1.2",
   "nodeVersion": "v24.19.0",
   "corpora": [
     {
@@ -9,9 +9,9 @@
       "digest": "027f952580cd6622",
       "files": 1845,
       "lines": 991705,
-      "durationMs": 11673,
+      "durationMs": 11121,
       "findings": 6814,
-      "high": 26,
+      "high": 29,
       "suppressed": 0,
       "parseErrors": 9,
       "byRule": {
@@ -21,8 +21,8 @@
           "low": 33
         },
         "py/swallowed-exception": {
-          "high": 22,
-          "medium": 425,
+          "high": 25,
+          "medium": 422,
           "low": 0
         },
         "py/dead-branch": {
@@ -48,13 +48,13 @@
       },
       "precision": {
         "overall": {
-          "tp": 25,
+          "tp": 28,
           "fp": 1,
-          "precision": 0.9615384615384616
+          "precision": 0.9655172413793104
         },
         "byRule": {
           "py/swallowed-exception": {
-            "tp": 22,
+            "tp": 25,
             "fp": 0,
             "precision": 1
           },
@@ -112,6 +112,14 @@
           "snippet": "except:"
         },
         {
+          "fingerprint": "94bb1860c88c8c10",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/debugger.py",
+          "line": 266,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
           "fingerprint": "815c91cc58f96bae",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/debugobj.py",
@@ -140,6 +148,14 @@
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/pyshell.py",
           "line": 222,
+          "confidence": "high",
+          "snippet": "except:"
+        },
+        {
+          "fingerprint": "e598848ed8006a4c",
+          "ruleId": "py/swallowed-exception",
+          "file": "idlelib/pyshell.py",
+          "line": 509,
           "confidence": "high",
           "snippet": "except:"
         },
@@ -206,6 +222,14 @@
           "line": 462,
           "confidence": "high",
           "snippet": "except:"
+        },
+        {
+          "fingerprint": "04f955297bbd0003",
+          "ruleId": "py/swallowed-exception",
+          "file": "multiprocessing/resource_tracker.py",
+          "line": 480,
+          "confidence": "high",
+          "snippet": "except Exception:"
         },
         {
           "fingerprint": "43215991ab4b349e",
@@ -290,7 +314,7 @@
       "digest": "d2b720bf4294881f",
       "files": 7,
       "lines": 2783,
-      "durationMs": 40,
+      "durationMs": 34,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -315,7 +339,7 @@
       "digest": "7e4d9210a0fc613d",
       "files": 2,
       "lines": 799,
-      "durationMs": 13,
+      "durationMs": 6,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -340,7 +364,7 @@
       "digest": "4c7472ad58bd8a01",
       "files": 111,
       "lines": 8363,
-      "durationMs": 182,
+      "durationMs": 129,
       "findings": 11,
       "high": 0,
       "suppressed": 0,
@@ -371,7 +395,7 @@
       "digest": "2035d82b564fe0fd",
       "files": 49,
       "lines": 3166,
-      "durationMs": 48,
+      "durationMs": 49,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -396,7 +420,7 @@
       "digest": "a1904525101c27be",
       "files": 7,
       "lines": 4225,
-      "durationMs": 38,
+      "durationMs": 36,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -452,7 +476,7 @@
       "digest": "8d19ccdb8205985c",
       "files": 409,
       "lines": 100880,
-      "durationMs": 838,
+      "durationMs": 789,
       "findings": 3,
       "high": 0,
       "suppressed": 0,
@@ -488,7 +512,7 @@
       "digest": "dc4dc56c06b64fb8",
       "files": 7,
       "lines": 2217,
-      "durationMs": 36,
+      "durationMs": 33,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -513,7 +537,7 @@
       "digest": "53ba47a2d90b26ae",
       "files": 5,
       "lines": 198,
-      "durationMs": 8,
+      "durationMs": 6,
       "findings": 0,
       "high": 0,
       "suppressed": 0,

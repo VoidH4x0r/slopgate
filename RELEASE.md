@@ -2,8 +2,8 @@
 
 Two supported paths:
 
-- **Local publish (default today):** `npm publish` from a verified checkout. The `NPM_TOKEN` secret is not configured yet, so do not push a `v*` tag.
-- **CI publish (after setup):** add an `NPM_TOKEN` repository secret, then a `v*` tag lets `.github/workflows/release.yml` verify the version, run the suite, publish with provenance and create the GitHub release.
+- **Local publish (default today):** `npm publish` from a verified checkout. The `NPM_TOKEN` secret is not configured yet.
+- **CI publish (after setup):** add an `NPM_TOKEN` repository secret, then a `v*` tag lets `.github/workflows/release.yml` verify the version, run the suite, publish with provenance and create the GitHub release. Without the secret a tag run skips publish/release with a warning instead of failing.
 
 ## 0. Repository slug (already done for this repository)
 
@@ -55,16 +55,16 @@ npm config delete //registry.npmjs.org/:_authToken
 ### 2b. CI publish (after adding NPM_TOKEN)
 
 ```bash
-git tag -a v0.1.1 -m "slopgate 0.1.1"
+git tag -a v0.1.2 -m "slopgate 0.1.2"
 git push origin main --follow-tags
 ```
 
-Only do this once the repository secret exists; without it the workflow fails after the version check.
+Only do this once the repository secret exists. Without it the workflow still validates the tag and tests, then skips publish and release with a warning.
 
 ## 3. Post-flight
 
 - [ ] `npm view @voidh4x0r/slopgate version` shows the new version
-- [ ] `npx @voidh4x0r/slopgate@0.1.1 --version` works on a clean machine
+- [ ] `npx @voidh4x0r/slopgate@0.1.2 --version` works on a clean machine
 - [ ] GitHub release notes read correctly (if the tag path was used)
 - [ ] The provenance badge shows on the npm page (CI publish only)
 

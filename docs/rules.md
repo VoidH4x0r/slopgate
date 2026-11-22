@@ -45,7 +45,7 @@ except ImportError:
     ujson = None
 ```
 
-**Precision controls.** Import-name to distribution-name map (`yaml` → `pyyaml`, `PIL` → `pillow`, …), local-module discovery from the repository layout (every module stem, not just top-level), `try/except ImportError` detection, `_`-prefixed C-extension modules (`_socket`, `_winapi`) ignored, `ignoreModules` config, and **medium confidence inside test files**, where `sys.path` monkey-patching is common.
+**Precision controls.** Import-name to distribution-name map (`yaml` → `pyyaml`, `PIL` → `pillow`, …, including dotted prefixes such as `google.protobuf`), local-module discovery from the repository layout (every module stem, not just top-level), `try/except ImportError` detection, imports under platform/version guards (`sys.platform`, `sys.version_info`, `six.PY2`, …) ignored, `_`-prefixed C-extension modules (`_socket`, `_winapi`) ignored, `ignoreModules` config, and **medium confidence inside test files**, where `sys.path` monkey-patching is common.
 
 ---
 
@@ -64,7 +64,7 @@ def test_create_user():
 - The test is inside `if __name__ == "__main__":` → skipped (demo code).
 - The body is a docstring with `>>>` → skipped (doctest).
 - The body returns a `DocTestSuite`/`load_tests` → skipped (suite factory).
-- The test is a class method, or calls `self.*`, or takes two or more parameters, or uses a `@contextmanager`-style decorator → **medium**: it probably delegates its assertions to a helper.
+- The test is a class method, or calls `self.*`, or takes two or more parameters, or uses a camelCase `testX` name with a parameter, or uses a `@contextmanager`-style decorator → **medium**: it probably delegates its assertions to a helper.
 
 **Why it matters.** A test that cannot fail is worse than no test: it inflates coverage, signals safety, and catches nothing.
 
@@ -94,7 +94,7 @@ def sync_accounts(self):
 
 **Confidence.** `high` only for a module-level, public, undocumented function whose body is `pass`/`...`. Everything else is `medium` (`raise NotImplementedError`, documented functions, methods, private helpers, `return None` → `low`), because interface placeholders and abstract hooks look identical to abandoned stubs.
 
-**Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op shim modules (`dummy/`, `noop/`, `shims/`), test files, and anything named `test_*` (handled by `py/noop-test`).
+**Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op modules with an exact `dummy/`, `_dummy/`, `noop/` or `no-op/` path segment, test files, and anything named `test_*` (handled by `py/noop-test`).
 
 ---
 
@@ -112,7 +112,7 @@ except Exception:
 **Confidence.**
 
 - `high` only for a bare `except:` or `except Exception` / `BaseException`, with no comment, outside a cleanup function.
-- `medium` when the caught type is specific (`except KeyError`), when a comment explains it (anywhere from the `try` statement to the end of the handler, including the line between `try` and `except`), or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
+- `medium` when the caught type is specific (`except KeyError`), when a comment explains it between the end of the `try` body (or the previous handler) and the end of this handler, or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
 
 **Not reported.** `except ImportError` / `ModuleNotFoundError` (the optional-dependency idiom), `try` blocks with an `else` clause (the `try/except: pass/else: fail` assertion idiom), test files, and handlers that log or re-raise.
 

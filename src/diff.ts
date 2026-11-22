@@ -114,6 +114,10 @@ export function parseUnifiedDiff(stdout: string): DiffSet {
       if (line.startsWith('\\')) continue; // "\ No newline at end of file"
       if (line.startsWith('+')) {
         if (newRemaining > 0) {
+          if (!store && currentFile) {
+            store = new Set<number>();
+            set.lines.set(currentFile, store);
+          }
           store?.add(newLine);
           newLine += 1;
           newRemaining -= 1;
@@ -160,11 +164,7 @@ export function parseUnifiedDiff(stdout: string): DiffSet {
     newRemaining = hunk[4] === undefined ? 1 : Number.parseInt(hunk[4], 10);
     newLine = Number.parseInt(hunk[3], 10);
     if (!Number.isFinite(newLine)) continue;
-    store = set.lines.get(currentFile);
-    if (!store) {
-      store = new Set<number>();
-      set.lines.set(currentFile, store);
-    }
+    store = currentFile ? set.lines.get(currentFile) : undefined;
   }
   return set;
 }

@@ -79,6 +79,7 @@ async function countLines(dir) {
     }
   }
   await walk(dir);
+  // Truncated SHA-256: enough to identify a corpus without a 128-character column.
   return { files, lines, digest: hash.digest('hex').slice(0, 16) };
 }
 
@@ -222,7 +223,7 @@ function renderMarkdown(report) {
   lines.push('# Benchmark report', '');
   lines.push(`Generated ${report.generatedAt} by \`scripts/benchmark.mjs\` (slopgate ${report.slopgateVersion}, Node ${report.nodeVersion}).`, '');
   lines.push('## Summary', '');
-  lines.push('| Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest |');
+  lines.push('| Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest (64-bit) |');
   lines.push('| --- | ---: | ---: | ---: | ---: | ---: | --- |');
   for (const corpus of report.corpora) {
     const perKloc = corpus.lines > 0 ? ((corpus.high / corpus.lines) * 1000).toFixed(2) : '—';

@@ -209,13 +209,19 @@ function insideAbstractMethod(node: AstNode): boolean {
   return false;
 }
 
-/** `if sys.platform == "java": from java.lang import System` is platform-specific. */
+/** Platform/version guards make the import conditional on the host. */
 function insidePlatformGuard(node: AstNode): boolean {
   let current = node.parent;
   while (current) {
     if (current.type === 'if_statement') {
       const condition = current.childForFieldName('condition')?.text ?? '';
-      if (/sys\.platform|platform\.system\s*\(/.test(condition)) return true;
+      if (
+        /sys\.platform|platform\.system\s*\(|sys\.version_info|platform\.python_version\s*\(|six\.PY2|\bPY2\b/.test(
+          condition,
+        )
+      ) {
+        return true;
+      }
     }
     current = current.parent;
   }
@@ -483,10 +489,19 @@ const swallowedException: Rule = {
     for (const tryNode of descendantsOfType(ctx.root, ['try_statement'])) {
       // `try: ... except X: pass else: fail()` is an assertion idiom, not a bug.
       if (tryNode.namedChildren.some((child) => child.type === 'else_clause')) continue;
+      const tryBody = tryNode.namedChildren.find((child) => child.type === 'block');
+      /** 0-based end row of the previous region, or -1 when there is no try body. */
+      let previousEndRow = tryBody ? tryBody.endPosition.row : -1;
       for (const clause of tryNode.namedChildren) {
         if (clause.type !== 'except_clause' && clause.type !== 'except_group_clause') continue;
         const body = clause.namedChildren.filter((child) => child.type === 'block').pop();
         if (!body) continue;
+        // Comments between the try body (or the previous handler) and this
+        // handler can explain this handler; comments inside the try body
+        // cannot. Advance the cursor for every handler, silent or not.
+        const handlerEndRow = body.endPosition.row;
+        const windowStart = previousEndRow >= 0 ? previousEndRow + 1 : clause.startPosition.row + 1;
+        previousEndRow = handlerEndRow;
         const statements = statementsOf(body);
         const silent =
           statements.length === 0 ||
@@ -504,9 +519,7 @@ const swallowedException: Rule = {
         // Optional-dependency idiom: swallowing a missing import is the point.
         if (/ImportError|ModuleNotFoundError/.test(typeText)) continue;
 
-        // Explain-the-suppression comments usually sit between the `try` body
-        // and the `except`, so the window starts at the whole statement.
-        const commented = hasCommentBetween(ctx, tryNode.startPosition.row + 1, body.endPosition.row + 1);
+        const commented = hasCommentBetween(ctx, windowStart, handlerEndRow + 1);
         const bare = typeText.length === 0;
         const broad = bare || /^(\(?\s*)?(Exception|BaseException)(\s*\))?$/.test(typeText);
         const cleanup = insideCleanupFunction(clause);

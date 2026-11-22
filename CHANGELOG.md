@@ -9,6 +9,25 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.2] - 2026-11-22
+
+### Fixed
+- `ts/noop-test` analyses `test.runIf(...)`, `test.skipIf(...)` and `test.for(...)` again; the 0.1.1 modifier whitelist skipped them entirely.
+- Bare assertion helpers such as `assertEqual`, `assertNotNull` and `assertTruthy` count as assertions again.
+- `py/swallowed-exception` scopes explanatory comments to the region between the end of the try body (or the previous handler) and the current handler. A comment inside the try body no longer hides a silent `except: pass`, and an earlier comment no longer excuses a later handler.
+- `py/stub-body` skips only exact no-op path segments (`dummy`, `_dummy`, `noop`, `no_op`, `no-op`); `dummy_data/` and genuinely unfinished `shims/` code are reported again.
+- Imports under `sys.version_info` / `platform.python_version()` / `six.PY2` guards are ignored, matching the existing `sys.platform` handling.
+- `stats.byLanguage` reports `javascript` for `.js`/`.jsx`/`.mjs`/`.cjs` instead of counting them as `tsx`.
+- The release workflow skips npm publish and GitHub release with a warning when `NPM_TOKEN` is missing instead of failing the tag run.
+- The unified-diff parser no longer leaves an empty line-set entry for a deletion-only hunk.
+- Internal cleanup: the pyproject parser no longer shadows the outer `names` variable.
+
+### Changed
+- 179 tests, including second-round regression fixtures for `assert-helpers`, `try-comment`, `noop-overmatch`, `pyproject-edge` and `test-call-forms`.
+- Benchmark re-run: **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, 0 high findings across 601 JavaScript files.** 19 labels cover 29 high-finding occurrences; stale and unlabeled findings are zero. The corrected comment window surfaced one previously labeled-tp finding in `idlelib/debugger.py`, which was re-added to the labels.
+- JSON consumers see a new `byLanguage.javascript` bucket; `.js`/`.jsx` counts no longer inflate `tsx`.
+- Docs: symlink counting clarified, host-only module limitation added, README CI snippet pins the release version, benchmark digest marked as a 64-bit truncation.
+
 ## [0.1.1] - 2026-11-22
 
 ### Fixed

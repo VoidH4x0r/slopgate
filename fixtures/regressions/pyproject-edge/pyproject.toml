@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "edge"
+version = "0.1.0"
+dependencies = [
+  "requests[socks,security]>=2.31",  # inline comment after a comma inside extras
+  "pydantic>=2 ; python_version >= '3.9'",
+  'click',
+]
+
+[project.optional-dependencies]
+docs = [
+  "sphinx",
+  "furo",
+]
+
+[dependency-groups]
+lint = ["ruff", "mypy"]
+test = [
+  "pytest",
+  { include-group = "lint" },
+]
+all = [{ include-group = "test" }, { include-group = "lint" }]
+
+[tool.uv]
+dev-dependencies = [
+  "pre-commit",
+]
+
+[tool.poetry.group.db.dependencies]
+psycopg = { version = "^3.1", optional = true }
+alembic = "^1.13"
+
+[tool.poetry.group.db.dependencies.extra-table]
+version = "^1.0"

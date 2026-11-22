@@ -38,7 +38,7 @@ function scanResult(findings: Finding[]): ScanResult {
     warnings: [],
     stats: {
       files: 3,
-      byLanguage: { python: 3, typescript: 0, tsx: 0 },
+      byLanguage: { python: 3, javascript: 0, typescript: 0, tsx: 0 },
       skipped: 0,
       parseErrors: 0,
       durationMs: 12,
