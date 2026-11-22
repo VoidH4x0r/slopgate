@@ -363,6 +363,26 @@ function hasImplicitFrameworkAction(body: AstNode): boolean {
   return found;
 }
 
+/** Tests nested inside describe.skip/context.skip/suite.skip are disabled too. */
+function insideSkippedDescribe(call: AstNode): boolean {
+  let node = call.parent;
+  while (node) {
+    if (node.type === 'call_expression') {
+      const fn = collapseWhitespace(node.childForFieldName('function')?.text ?? '');
+      const root = fn.split(/[.(]/)[0] ?? '';
+      const descriptors = /(?:^|\.)(?:describe|context|suite)(?:\.|$)/.test(fn);
+      if (
+        (root === 'describe' || root === 'context' || root === 'suite' || descriptors) &&
+        testModifiers(node).some((name) => ['skip', 'todo', 'fixme'].includes(name))
+      ) {
+        return true;
+      }
+    }
+    node = node.parent;
+  }
+  return false;
+}
+
 const noopTest: Rule = {
   meta: {
     id: 'ts/noop-test',
@@ -381,6 +401,7 @@ const noopTest: Rule = {
     for (const call of descendantsOfType(ctx.root, ['call_expression'])) {
       const fn = call.childForFieldName('function');
       if (!fn || !isTestCall(fn)) continue;
+      if (insideSkippedDescribe(call)) continue;
       if (testModifiers(fn).some((name) => ['skip', 'todo', 'fixme'].includes(name))) continue;
 
       const args = call.childForFieldName('arguments');

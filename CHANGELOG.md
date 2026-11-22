@@ -5,25 +5,23 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Fixed
-- Config `include` / `exclude` globs are matched relative to the **config root** they came from, so a root config still governs `slopgate backend` when `backend` has its own manifest.
-- Registry indexing is scoped to the project/target, lazy-loads project deps, respects `config.exclude`, and is cached across MCP tool calls.
-- Python files choose the nearest **Python** manifest rather than a nested Node-only `package.json`; TS files use the nearest `package.json`.
+- Config `include` / `exclude` globs are matched relative to the config file's directory (or the project root when no config exists), so a root config still governs `slopgate backend` and CLI `--exclude generated/**` works without a config file.
+- Registry indexing is scoped to the repository/target, lazy-loads project deps, and respects `config.exclude`; MCP rebuilds the index per call so new modules and projects are visible, while configs invalidate on mtime.
+- Python files choose the nearest **Python** manifest rather than a nested Node-only `package.json`; TS files use the nearest `package.json`; indexes cover ancestor manifests and sibling modules.
 - Python project markers are derived from the same list as `PYTHON_MANIFESTS` (`requirements-dev.txt`, `environment.yml`, etc.).
 - `pytest.warns` / `pytest.deprecated_call` count as assertions, but a plain `warnings.warn()` does not.
 - Top-level decorated `pass`/`...` functions remain high-confidence stubs.
 - `ts/tautological-assert` no longer treats two calls with the same text as identical.
 - `ts/stub-function` recognises `unimplemented` / `Not yet implemented` placeholders.
 - Suppression directives inside block comments and before decorators now reach the finding.
-- Disabled tests (`test.skip` / `todo` / `fixme`) are skipped; Cypress/Playwright implicit commands demote assertion-free tests to medium.
+- Disabled tests (`test.skip` / `todo` / `fixme`, including inside `describe.skip`) are skipped; Cypress/Playwright implicit commands demote assertion-free tests to medium.
 - `--write-baseline` merges the scanned scope into the root baseline instead of clobbering entries outside it; writes are atomic.
 - Empty `--include=`, `--exclude=`, `--rule=`, `--baseline=` and `--write-baseline=` values are rejected; `--diff=` falls back to HEAD.
 - Error help paths show the actual package version; `--verbose` docs describe the config/diff details it actually prints.
 - `isInDiffWithPrefix` checks the prefixed path before any raw path, avoiding false root-file matches.
-- Config `include` / `exclude` globs now match project-root-relative paths for subdirectory and single-file scans (including directory pruning), not paths relative to the scan target.
 - Root scans now resolve dependencies per file: monorepo files use their nearest `pyproject.toml` / `package.json` / requirements file, and Python local-module discovery covers the whole repository rather than only scanned files.
 - Non-git scans search parent manifests/configs up to the current working directory boundary while keeping report paths relative to the scan target.
 - Vite/TypeScript aliases now come from `tsconfig.app.json`, `tsconfig.node.json`, `jsconfig.json`, `extends`, and project references; `@/`, `~/`, `$lib/`, `$app/`, `$env/`, `npm:` and `jsr:` prefixes are treated as virtual.
-- `pytest.warns` / `pytest.deprecated_call` count as test assertions.
 - Findings are computed once relative to an explicit report root; CLI/MCP/baseline/diff no longer re-prefix target-relative paths.
 - Single-file and subdirectory scans now resolve the nearest project root for manifests, aliases and same-package local modules; output and `--diff` paths use the target directory prefix.
 - Namespace distributions such as `google-cloud-storage`, `opentelemetry-api`, `azure-storage-blob`, `ruamel.yaml`, `backports.zoneinfo` and headless OpenCV satisfy their import names.

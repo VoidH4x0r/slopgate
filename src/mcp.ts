@@ -4,6 +4,7 @@ import process from 'node:process';
 import { createInterface } from 'node:readline';
 import { loadBaseline, partitionByBaseline } from './baseline.ts';
 import {
+  CONFIG_FILENAMES,
   findConfigRoot,
   findGitRoot,
   loadConfig,
@@ -11,8 +12,7 @@ import {
   type Config,
 } from './config.ts';
 import { diffSince, isInDiff, type DiffSet } from './diff.ts';
-import { resolveProjectRoot, isProjectDir } from './deps.ts';
-import { loadProjectRegistry, type ProjectRegistry } from './projects.ts';
+import { resolveProjectRoot } from './deps.ts';
 import { scanProject, type ScanResult } from './engine.ts';
 import { ALL_RULES } from './rules/index.ts';
 import type { Confidence, Finding } from './types.ts';
@@ -146,6 +146,7 @@ function formatFindings(
   );
   if (findings.length === 0) {
     lines.push('No findings above the confidence threshold.');
+    for (const warning of result.warnings.slice(0, 5)) lines.push(`warning: ${warning}`);
     return lines.join('\n');
   }
   if (findings.length > shown.length) {
@@ -158,6 +159,7 @@ function formatFindings(
     if (finding.snippet) lines.push(`    ${finding.snippet}`);
     for (const item of finding.evidence.slice(0, 2)) lines.push(`    - ${item}`);
   }
+  for (const warning of result.warnings.slice(0, 5)) lines.push(`warning: ${warning}`);
   return lines.join('\n');
 }
 
@@ -273,21 +275,44 @@ export function createMcpServer(deps: McpDeps) {
 }
 
 export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'config'> {
-  const configCache = new Map<string, Promise<Config>>();
-  const registryCache = new Map<string, Promise<ProjectRegistry>>();
+  interface ConfigInfo {
+    config: Config;
+    file: string | undefined;
+    root: string;
+  }
+  const configCache = new Map<string, { stamp: string; pending: Promise<ConfigInfo> }>();
   const configRootFor = async (start: string): Promise<string> => {
     const target = path.resolve(start);
     const repoRoot = (await findGitRoot(target)) ?? root;
     return findConfigRoot(target, repoRoot);
   };
-  const configFor = async (start: string): Promise<Config> => {
-    const configRoot = await configRootFor(start);
-    let pending = configCache.get(configRoot);
-    if (!pending) {
-      pending = loadConfig(configRoot).then((loaded) => loaded.config);
-      configCache.set(configRoot, pending);
+  const configStamp = async (configRoot: string): Promise<string> => {
+    const parts: string[] = [];
+    for (const name of CONFIG_FILENAMES) {
+      try {
+        const info = await stat(path.join(configRoot, name));
+        parts.push(`${name}:${info.mtimeMs}:${info.size}`);
+      } catch {
+        parts.push(`${name}:none`);
+      }
     }
+    return parts.join('|');
+  };
+  const configInfoFor = async (start: string): Promise<ConfigInfo> => {
+    const configRoot = await configRootFor(start);
+    const stamp = await configStamp(configRoot);
+    const cached = configCache.get(configRoot);
+    if (cached?.pending && cached.stamp === stamp) return cached.pending;
+    const pending = loadConfig(configRoot).then((loaded) => ({
+      config: loaded.config,
+      file: loaded.file,
+      root: configRoot,
+    }));
+    configCache.set(configRoot, { stamp, pending });
     return pending;
+  };
+  const configFor = async (start: string): Promise<Config> => {
+    return (await configInfoFor(start)).config;
   };
 
   return {
@@ -295,39 +320,24 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
     version,
     configFor,
     async scan(scanRoot: string) {
-      const config = await configFor(scanRoot);
+      const configInfo = await configInfoFor(scanRoot);
+      const config = configInfo.config;
 
       const target = path.resolve(scanRoot);
       const info = await stat(target).catch(() => undefined);
       const base = info?.isFile() ? path.dirname(target) : target;
       const repoRoot = (await findGitRoot(base)) ?? root;
       const projectRoot = await resolveProjectRoot(base, repoRoot);
-      const configRoot = await configRootFor(scanRoot);
-      const indexRoot = (await isProjectDir(projectRoot)) ? projectRoot : base;
-      const registryKey = JSON.stringify([
-        indexRoot,
-        configRoot,
-        config.exclude,
-        config.ignoreModules,
-      ]);
-      let registry = registryCache.get(registryKey);
-      if (!registry) {
-        registry = loadProjectRegistry({
-          scopeRoot: indexRoot,
-          fallbackRoot: projectRoot,
-          configRoot,
-          exclude: config.exclude,
-          ignoreModules: config.ignoreModules,
-        });
-        registryCache.set(registryKey, registry);
-      }
+      const globRoot = configInfo.file ? configInfo.root : projectRoot;
+      // No registry cache: a new module or manifest must be visible on the
+      // next scan. Project deps are lazy, so the traversal is the only cost.
+      const indexRoot = repoRoot;
       const result = await scanProject({
         root: target,
         projectRoot,
-        configRoot,
+        configRoot: globRoot,
         indexRoot,
         reportRoot: root,
-        registry: await registry,
         config,
       });
 

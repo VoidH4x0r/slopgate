@@ -89,6 +89,19 @@ test('ts/noop-test skips disabled tests and demotes implicit browser commands', 
   assert.equal(cypress.length, 1);
   assert.equal(cypress[0]?.confidence, 'medium');
   assert.match(cypress[0]?.message ?? '', /no explicit assertions/);
+
+  const describe = await runRule(
+    'ts/noop-test',
+    "describe.skip('group', () => { it('empty', () => {}); });\n",
+    'typescript',
+  );
+  assert.deepEqual(describe, []);
+  const testDescribe = await runRule(
+    'ts/noop-test',
+    "test.describe.skip('group', () => { test('empty', () => {}); });\n",
+    'typescript',
+  );
+  assert.deepEqual(testDescribe, []);
 });
 
 test('ts/noop-test recognises node:assert method assertions', async () => {

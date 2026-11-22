@@ -447,8 +447,9 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const configBoundary = repoRoot ?? projectRoot;
   const configRoot = await findConfigRoot(scanBase, configBoundary);
   const reportRoot = repoRoot ?? scanBase;
-  const indexRoot = (await isProjectDir(projectRoot)) ? projectRoot : scanBase;
+  const indexRoot = repoRoot ?? ((await isProjectDir(projectRoot)) ? projectRoot : scanBase);
   const { config, file: configFile } = await loadConfig(configRoot);
+  const globRoot = configFile ? configRoot : projectRoot;
 
   if (options.rules.length > 0) {
     const unknown = options.rules.filter((id) => !RULE_BY_ID.has(id));
@@ -475,7 +476,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const result = await scanProject({
     root: target,
     projectRoot,
-    configRoot,
+    configRoot: globRoot,
     indexRoot,
     reportRoot,
     config: merged,

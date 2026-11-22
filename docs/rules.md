@@ -172,6 +172,8 @@ If the package **is** installed under `node_modules` the finding is `medium` ("u
 
 **Delegation.** If the callback’s first parameter is passed as an argument to a helper (`(t) => runSuite(t)`), the finding is `medium`: the helper may contain the assertions. Passing it as a receiver (`t.equal(...)`) is still a normal assertion; callbacks with several parameters are treated as table-driven data, not delegated context.
 
+**Disabled tests.** `test.skip`, `test.todo`, `test.fixme` and tests nested under `describe.skip` / `context.skip` / `suite.skip` are not reported. Cypress/Playwright-style commands (`cy.*`, `page.*`, `browser.*`) can fail a test implicitly, so an otherwise assertion-free test is demoted to `medium` rather than `high`.
+
 ```ts
 test('creates user', () => {
   createUser('a@b.c');       // no expect() → finding
@@ -188,7 +190,7 @@ test('creates user', () => {
 
 ## ts/stub-function
 
-**What it catches.** A `function` declaration or class method whose body is empty, or only throws an error with a "not implemented" message.
+**What it catches.** A `function` declaration or class method whose body is empty, or only throws an error with a `not implemented` / `unimplemented` / `Not yet implemented` message.
 
 **Confidence.** `high` only for a standalone or exported function with the explicit `throw new Error("not implemented")` placeholder. An empty body is `medium`, and a class method that throws the placeholder is `medium` too: it is the standard way to declare an interface member for subclasses. Callbacks, dispatch tables and interface implementations legitimately do nothing in JavaScript. When auditing AI-generated code, most real stub findings are `medium`; use `--confidence medium` (see README “Auditing AI-written code”).
 

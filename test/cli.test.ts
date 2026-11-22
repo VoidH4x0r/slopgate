@@ -431,6 +431,61 @@ test('cli: a monorepo root scan uses the nearest project manifest', async () => 
   }
 });
 
+test('cli: --exclude is relative to the project when no config file exists', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-exclude-noconfig-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'packages', 'app', 'generated'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'packages', 'app', 'package.json'),
+      '{"name":"app","private":true}\n',
+    );
+    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'def stubbed():\n    pass\n');
+    await writeFile(
+      path.join(dir, 'packages', 'app', 'generated', 'g.py'),
+      'def generated_stub():\n    pass\n',
+    );
+
+    const result = await run([
+      path.join(dir, 'packages', 'app'),
+      '--exclude',
+      'generated/**',
+      '--no-color',
+    ]);
+    assert.equal(result.status, 1, result.stderr);
+    assert.doesNotMatch(result.stdout, /generated\/g\.py/);
+    assert.match(result.stdout, /^packages\/app\/app\.py$/m);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: a nested package does not hide ancestor manifests or sibling modules', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-ancestor-index-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'assets'), { recursive: true });
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await mkdir(path.join(dir, 'lib'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'pyproject.toml'),
+      '[project]\nname = "root"\nversion = "0.0.0"\ndependencies = ["requests"]\n',
+    );
+    await writeFile(path.join(dir, 'assets', 'package.json'), '{"name":"assets","private":true}\n');
+    await writeFile(path.join(dir, 'assets', 'build.py'), 'import requests\n');
+    await writeFile(path.join(dir, 'lib', 'util.py'), 'def f():\n    return 1\n');
+    await writeFile(path.join(dir, 'packages', 'app', 'package.json'), '{"name":"app","private":true}\n');
+    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'from lib.util import f\n');
+
+    const assets = await run([path.join(dir, 'assets'), '--no-color']);
+    assert.equal(assets.status, 0, assets.stderr);
+    const app = await run([path.join(dir, 'packages', 'app'), '--no-color']);
+    assert.equal(app.status, 0, app.stderr);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: a subdirectory scan sees Python modules outside the target', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-local-modules-'));
   try {

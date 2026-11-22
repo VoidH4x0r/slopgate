@@ -299,6 +299,78 @@ test('mcp: a monorepo root scan uses each backend manifest', async () => {
   }
 });
 
+test('mcp: registry and config caches observe filesystem changes', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-cache-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await writeFile(path.join(dir, 'app.py'), 'import newlib\n');
+    const deps = defaultMcpDeps(dir, '0.1.0');
+    const server = createMcpServer({ ...deps, config: DEFAULT_CONFIG });
+
+    const first = await call(server, {
+      jsonrpc: '2.0',
+      id: 18,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: '.' } },
+    });
+    assert.match(
+      (first.result as { content: Array<{ text: string }> }).content[0]?.text ?? '',
+      /py\/phantom-import/,
+    );
+
+    await mkdir(path.join(dir, 'newlib'));
+    await writeFile(path.join(dir, 'newlib', '__init__.py'), '');
+    const second = await call(server, {
+      jsonrpc: '2.0',
+      id: 19,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: '.' } },
+    });
+    assert.doesNotMatch(
+      (second.result as { content: Array<{ text: string }> }).content[0]?.text ?? '',
+      /py\/phantom-import/,
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('mcp: config changes invalidate the cached config', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-config-cache-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await writeFile(path.join(dir, 'app.py'), 'def stubbed():\n    pass\n');
+    await writeFile(path.join(dir, '.slopgate.json'), '{"rules":{"py/stub-body":"off"}}\n');
+    const deps = defaultMcpDeps(dir, '0.1.0');
+    const server = createMcpServer({ ...deps, config: DEFAULT_CONFIG });
+
+    const off = await call(server, {
+      jsonrpc: '2.0',
+      id: 21,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: '.' } },
+    });
+    assert.doesNotMatch(
+      (off.result as { content: Array<{ text: string }> }).content[0]?.text ?? '',
+      /py\/stub-body/,
+    );
+
+    await writeFile(path.join(dir, '.slopgate.json'), '{}\n');
+    const on = await call(server, {
+      jsonrpc: '2.0',
+      id: 22,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: '.' } },
+    });
+    assert.match(
+      (on.result as { content: Array<{ text: string }> }).content[0]?.text ?? '',
+      /py\/stub-body/,
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('mcp: scan_path uses the nearest package config, like the CLI', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-config-'));
   try {
