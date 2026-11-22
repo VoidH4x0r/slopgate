@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-11-23
+
+### Fixed
+- Restored UTF-8 clean `README.md`, `CHANGELOG.md` and `CONTRIBUTING.md` after a double-decoded docs edit; no CJK mojibake or replacement characters remain.
+- Added a markdown encoding guard that rejects `U+FFFD`, known GBK/CP936 mojibake markers, and common Latin-1 mojibake while allowing legitimate CJK text.
+
+### Changed
+- 339 tests.
+
 ## [0.2.2] - 2026-11-23
 
 ### Fixed
@@ -13,7 +22,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - `--fix` records a BOM-stripped source hash and refuses to apply stale offsets if the file changed between scan and write.
 
 ### Changed
-- 339 tests.
+- 338 tests.
 - README performance section updated to the measured ~13 s CPython benchmark and documents the duplicate-block opt-out for large repositories.
 - Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**; the duplicate medium count changed.
 

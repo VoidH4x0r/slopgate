@@ -27,7 +27,7 @@ export const LINES = [
   { segments: [] },
   {
     segments: [
-      { text: 'slopgate 0.2.2', color: COLORS.fg },
+      { text: 'slopgate 0.2.3', color: COLORS.fg },
       { text: '  ·  4 files  ·  50ms', color: COLORS.dim },
     ],
   },

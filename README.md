@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.2.2  ·  4 files  ·  50ms
+slopgate 0.2.3  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -232,7 +232,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.2.2 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.2.3 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -240,7 +240,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.2.2 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.2.3 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -308,6 +308,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.2 — config-root globs, language-aware project registry, MCP cache invalidation, non-git ancestor discovery
 - [x] v0.2.1 — duplicate-block detection, safe `--fix` for unreachable code, AI-generated regression corpus
 - [x] v0.2.2 — operator-complete duplicate signatures, per-file representatives, SARIF metadata, stale-autofix guard
+- [x] v0.2.3 — UTF-8 documentation repair and markdown mojibake guard
 - [ ] v0.3 — Go and Rust grammars, VS Code diagnostics
 - [ ] v0.4 — expanded published false-positive benchmark, duplicate-block semantic clones
 
