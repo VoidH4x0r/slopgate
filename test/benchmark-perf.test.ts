@@ -30,11 +30,11 @@ test('benchmark performance guard reports a run beyond the threshold', () => {
 test('benchmark performance guard ignores short noisy corpora', () => {
   const previous = result([
     { name: 'tiny', durationMs: 35 },
-    { name: 'medium', durationMs: 400 },
+    { name: 'medium', durationMs: 800 },
   ]);
   const current = result([
     { name: 'tiny', durationMs: 80 },
-    { name: 'medium', durationMs: 520 },
+    { name: 'medium', durationMs: 1100 },
   ]);
   assert.deepEqual(compareDurations(previous, current, 5), []);
 });

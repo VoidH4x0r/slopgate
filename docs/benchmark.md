@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.1.15): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
+> Status (0.1.16): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
 
 ## The claim
 
@@ -20,6 +20,10 @@ Two halves, both real code:
 Repositories are not vendored. Each corpus is identified in `benchmark/results.json` by a **SHA-256 digest over its scanned files, truncated to 64 bits** (relative path + content), plus the package name/version when a `package.json` exists. The digest lets another checkout prove it is running the same tree without publishing absolute paths. The CPython corpus is a local 3.14.7 install rather than a git checkout, so it is identified by digest and version, not by commit.
 
 Known false positive in the published run: `platform.py` imports `java.lang` inside the Jython-only `_java_getprop` helper. The pattern is present, but the report is not actionable on CPython; it is labeled `fp` and counted in the ratio.
+
+### Human-written corpus caveat
+
+The false-positive corpus is human-written code, which rarely contains AI-specific shapes such as `except Exception as error:` followed by `pass`. Those patterns are covered by `fixtures/regressions` instead; 0.2.0 should add an AI-generated corpus so the benchmark exercises them directly.
 
 ### What the JavaScript half does not cover
 
@@ -44,7 +48,7 @@ Timings are machine- and load-dependent, so the guard is opt-in and intended for
 node scripts/benchmark.mjs … --max-regression 5
 ```
 
-It compares each corpus’s `durationMs` with the existing `--out` file before overwriting it, prints any corpus that is more than the given percentage slower, and exits 1. Corpora whose baseline is under 500 ms are ignored because startup/timer noise dominates them; new or missing corpora are ignored too.
+It compares each corpus’s `durationMs` with the existing `--out` file before overwriting it, prints any corpus that is more than the given percentage slower, and exits 1. Corpora whose baseline is under 1000 ms are ignored because startup/timer noise dominates them; new or missing corpora are ignored too.
 
 ## Metrics reported
 

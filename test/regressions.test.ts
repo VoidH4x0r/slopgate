@@ -263,3 +263,20 @@ test('regression: explanations containing future words still demote', async () =
     [10, 18],
   );
 });
+
+test('regression: exception bindings do not narrow the caught type', async () => {
+  const result = await scanFixture('regressions/as-binding');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 4);
+  assert.ok(findings.every((finding) => finding.confidence === 'high'));
+});
+
+test('regression: except* and tuple bindings classify by the caught type', async () => {
+  const result = await scanFixture('regressions/as-binding-more');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 4);
+  assert.equal(findings.filter((finding) => finding.confidence === 'high').length, 3);
+  const specific = findings.filter((finding) => finding.confidence === 'medium');
+  assert.equal(specific.length, 1);
+  assert.match(specific[0]?.message ?? '', /specific error type/);
+});

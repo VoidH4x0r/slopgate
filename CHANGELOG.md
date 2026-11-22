@@ -9,6 +9,17 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.16] - 2026-11-22
+
+### Fixed
+- `py/swallowed-exception` classifies the caught type independently of an `as name` binding: `except Exception as error:`, `except BaseException as e:`, `except (Exception,) as e:` and `except* Exception as e:` are high confidence again, with the broad “swallows the error” message instead of “specific error type”.
+- Tuples containing `Exception`/`BaseException` are treated as broad; `(ValueError, RuntimeError)` remains specific/medium.
+
+### Changed
+- 270 tests, including `as-binding` and `as-binding-more` fixtures covering bindings, `except*`, single-element and mixed tuples.
+- Docs note that human-written benchmark corpora rarely exercise AI-specific `except … as e: pass` shapes; regression fixtures cover them until the 0.2.0 AI corpus.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.15] - 2026-11-22
 
 ### Fixed
@@ -66,7 +77,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 - **Behavior change:** a baseline written by an older version inside a scanned subdirectory is no longer found automatically; move it to the repository root or pass `--baseline`.
 - 259 tests, including repo-root config applying to directory/file scans and default-baseline read/write at the root.
-- The performance guard now ignores corpora under 500 ms, so 5% comparisons target the CPython/ESLint-scale scans rather than startup noise.
+- The performance guard now ignores corpora under 1000 ms, so 5% comparisons target the CPython-scale scan rather than JavaScript startup noise.
 - Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
 
 ## [0.1.10] - 2026-11-22

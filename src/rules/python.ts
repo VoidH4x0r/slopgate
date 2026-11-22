@@ -600,6 +600,20 @@ function isDocumentedNoopDirectory(ctx: RuleContext): boolean {
   return NOOP_MODULE_DOC.test(moduleDocstring(ctx.root) ?? '');
 }
 
+/** Broad even when the expression is a tuple containing a catch-all type. */
+function isBroadExceptionType(text: string): boolean {
+  if (/^\(?\s*(Exception|BaseException)\s*,?\s*\)?$/.test(text)) return true;
+  if (text.startsWith('(') && text.endsWith(')')) {
+    const parts = text
+      .slice(1, -1)
+      .split(',')
+      .map((part) => collapseWhitespace(part))
+      .filter((part) => part.length > 0);
+    return parts.some((part) => part === 'Exception' || part === 'BaseException');
+  }
+  return false;
+}
+
 const swallowedException: Rule = {
   meta: {
     id: 'py/swallowed-exception',
@@ -654,8 +668,11 @@ const swallowedException: Rule = {
         const commented =
           above ||
           supportingCommentBetween(ctx, betweenStart, handlerEndRow + 1, clause.startPosition.row + 1);
+        // `except Exception as error:` binds the exception; the binding name
+        // says nothing about the caught type.
+        const baseType = typeText.replace(/\s+as\s+\S+$/, '').trim();
         const bare = typeText.length === 0;
-        const broad = bare || /^(\(?\s*)?(Exception|BaseException)(\s*\))?$/.test(typeText);
+        const broad = bare || isBroadExceptionType(baseType);
         const cleanup = insideCleanupFunction(clause);
         const confidence: Confidence = broad && !commented && !cleanup ? 'high' : 'medium';
 

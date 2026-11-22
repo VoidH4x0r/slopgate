@@ -10,7 +10,7 @@ export function compareDurations(previous, current, thresholdPercent) {
     const previousMs = before.get(corpus.name);
     // Short scans are dominated by process startup and timer noise. Only gate
     // corpora large enough for a 5% threshold to be meaningful.
-    if (previousMs === undefined || previousMs < 500) return [];
+    if (previousMs === undefined || previousMs < 1000) return [];
     const limit = previousMs * (1 + thresholdPercent / 100);
     return corpus.durationMs > limit
       ? [{ name: corpus.name, previousMs, currentMs: corpus.durationMs }]

@@ -308,6 +308,23 @@ test('py/noop-test caches helper checks and ignores unknown calls', async () => 
   assert.equal(drafts.filter((draft) => draft.confidence === 'high').length, 2);
 });
 
+test('py/swallowed-exception classifies bindings by the caught type', async () => {
+  const cases = [
+    ['except Exception as error:', 'high'],
+    ['except BaseException as error:', 'high'],
+    ['except (Exception,) as error:', 'high'],
+    ['except (ValueError, Exception) as error:', 'high'],
+    ['except (ValueError, RuntimeError) as error:', 'medium'],
+  ] as const;
+  for (const [header, expected] of cases) {
+    const source = ['def f():', '    try:', '        work()', `    ${header}`, '        pass'].join('\n');
+    const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+    assert.equal(drafts.length, 1, header);
+    assert.equal(drafts[0]?.confidence, expected, header);
+    if (expected === 'high') assert.doesNotMatch(drafts[0]?.message ?? '', /specific/, header);
+  }
+});
+
 test('py/phantom-import ignores imports under sys.version_info guards', async () => {
   const source = [
     'import sys',
