@@ -9,6 +9,21 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.3] - 2026-11-22
+
+### Fixed
+- MCP `scan_path` and `scan_diff` now return a tool error (`isError: true`) when zero files match, matching the CLI's exit 2 instead of reporting a clean run.
+- `py/swallowed-exception` counts an explanatory comment immediately above `try` (keyword-filtered so a generic "parse the payload" comment does not hide a silent handler), and no longer includes a trailing comment on the last try-body line (off-by-one in the window start).
+- `py/stub-body` skips `dummy_threading.py`-style modules again: exact no-op directories plus file stems starting `dummy_`/`noop_`/`_dummy_`; `dummy_data/` and `shims/` real stubs remain reported.
+- `ts/noop-test` recognises renamed `node:assert` imports (namespace, default, named aliases and `require` bindings) as assertions.
+- The extension language/dialect tables are merged into one map, so an extension cannot be present in one table and silently dropped from discovery.
+- Added a docs test that fails when README or the demo artwork version disagrees with `package.json`; RELEASE now lists the docs update.
+
+### Changed
+- 193 tests, including third-round regression fixtures for `window`, `renamed-assert` and `dummy-variants`.
+- Benchmark re-run: **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, 0 high findings on 601 JavaScript files.** One 0.1.2 label became stale after the comment-window change and was pruned; the file now has 18 labels covering 29 occurrences, with `staleLabels: []` and `unlabeledHigh: []`.
+- Docs: MCP zero-file behaviour, the four comment placements, dummy naming variants, and renamed assert imports are documented.
+
 ## [0.1.2] - 2026-11-22
 
 ### Fixed

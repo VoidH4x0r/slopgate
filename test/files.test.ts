@@ -47,6 +47,13 @@ test('dialectFor reports the human-facing language, not the grammar', () => {
   assert.equal(dialectFor('a.d.ts'), undefined);
 });
 
+test('every supported extension has both a grammar and a dialect', () => {
+  for (const extension of ['.py', '.pyi', '.ts', '.mts', '.cts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']) {
+    assert.ok(languageFor(`file${extension}`), `missing language for ${extension}`);
+    assert.ok(dialectFor(`file${extension}`), `missing dialect for ${extension}`);
+  }
+});
+
 test('languageFor maps extensions and skips declaration files', () => {
   assert.equal(languageFor('a.py'), 'python');
   assert.equal(languageFor('a.pyi'), 'python');

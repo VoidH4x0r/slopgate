@@ -471,6 +471,18 @@ const stubBody: Rule = {
   },
 };
 
+/** A comment that actually explains why an error is safe to ignore. */
+const EXPLANATION_WORDS =
+  /error|fail|ignore|abort|expected|safe|best effort|intentional|throw|except|swallow|\bok\b/i;
+
+function explanatoryCommentBetween(ctx: RuleContext, fromLine: number, toLine: number): boolean {
+  return ctx.comments.some((comment) => {
+    if (comment.startLine > toLine || comment.endLine < fromLine) return false;
+    const text = ctx.lines.slice(comment.startLine - 1, comment.endLine).join(' ');
+    return EXPLANATION_WORDS.test(text);
+  });
+}
+
 const swallowedException: Rule = {
   meta: {
     id: 'py/swallowed-exception',
@@ -490,6 +502,9 @@ const swallowedException: Rule = {
       // `try: ... except X: pass else: fail()` is an assertion idiom, not a bug.
       if (tryNode.namedChildren.some((child) => child.type === 'else_clause')) continue;
       const tryBody = tryNode.namedChildren.find((child) => child.type === 'block');
+      // A comment immediately above `try` often explains the failure policy.
+      const aboveStart = Math.max(1, tryNode.startPosition.row);
+      const above = explanatoryCommentBetween(ctx, aboveStart, tryNode.startPosition.row + 1);
       /** 0-based end row of the previous region, or -1 when there is no try body. */
       let previousEndRow = tryBody ? tryBody.endPosition.row : -1;
       for (const clause of tryNode.namedChildren) {
@@ -500,7 +515,7 @@ const swallowedException: Rule = {
         // handler can explain this handler; comments inside the try body
         // cannot. Advance the cursor for every handler, silent or not.
         const handlerEndRow = body.endPosition.row;
-        const windowStart = previousEndRow >= 0 ? previousEndRow + 1 : clause.startPosition.row + 1;
+        const betweenStart = previousEndRow >= 0 ? previousEndRow + 2 : clause.startPosition.row + 1;
         previousEndRow = handlerEndRow;
         const statements = statementsOf(body);
         const silent =
@@ -519,7 +534,7 @@ const swallowedException: Rule = {
         // Optional-dependency idiom: swallowing a missing import is the point.
         if (/ImportError|ModuleNotFoundError/.test(typeText)) continue;
 
-        const commented = hasCommentBetween(ctx, windowStart, handlerEndRow + 1);
+        const commented = above || hasCommentBetween(ctx, betweenStart, handlerEndRow + 1);
         const bare = typeText.length === 0;
         const broad = bare || /^(\(?\s*)?(Exception|BaseException)(\s*\))?$/.test(typeText);
         const cleanup = insideCleanupFunction(clause);

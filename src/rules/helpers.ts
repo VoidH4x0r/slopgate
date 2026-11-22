@@ -122,16 +122,17 @@ export function isStubFile(file: string): boolean {
 
 /**
  * Modules whose whole purpose is to provide no-op stand-ins (CPython's
- * `multiprocessing/dummy`). Only exact path segments count: `dummy_data/` is a
- * normal package, and a `shims/` directory can contain unfinished code.
+ * `multiprocessing/dummy`, `dummy_threading.py`). Directory names must match
+ * exactly; file names may use the `dummy_`/`noop_` convention. `dummy_data/`
+ * is a normal package and `shims/` can contain unfinished code.
  */
-const NOOP_SEGMENTS = new Set(['dummy', '_dummy', 'noop', 'no_op', 'no-op']);
+const NOOP_DIRS = new Set(['dummy', '_dummy', 'noop', 'no_op', 'no-op']);
 
 export function isNoopModulePath(file: string): boolean {
-  return file
-    .toLowerCase()
-    .split('/')
-    .some((part) => NOOP_SEGMENTS.has(part));
+  const parts = file.toLowerCase().split('/');
+  if (parts.slice(0, -1).some((part) => NOOP_DIRS.has(part))) return true;
+  const stem = (parts[parts.length - 1] ?? '').replace(/\.pyi?$/, '');
+  return /^_?(dummy|noop|no_op|no-op)(_|$)/.test(stem);
 }
 
 /** True when the file name follows a test-module convention. */

@@ -129,6 +129,34 @@ test('ts/noop-test does not treat test.<data>.forEach() as a test', async () => 
   assert.deepEqual(drafts, []);
 });
 
+test('ts/noop-test recognises renamed node:assert imports', async () => {
+  const source = [
+    "import * as nodeAssert from 'node:assert';",
+    "import strictAssert from 'node:assert/strict';",
+    "import { strictEqual as eq } from 'node:assert';",
+    "import { test } from 'node:test';",
+    "test('namespace', () => { nodeAssert.strictEqual(1 + 1, 2); });",
+    "test('default', () => { strictAssert.equal(1 + 1, 2); });",
+    "test('named alias', () => { eq(1 + 1, 2); });",
+  ].join('\n');
+  assert.deepEqual(await runRule('ts/noop-test', source, 'typescript'), []);
+});
+
+test('ts/noop-test recognises require-bound assert aliases', async () => {
+  const source = [
+    "const nodeAssert = require('node:assert');",
+    "const { strictEqual: eq } = require('node:assert');",
+    "test('require alias', () => { nodeAssert.strictEqual(1, 1); eq(1, 1); });",
+  ].join('\n');
+  assert.deepEqual(await runRule('ts/noop-test', source, 'typescript'), []);
+});
+
+test('ts/noop-test does not accept arbitrary .strictEqual calls', async () => {
+  const source = "test('custom helper is not an assertion', () => { helper.strictEqual(1, 1); });\n";
+  const drafts = await runRule('ts/noop-test', source, 'typescript');
+  assert.equal(drafts.length, 1);
+});
+
 test('ts/tautological-assert finds self-comparisons', async () => {
   assert.equal((await runRule('ts/tautological-assert', 'expect(true).toBe(true);\n', 'typescript')).length, 1);
   assert.equal((await runRule('ts/tautological-assert', 'expect(x).toEqual(x);\n', 'typescript')).length, 1);

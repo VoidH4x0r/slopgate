@@ -109,6 +109,54 @@ test('py/swallowed-exception scopes comments to the following handler', async ()
   assert.equal(drafts[1]?.confidence, 'high');
 });
 
+test('py/swallowed-exception accepts an explanatory comment above try', async () => {
+  const source = [
+    'def f(ctx):',
+    '    # any error here is expected; just abort',
+    '    try:',
+    '        ctx.flush()',
+    '    except Exception:',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('py/swallowed-exception ignores a non-explanatory comment above try', async () => {
+  const source = [
+    'def f(raw):',
+    '    # Parse the payload into JSON.',
+    '    try:',
+    '        return json.loads(raw)',
+    '    except Exception:',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('py/swallowed-exception ignores a trailing comment on the last try-body line', async () => {
+  const source = [
+    'def f(ctx):',
+    '    try:',
+    '        ctx.flush()  # flush is best effort',
+    '    except Exception:',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('py/stub-body handles dummy_threading-style module names', async () => {
+  const source = 'def start_new_thread(function, args, kwargs={}):\n    pass\n';
+  assert.deepEqual(await runRuleOnFile('py/stub-body', source, 'python', 'dummy_threading.py'), []);
+  const drafts = await runRuleOnFile('py/stub-body', source, 'python', 'dummy_data/loader.py');
+  assert.equal(drafts.length, 1);
+});
+
 test('py/phantom-import ignores imports under sys.version_info guards', async () => {
   const source = [
     'import sys',

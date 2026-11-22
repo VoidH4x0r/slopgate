@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.1.2): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
+> Status (0.1.3): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
 
 ## The claim
 
@@ -44,7 +44,7 @@ The script scans each corpus with the shipped defaults, counts findings by rule 
 
 ## Labels and limitations
 
-- Labels are **per fingerprint**, not per occurrence: identical snippets in one file share a label. The published run has 19 labels covering 29 high-finding occurrences.
+- Labels are **per fingerprint**, not per occurrence: identical snippets in one file share a label. The published run has 18 labels covering 29 high-finding occurrences.
 - The labels were produced while iterating on the same corpus. Precision is therefore a **development-set measurement, not a held-out estimate**; a rule tuned against these labels is not evidence that it generalises.
 - Label additions, removals and disputed labels are recorded in `CHANGELOG.md`. There is no "fewer than 10 samples" exclusion: every rule with at least one labeled high finding appears in the per-rule table, with its sample count.
 - False negatives found after release are added to the fixture corpus or to a future corpus; they are not silently patched without a test.

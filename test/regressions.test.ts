@@ -115,3 +115,23 @@ test('regression: .js is counted as javascript, not tsx', async () => {
   assert.equal(result.stats.byLanguage.tsx, 0);
   assert.equal(result.stats.byLanguage.typescript, 0);
 });
+
+test('regression: all four comment placements behave as documented', async () => {
+  const result = await scanFixture('regressions/window');
+  const swallowed = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(swallowed.length, 4);
+  const high = swallowed.filter((finding) => finding.confidence === 'high');
+  assert.equal(high.length, 1);
+  assert.equal(high[0]?.start.line, 7, 'only the trailing try-body comment stays high');
+  assert.equal(swallowed.filter((finding) => finding.confidence === 'medium').length, 3);
+});
+
+test('regression: renamed node:assert imports count as assertions', async () => {
+  const result = await scanFixture('regressions/renamed-assert');
+  assert.deepEqual(ruleFindings(result, 'ts/noop-test'), []);
+});
+
+test('regression: dummy_threading-style modules are skipped', async () => {
+  const result = await scanFixture('regressions/dummy-variants');
+  assert.deepEqual(ruleFindings(result, 'py/stub-body'), []);
+});

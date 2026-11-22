@@ -16,7 +16,7 @@ Claude Code (`~/.claude.json` or project `.mcp.json`):
 
 Codex and other MCP clients use the same `command` + `args` pair. The optional argument after `mcp` is the repository root; it defaults to the current working directory.
 
-The server prints a single line to stderr on startup (`slopgate mcp 0.1.2 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
+The server prints a single line to stderr on startup (`slopgate mcp 0.1.3 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
 
 ## Tools
 
@@ -34,6 +34,8 @@ Scans the repository and keeps a finding when its `start..end` range intersects 
 { "name": "scan_path", "arguments": { "path": "src/", "confidence": "medium" } }
 ```
 
+Scans a file or directory inside the repository root. A path outside the root, or a scan that matches zero files, is returned as a tool error so an agent cannot mistake a typo for a clean result.
+
 Scans a file or directory relative to the repository root. Paths that escape the root are refused.
 
 ### `list_rules`
@@ -46,7 +48,7 @@ Returns the rule table (id, severity, default confidence, languages, title) so t
 
 ```text
 Diff since origin/main: 2 finding(s) on changed lines.
-slopgate 0.1.2 · 2 finding(s) (1 error) · 38 files scanned in 214ms
+slopgate 0.1.3 · 2 finding(s) (1 error) · 38 files scanned in 214ms
 src/users.py:12:5  error  high  py/phantom-import  `requests_v2` is imported but not declared…
     import requests_v2
     - no Python dependency manifest found
@@ -77,3 +79,4 @@ printf '%s\n' \
 - Only the `tools` capability is implemented; no prompts, resources or sampling.
 - stdio transport only. No SSE or HTTP endpoint.
 - `scan_diff` needs `git` on `PATH` and a sandbox that permits child processes; the plain `scan_path` and `list_rules` tools do not spawn anything.
+- `scan_path` and `scan_diff` return `isError: true` when zero files match, so a typo or an over-broad `exclude` cannot look like a clean result.

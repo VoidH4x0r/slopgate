@@ -31,15 +31,18 @@ const config: Config = {
   failOn: 'high',
 };
 
-function scanResult(findings: Finding[]): ScanResult {
+function scanResult(findings: Finding[], files = 3): ScanResult {
   return {
     findings,
     suppressedCount: 0,
     warnings: [],
     stats: {
-      files: 3,
-      byLanguage: { python: 3, javascript: 0, typescript: 0, tsx: 0 },
-      skipped: 0,
+      files,
+      byLanguage:
+        files === 0
+          ? { python: 0, javascript: 0, typescript: 0, tsx: 0 }
+          : { python: 3, javascript: 0, typescript: 0, tsx: 0 },
+      skipped: files === 0 ? 1 : 0,
       parseErrors: 0,
       durationMs: 12,
     },
@@ -135,6 +138,32 @@ test('mcp: scan_path with medium confidence includes medium findings', async () 
   });
   const content = (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
   assert.match(content, /py\/stub-body/);
+});
+
+test('mcp: scan_path reports zero matched files as a tool error', async () => {
+  const server = makeServer({ scan: async () => scanResult([], 0) });
+  const response = await call(server, {
+    jsonrpc: '2.0',
+    id: 6,
+    method: 'tools/call',
+    params: { name: 'scan_path', arguments: {} },
+  });
+  const result = response.result as { isError?: boolean; content: Array<{ text: string }> };
+  assert.equal(result.isError, true);
+  assert.match(result.content[0]?.text ?? '', /No files matched/);
+});
+
+test('mcp: scan_diff reports zero matched files as a tool error', async () => {
+  const server = makeServer({ scan: async () => scanResult([], 0) });
+  const response = await call(server, {
+    jsonrpc: '2.0',
+    id: 7,
+    method: 'tools/call',
+    params: { name: 'scan_diff', arguments: {} },
+  });
+  const result = response.result as { isError?: boolean; content: Array<{ text: string }> };
+  assert.equal(result.isError, true);
+  assert.match(result.content[0]?.text ?? '', /No files matched/);
 });
 
 test('mcp: scan_path refuses paths outside the repository root', async () => {

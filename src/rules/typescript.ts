@@ -87,7 +87,50 @@ function matchesAlias(specifier: string, aliases: readonly string[]): boolean {
   });
 }
 
-const ASSERTION_ROOTS = new Set(['assert', 'expect', 'expectTypeOf', 'should', 'chai']);
+const NODE_ASSERT_SPECIFIERS = new Set(['node:assert', 'node:assert/strict']);
+
+function addAssertBinding(aliases: Set<string>, part: string): void {
+  const match = /^\s*(?:type\s+)?([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?\s*$/.exec(part);
+  if (match?.[1]) aliases.add(match[2] ?? match[1]);
+}
+
+/** Local names bound to `node:assert` / `node:assert/strict`. */
+function assertAliases(root: AstNode): Set<string> {
+  const aliases = new Set<string>();
+  for (const node of descendantsOfType(root, ['import_statement'])) {
+    const specifier = sourceString(node);
+    if (!specifier || !NODE_ASSERT_SPECIFIERS.has(specifier)) continue;
+    const text = node.text;
+    const namespace = /import\s+\*\s+as\s+([A-Za-z_$][\w$]*)/.exec(text);
+    if (namespace?.[1]) aliases.add(namespace[1]);
+    const defaultImport = /import\s+([A-Za-z_$][\w$]*)\s*(?:,|from)/.exec(text);
+    if (defaultImport?.[1]) aliases.add(defaultImport[1]);
+    const named = /\{([^}]*)\}/.exec(text);
+    if (named?.[1]) {
+      for (const part of named[1].split(',')) addAssertBinding(aliases, part);
+    }
+  }
+
+  for (const call of descendantsOfType(root, ['call_expression'])) {
+    const fn = call.childForFieldName('function');
+    if (!fn || collapseWhitespace(fn.text) !== 'require') continue;
+    const args = call.childForFieldName('arguments');
+    const specifier = stringLiteralValue(args?.namedChildren[0]);
+    if (!specifier || !NODE_ASSERT_SPECIFIERS.has(specifier)) continue;
+    const declarator = ancestorOfType(call, ['variable_declarator']);
+    const name = declarator?.childForFieldName('name')?.text;
+    if (!name) continue;
+    if (/^[A-Za-z_$][\w$]*$/.test(name)) {
+      aliases.add(name);
+    } else {
+      const pattern = /\{([^}]*)\}/.exec(name);
+      if (pattern?.[1]) {
+        for (const part of pattern[1].split(',')) addAssertBinding(aliases, part);
+      }
+    }
+  }
+  return aliases;
+}
 
 const T_ASSERTION_MEMBERS = new Set([
   'ok',
@@ -108,8 +151,11 @@ const T_ASSERTION_MEMBERS = new Set([
  * `assert.strictEqual` ends in `strictEqual`, which the old last-segment
  * regex missed, so node:assert-based tests were reported as assertion-free.
  */
-function isAssertionCallee(text: string): boolean {
+function isAssertionCallee(text: string, aliases: ReadonlySet<string>): boolean {
   if (text.length === 0) return false;
+  // Renamed imports: nodeAssert.strictEqual, strictAssert.equal, eq(...).
+  const root = text.split(/[.(]/)[0] ?? '';
+  if (aliases.has(root)) return true;
   // node:assert and node:assert/strict: assert(...) plus every method.
   if (text === 'assert' || text.startsWith('assert.')) return true;
   // Bare helpers such as assertEqual/assertNotNull/assertTruthy.
@@ -130,14 +176,14 @@ function isAssertionCallee(text: string): boolean {
   return false;
 }
 
-function hasAssertion(body: AstNode): boolean {
+function hasAssertion(body: AstNode, aliases: ReadonlySet<string>): boolean {
   let found = false;
   walk(body, (node) => {
     if (found) return false;
     if (node.type === 'call_expression') {
       const fn = node.childForFieldName('function') ?? node.namedChildren[0];
       const text = collapseWhitespace(fn?.text ?? '');
-      if (isAssertionCallee(text)) {
+      if (isAssertionCallee(text, aliases)) {
         found = true;
         return false;
       }
@@ -247,6 +293,7 @@ const noopTest: Rule = {
   run(ctx) {
     if (ctx.language === 'python') return [];
     const drafts: RuleDraft[] = [];
+    const aliases = assertAliases(ctx.root);
 
     for (const call of descendantsOfType(ctx.root, ['call_expression'])) {
       const fn = call.childForFieldName('function');
@@ -264,7 +311,7 @@ const noopTest: Rule = {
       const label = args.namedChildren[0]?.type === 'string' ? truncate(args.namedChildren[0].text, 60) : undefined;
 
       if (body.type !== 'statement_block') {
-        if (!hasAssertion(body)) {
+        if (!hasAssertion(body, aliases)) {
           drafts.push({
             message: 'test makes no assertions',
             start: startOf(call),
@@ -290,7 +337,7 @@ const noopTest: Rule = {
         });
         continue;
       }
-      if (!hasAssertion(body)) {
+      if (!hasAssertion(body, aliases)) {
         drafts.push({
           message: 'test makes no assertions',
           start: startOf(call),

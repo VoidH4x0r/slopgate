@@ -21,31 +21,20 @@ export const DEFAULT_INCLUDE: readonly string[] = [
   '**/*.js', '**/*.mjs', '**/*.cjs', '**/*.jsx',
 ];
 
-const EXTENSION_LANGUAGE: Readonly<Record<string, LanguageId>> = {
-  '.py': 'python',
-  '.pyi': 'python',
-  '.ts': 'typescript',
-  '.mts': 'typescript',
-  '.cts': 'typescript',
-  '.tsx': 'tsx',
-  '.jsx': 'tsx',
+const EXTENSIONS: Readonly<
+  Record<string, { language: LanguageId; dialect: SourceDialect }>
+> = {
+  '.py': { language: 'python', dialect: 'python' },
+  '.pyi': { language: 'python', dialect: 'python' },
+  '.ts': { language: 'typescript', dialect: 'typescript' },
+  '.mts': { language: 'typescript', dialect: 'typescript' },
+  '.cts': { language: 'typescript', dialect: 'typescript' },
+  '.tsx': { language: 'tsx', dialect: 'tsx' },
   // JSX is legal in .js, and the tsx grammar is a superset of plain JS.
-  '.js': 'tsx',
-  '.mjs': 'tsx',
-  '.cjs': 'tsx',
-};
-
-const EXTENSION_DIALECT: Readonly<Record<string, SourceDialect>> = {
-  '.py': 'python',
-  '.pyi': 'python',
-  '.ts': 'typescript',
-  '.mts': 'typescript',
-  '.cts': 'typescript',
-  '.tsx': 'tsx',
-  '.js': 'javascript',
-  '.jsx': 'javascript',
-  '.mjs': 'javascript',
-  '.cjs': 'javascript',
+  '.js': { language: 'tsx', dialect: 'javascript' },
+  '.jsx': { language: 'tsx', dialect: 'javascript' },
+  '.mjs': { language: 'tsx', dialect: 'javascript' },
+  '.cjs': { language: 'tsx', dialect: 'javascript' },
 };
 
 const MAX_FILE_BYTES = 1024 * 1024;
@@ -165,15 +154,14 @@ export function languageFor(fileName: string): LanguageId | undefined {
   if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.mts') || fileName.endsWith('.d.cts')) {
     return undefined;
   }
-  const ext = path.extname(fileName).toLowerCase();
-  return EXTENSION_LANGUAGE[ext];
+  return EXTENSIONS[path.extname(fileName).toLowerCase()]?.language;
 }
 
 export function dialectFor(fileName: string): SourceDialect | undefined {
   if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.mts') || fileName.endsWith('.d.cts')) {
     return undefined;
   }
-  return EXTENSION_DIALECT[path.extname(fileName).toLowerCase()];
+  return EXTENSIONS[path.extname(fileName).toLowerCase()]?.dialect;
 }
 
 export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverResult> {

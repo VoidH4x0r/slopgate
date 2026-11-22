@@ -94,7 +94,7 @@ def sync_accounts(self):
 
 **Confidence.** `high` only for a module-level, public, undocumented function whose body is `pass`/`...`. Everything else is `medium` (`raise NotImplementedError`, documented functions, methods, private helpers, `return None` → `low`), because interface placeholders and abstract hooks look identical to abandoned stubs.
 
-**Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op modules with an exact `dummy/`, `_dummy/`, `noop/` or `no-op/` path segment, test files, and anything named `test_*` (handled by `py/noop-test`).
+**Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op modules with an exact `dummy/`, `_dummy/`, `noop/` or `no-op/` path segment or a file stem starting with `dummy_`/`noop_`/`_dummy_`, test files, and anything named `test_*` (handled by `py/noop-test`).
 
 ---
 
@@ -112,7 +112,7 @@ except Exception:
 **Confidence.**
 
 - `high` only for a bare `except:` or `except Exception` / `BaseException`, with no comment, outside a cleanup function.
-- `medium` when the caught type is specific (`except KeyError`), when a comment explains it between the end of the `try` body (or the previous handler) and the end of this handler, or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
+- `medium` when the caught type is specific (`except KeyError`), when a comment explains it — immediately above `try` with explanation wording, between the try body and this handler (or between handlers), or inside the handler — or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
 
 **Not reported.** `except ImportError` / `ModuleNotFoundError` (the optional-dependency idiom), `try` blocks with an `else` clause (the `try/except: pass/else: fail` assertion idiom), test files, and handlers that log or re-raise.
 
@@ -164,7 +164,7 @@ If the package **is** installed under `node_modules` the finding is `medium` ("u
 
 ## ts/noop-test
 
-**What it catches.** A `test()` / `it()` / `test.only()` call whose callback has an empty body, no assertion, or only calls code. Handles both block bodies and expression bodies.
+**What it catches.** A test whose callback has an empty body or no assertion. Recognises `assert` / `node:assert` methods, renamed `node:assert` imports (namespace, default, named aliases and `require` bindings), `expect(...)` chains, `expectTypeOf`, `should`, `chai`, and `node:test` context assertions (`t.ok`, `t.assert.*`).
 
 ```ts
 test('creates user', () => {

@@ -179,6 +179,9 @@ export function createMcpServer(deps: McpDeps) {
         return textResult(`Refusing to scan outside the repository root: ${target}`, true);
       }
       const result = await deps.scan(target);
+      if (result.stats.files === 0) {
+        return textResult(`No files matched under ${target} (check include/exclude patterns)`, true);
+      }
       const visible = result.findings.filter((finding) => meetsConfidence(finding.confidence, confidence));
       return textResult(formatFindings(visible, result, deps.version, max));
     }
@@ -186,6 +189,9 @@ export function createMcpServer(deps: McpDeps) {
     if (name === 'scan_diff') {
       const base = typeof params.base === 'string' && params.base.length > 0 ? params.base : 'HEAD';
       const result = await deps.scan(deps.root);
+      if (result.stats.files === 0) {
+        return textResult('No files matched in the repository (check include/exclude patterns)', true);
+      }
       const set = await deps.diff(deps.root, base);
       const inDiff = result.findings.filter(
         (finding) => isInDiff(finding, set) && meetsConfidence(finding.confidence, confidence),

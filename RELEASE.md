@@ -26,6 +26,7 @@ npm run verify      # typecheck + links + tests + build + self-scan + package co
 
 - [ ] CI is green on `main`
 - [ ] `CHANGELOG.md` has an entry for the new version
+- [ ] README and `scripts/demo-frame.mjs` version references updated (covered by `test/docs.test.ts`)
 - [ ] `package.json` version bumped (`npm version patch --no-git-tag-version`)
 - [ ] Benchmark regenerated and not worse than the published number
 
@@ -55,7 +56,7 @@ npm config delete //registry.npmjs.org/:_authToken
 ### 2b. CI publish (after adding NPM_TOKEN)
 
 ```bash
-git tag -a v0.1.2 -m "slopgate 0.1.2"
+git tag -a v0.1.3 -m "slopgate 0.1.3"
 git push origin main --follow-tags
 ```
 
@@ -64,7 +65,7 @@ Only do this once the repository secret exists. Without it the workflow still va
 ## 3. Post-flight
 
 - [ ] `npm view @voidh4x0r/slopgate version` shows the new version
-- [ ] `npx @voidh4x0r/slopgate@0.1.2 --version` works on a clean machine
+- [ ] `npx @voidh4x0r/slopgate@0.1.3 --version` works on a clean machine
 - [ ] GitHub release notes read correctly (if the tag path was used)
 - [ ] The provenance badge shows on the npm page (CI publish only)
 
