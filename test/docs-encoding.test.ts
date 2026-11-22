@@ -33,14 +33,16 @@ function hasAsciiRoadRun(text: string): boolean {
 }
 
 function isCjkDocument(text: string): boolean {
-  const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
-  const chars = [...text].filter((char) => !/\s/.test(char));
+  // Code blocks are mostly ASCII; classify the prose, not the code.
+  const prose = text.replace(/```[\s\S]*?```/g, '');
+  const lines = prose.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  const chars = [...prose].filter((char) => !/\s/.test(char));
   const cjk = chars.filter((char) => /[\u4e00-\u9fff]/u.test(char)).length;
   if (cjk < 5) return false;
   const density = cjk / chars.length;
   const cjkLines = lines.filter((line) => /[\u4e00-\u9fff]/u.test(line)).length;
   if (density < 0.1 || cjkLines / lines.length < 0.3) return false;
-  const runs = text.match(/[\u4e00-\u9fff]{4,}/gu) ?? [];
+  const runs = prose.match(/[\u4e00-\u9fff]{4,}/gu) ?? [];
   if (runs.length === 0) return false;
   // Every 4+ CJK run must be free of mojibake markers and must not consist
   // solely of `路` (which would be the `·` mojibake repeated).
@@ -125,6 +127,18 @@ test('docs: markdown files contain no mojibake or replacement characters', async
     '```',
   ].join('\n');
   assert.equal(markdownProblem(chineseCode), undefined);
+  const chineseCodeHeavy = [
+    '# 中文文档',
+    '',
+    '这是中文说明，介绍项目的用法和安装步骤。',
+    '',
+    '```ts',
+    ...Array.from({ length: 30 }, (_, i) => `const value${i} = ${i};`),
+    '```',
+    '',
+    '更多中文解释。',
+  ].join('\n');
+  assert.equal(markdownProblem(chineseCodeHeavy), undefined);
   assert.equal(markdownProblem('English 鈥 鈥 鈥 鈥 鈥'), 'GBK/CP936 mojibake');
   assert.equal(markdownProblem('English 鈥鈥鈥鈥'), 'GBK/CP936 mojibake');
   assert.equal(markdownProblem('slopgate 0.2.3 路 4 files'), 'whitespace-delimited 路 (mojibake for ·)');

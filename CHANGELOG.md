@@ -18,6 +18,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 - `isCjkDocument` now uses CJK density plus the share of lines containing CJK, so an English document with a single four-character Chinese phrase is not treated as a Chinese document.
+- Fenced code blocks are excluded from the CJK density calculation, so a Chinese README with large code samples is still recognized as Chinese.
 - Repeated U+8DEF runs are rejected only with ASCII context; short Chinese text no longer false-positives, while ASCII-context repetitions still do.
 
 ### Changed
