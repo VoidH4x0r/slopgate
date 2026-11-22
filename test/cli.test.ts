@@ -206,6 +206,20 @@ test('cli: --fix supports SARIF output', async () => {
   }
 });
 
+test('cli: --fix supports github output and quiet mode', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-github-'));
+  try {
+    await writeFile(path.join(dir, 'app.py'), 'def f():\n    return 1\n    print("dead")\n');
+    const result = await run([dir, '--fix', '--format', 'github', '--quiet']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /::notice title=slopgate::/);
+    assert.equal(result.stderr, '');
+    assert.doesNotMatch(await readFile(path.join(dir, 'app.py'), 'utf8'), /dead/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: --fix rejects --write-baseline', async () => {
   const result = await run(['fixtures/demo', '--fix', '--write-baseline']);
   assert.equal(result.status, 2);

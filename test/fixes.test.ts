@@ -115,6 +115,22 @@ test('fix refuses stale offsets when the file changed after scanning', async () 
   }
 });
 
+test('fix reports a missing file without writing anything', async () => {
+  const dir = await fixture({
+    'app.py': 'def f():\n    return 1\n    print("dead")\n',
+  });
+  try {
+    const result = await scan(dir);
+    await rm(path.join(dir, 'app.py'));
+    const applied = await applyFixes(result.fixes, { write: true });
+    assert.equal(applied.fixedFindings, 0);
+    assert.equal(applied.skippedFindings, 1);
+    assert.match(applied.warnings.join('\n'), /could not read/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('fix skips overlapping edits instead of corrupting the file', async () => {
   const dir = await fixture({ 'app.py': '1234567890\n' });
   try {

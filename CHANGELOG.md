@@ -13,7 +13,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - `--fix` records a BOM-stripped source hash and refuses to apply stale offsets if the file changed between scan and write.
 
 ### Changed
-- 336 tests.
+- 338 tests.
 - README performance section updated to the measured ~13 s CPython benchmark and documents the duplicate-block opt-out for large repositories.
 - Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**; the duplicate medium count changed.
 
