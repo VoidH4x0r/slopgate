@@ -4,7 +4,14 @@ import * as path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { loadBaseline, partitionByBaseline, writeBaseline } from './baseline.ts';
-import { confidenceRank, loadConfig, meetsConfidence, type Config, type FailOn } from './config.ts';
+import {
+  CONFIG_FILENAMES,
+  confidenceRank,
+  loadConfig,
+  meetsConfidence,
+  type Config,
+  type FailOn,
+} from './config.ts';
 import { assertSafeRef, diffSince, findRepoRoot, isInDiffWithPrefix } from './diff.ts';
 import { scanProject } from './engine.ts';
 import { serveMcp } from './mcp.ts';
@@ -270,6 +277,34 @@ async function findGitRoot(start: string): Promise<string | undefined> {
   }
 }
 
+async function hasConfig(dir: string): Promise<boolean> {
+  for (const name of CONFIG_FILENAMES) {
+    try {
+      await stat(path.join(dir, name));
+      return true;
+    } catch {
+      // try the next config filename
+    }
+  }
+  return false;
+}
+
+/**
+ * Nearest config wins: target → ancestors → repository root. Outside git,
+ * only the target directory is considered.
+ */
+async function findConfigRoot(start: string, repoRoot: string | undefined): Promise<string> {
+  const target = path.resolve(start);
+  let dir = target;
+  for (;;) {
+    if (await hasConfig(dir)) return dir;
+    if (repoRoot === undefined || dir === repoRoot) return repoRoot ?? target;
+    const parent = path.dirname(dir);
+    if (parent === dir) return repoRoot;
+    dir = parent;
+  }
+}
+
 async function runRules(options: Options, io: CliIo): Promise<number> {
   const rows = ALL_RULES.map((rule) => ({
     id: rule.meta.id,
@@ -327,7 +362,7 @@ const INIT_CONFIG = {
   failOn: 'high',
 } satisfies Partial<Config>;
 
-const INIT_WORKFLOW = (version: string): string => `name: slopgate
+const INIT_WORKFLOW = (version: string, target: string): string => `name: slopgate
 
 on:
   push:
@@ -347,15 +382,21 @@ jobs:
         with:
           node-version: 22
       - name: Scan for AI slop
-        run: npx --yes @voidh4x0r/slopgate@${version} . --fail-on high --format pretty
+        run: npx --yes @voidh4x0r/slopgate@${version} ${target} --fail-on high --format pretty
 `;
 
 async function runInit(options: Options, io: CliIo, version: string): Promise<number> {
   const requested = path.resolve(options.paths[0] ?? '.');
+  // Find the repo root before creating a directory, so `init newdir` does not
+  // leave an empty directory when the config belongs at the root.
+  const repoRoot = await findGitRoot(requested);
   await mkdir(requested, { recursive: true });
-  const root = (await findGitRoot(requested)) ?? requested;
-  const configPath = path.join(root, '.slopgate.json');
-  const workflowPath = path.join(root, '.github', 'workflows', 'slopgate.yml');
+  const workflowRoot = repoRoot ?? requested;
+  const relativeTarget = path.relative(workflowRoot, requested).replace(/\\/g, '/');
+  const rawTarget = relativeTarget.length > 0 ? `./${relativeTarget}` : '.';
+  const workflowTarget = /\s/.test(rawTarget) ? `"${rawTarget}"` : rawTarget;
+  const configPath = path.join(requested, '.slopgate.json');
+  const workflowPath = path.join(workflowRoot, '.github', 'workflows', 'slopgate.yml');
 
   if (!options.force && (await exists(configPath))) {
     warn(io, options, `${path.relative(process.cwd(), configPath)} already exists (use --force to overwrite)`);
@@ -368,11 +409,11 @@ async function runInit(options: Options, io: CliIo, version: string): Promise<nu
     warn(io, options, `${path.relative(process.cwd(), workflowPath)} already exists (use --force to overwrite)`);
   } else {
     await mkdir(path.dirname(workflowPath), { recursive: true });
-    await writeFile(workflowPath, INIT_WORKFLOW(version), 'utf8');
+    await writeFile(workflowPath, INIT_WORKFLOW(version, workflowTarget), 'utf8');
     writeOut(io, `created ${path.relative(process.cwd(), workflowPath)}`);
   }
 
-  writeOut(io, 'next: npx @voidh4x0r/slopgate . --write-baseline, then commit the baseline');
+  writeOut(io, `next: npx @voidh4x0r/slopgate ${workflowTarget} --write-baseline, then commit the baseline`);
   return 0;
 }
 
@@ -405,9 +446,8 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     throw new Error(`path not found: ${target}`);
   }
   const projectRoot = targetInfo.isFile() ? path.dirname(target) : target;
-  // Config and the default baseline belong to the repository, not to the
-  // directory being scanned. Manifests stay target-scoped inside scanProject.
-  const configRoot = (await findGitRoot(projectRoot)) ?? projectRoot;
+  const repoRoot = await findGitRoot(projectRoot);
+  const configRoot = await findConfigRoot(projectRoot, repoRoot);
   const { config, file: configFile } = await loadConfig(configRoot);
 
   if (options.rules.length > 0) {
@@ -446,11 +486,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     );
   }
 
-  const scanBase = targetInfo.isFile() ? path.dirname(target) : target;
-  const outputRoot = await findGitRoot(scanBase);
+  const scanBase = projectRoot;
   let outputPrefix = '';
-  if (outputRoot) {
-    const relative = path.relative(outputRoot, scanBase);
+  if (repoRoot) {
+    const relative = path.relative(repoRoot, scanBase);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
       outputPrefix = relative.replace(/\\/g, '/');
     }
@@ -460,10 +499,11 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
       ? items.map((finding) => ({ ...finding, file: `${outputPrefix}/${finding.file}` }))
       : [...items];
 
-  const baselinePath = path.resolve(configRoot, options.baseline ?? DEFAULT_BASELINE);
+  const baselineRoot = repoRoot ?? projectRoot;
+  const baselinePath = path.resolve(baselineRoot, options.baseline ?? DEFAULT_BASELINE);
   const explicitWrite = options.writeBaseline;
   if (explicitWrite) {
-    const writeTarget = path.resolve(configRoot, explicitWrite);
+    const writeTarget = path.resolve(baselineRoot, explicitWrite);
     // Record the current findings, not the diff-filtered subset, with the same
     // repo-relative keys used when reading the baseline.
     const toRecord = toRepoRelative(result.findings);
@@ -543,9 +583,12 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
       }),
     );
     if (options.verbose) {
+      const configLabel = configFile
+        ? path.relative(process.cwd(), path.join(configRoot, configFile))
+        : '(none)';
       writeOut(
         io,
-        `  config: ${configFile ?? '(none)'}  include: ${merged.include.length} pattern(s)  baseline: ${baseline ? path.relative(process.cwd(), baselinePath) : '(none)'}` +
+        `  config: ${configLabel}  include: ${merged.include.length} pattern(s)  baseline: ${baseline ? path.relative(process.cwd(), baselinePath) : '(none)'}` +
           (onlyDiff > 0 ? `  diff-only: ${onlyDiff} finding(s) outside the diff were ignored` : '') +
           '\n',
       );

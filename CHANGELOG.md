@@ -9,6 +9,19 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.13] - 2026-11-22
+
+### Added
+- Per-package config discovery: `.slopgate.json` / `slopgate.config.json` is searched from the scan target upward to the git repository root, and the nearest config wins. `packages/app` uses its own package config; `src` without one falls back to the root config. Baselines remain shared at the repository root.
+- `slopgate init <dir>` writes the config in `<dir>` and the workflow at the repository root, with the workflow command targeting `./<dir>`. Root `init` output is unchanged.
+- `--verbose` shows the resolved config path, e.g. `packages/app/.slopgate.json`, not just the filename.
+
+### Changed
+- Git-root discovery runs once per scan and is reused for config search, baseline root and output prefix.
+- **Behavior change:** `init <subdir>` now writes the config in that subdirectory (0.1.12 wrote it at the repo root); this makes generated package configs actually apply. The workflow still lives at the root.
+- 263 tests, including a monorepo package-vs-root config test, package config `init`, and the updated subdirectory init expectations.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.12] - 2026-11-22
 
 ### Fixed

@@ -218,6 +218,57 @@ test('cli: init pins the current version instead of writing @latest', async () =
   }
 });
 
+test('cli: the nearest package config wins over the repo-root config', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-monorepo-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await writeFile(
+      path.join(dir, '.slopgate.json'),
+      '{"rules":{"py/stub-body":"error"}}',
+    );
+    await writeFile(
+      path.join(dir, 'packages', 'app', '.slopgate.json'),
+      '{"rules":{"py/stub-body":"off"}}',
+    );
+    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'def stubbed():\n    pass\n');
+
+    const packageScan = await run([path.join(dir, 'packages', 'app'), '--format', 'json']);
+    assert.equal(packageScan.status, 0, packageScan.stderr);
+    assert.deepEqual((JSON.parse(packageScan.stdout) as { findings: unknown[] }).findings, []);
+
+    const rootScan = await run([dir, '--format', 'json']);
+    assert.equal(rootScan.status, 1, rootScan.stderr);
+    const rootPayload = JSON.parse(rootScan.stdout) as {
+      findings: Array<{ severity: string }>;
+    };
+    assert.ok(rootPayload.findings.some((finding) => finding.severity === 'error'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: init writes the config at the requested package and the workflow at the root', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-init-package-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    const result = await run(['init', path.join(dir, 'packages', 'app')]);
+    assert.equal(result.status, 0, result.stderr);
+    await readFile(path.join(dir, 'packages', 'app', '.slopgate.json'), 'utf8');
+    const workflow = await readFile(
+      path.join(dir, '.github', 'workflows', 'slopgate.yml'),
+      'utf8',
+    );
+    assert.match(workflow, /\/packages\/app|\.\/packages\/app/);
+    await assert.rejects(
+      readFile(path.join(dir, 'packages', 'app', '.github', 'workflows', 'slopgate.yml'), 'utf8'),
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: init from a subdirectory writes at the repository root', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-init-root-'));
   try {
@@ -225,9 +276,15 @@ test('cli: init from a subdirectory writes at the repository root', async () => 
     await mkdir(path.join(dir, 'src'));
     const result = await run(['init', path.join(dir, 'src')]);
     assert.equal(result.status, 0, result.stderr);
-    await readFile(path.join(dir, '.slopgate.json'), 'utf8');
-    await readFile(path.join(dir, '.github', 'workflows', 'slopgate.yml'), 'utf8');
-    await assert.rejects(readFile(path.join(dir, 'src', '.slopgate.json'), 'utf8'));
+    await readFile(path.join(dir, 'src', '.slopgate.json'), 'utf8');
+    const workflow = await readFile(
+      path.join(dir, '.github', 'workflows', 'slopgate.yml'),
+      'utf8',
+    );
+    assert.match(workflow, /\.\/src/);
+    await assert.rejects(
+      readFile(path.join(dir, 'src', '.github', 'workflows', 'slopgate.yml'), 'utf8'),
+    );
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
