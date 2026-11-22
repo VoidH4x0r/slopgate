@@ -204,6 +204,27 @@ test('cli: --fail-on medium lowers the display threshold and fails the run', asy
   assert.equal(payload.findings[0]?.confidence, 'medium');
 });
 
+test('cli: init --strict writes medium confidence and fail-on into config and workflow', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-init-strict-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    const result = await run(['init', dir, '--strict']);
+    assert.equal(result.status, 0, result.stderr);
+    const config = JSON.parse(
+      await readFile(path.join(dir, '.slopgate.json'), 'utf8'),
+    ) as { confidence: string; failOn: string };
+    assert.equal(config.confidence, 'medium');
+    assert.equal(config.failOn, 'medium');
+    const workflow = await readFile(
+      path.join(dir, '.github', 'workflows', 'slopgate.yml'),
+      'utf8',
+    );
+    assert.match(workflow, /--confidence medium --fail-on medium/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: init pins the current version instead of writing @latest', async () => {
   const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-init-'));
   try {

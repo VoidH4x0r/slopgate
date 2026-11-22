@@ -9,6 +9,17 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.17] - 2026-11-22
+
+### Added
+- `slopgate init --strict` writes `confidence: "medium"` and `failOn: "medium"` into `.slopgate.json` and generates a workflow with `--confidence medium --fail-on medium`, matching the AI-code audit recipe. Default `init` remains high/high for human-maintained repositories.
+- README “Auditing AI-written code” section with the baseline-first medium recipe, explaining that implementation stubs are medium by design while test theatre is high.
+- `py/stub-body` and `ts/stub-function` docs now state that most real AI-stub findings are at medium confidence.
+
+### Changed
+- 271 tests, including `init --strict` config and workflow assertions.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.16] - 2026-11-22
 
 ### Fixed

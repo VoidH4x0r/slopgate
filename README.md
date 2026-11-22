@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.1.16  ·  4 files  ·  39ms
+slopgate 0.1.17  ·  4 files  ·  39ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -172,6 +172,20 @@ npx @voidh4x0r/slopgate . --fail-on high
 npx @voidh4x0r/slopgate . --diff origin/main --fail-on high
 ```
 
+### Auditing AI-written code
+
+The defaults are tuned for human-maintained code: an interface stub in a library is often deliberate, so class-method stubs and documented `pass` bodies are `medium`. AI-generated code has the opposite prior — an unimplemented method is usually unfinished — so audit it with the medium threshold:
+
+```bash
+# 1. Absorb the existing medium-confidence debt once.
+npx @voidh4x0r/slopgate . --confidence medium --fail-on medium --write-baseline
+
+# 2. Gate NEW implementation stubs and test theatre at medium.
+npx @voidh4x0r/slopgate . --confidence medium --fail-on medium
+```
+
+`slopgate init --strict` writes this policy into `.slopgate.json` and the generated GitHub Actions workflow. Keep the default `init` for human-maintained repositories.
+
 ### Use it from a coding agent (MCP)
 
 `slopgate` ships a Model Context Protocol server over stdio, so Claude Code, Codex and other MCP clients can check their own diff **before** saying "done".
@@ -210,7 +224,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.1.16 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.17 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -218,7 +232,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.1.16 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.17 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -303,7 +317,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 270 tests; the tests themselves make no network or child-process calls
+npm test            # 271 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

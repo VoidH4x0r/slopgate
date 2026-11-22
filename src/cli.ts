@@ -46,6 +46,7 @@ interface Options {
   quiet: boolean;
   verbose: boolean;
   force: boolean;
+  strict: boolean;
 }
 
 const HELP = `slopgate ${FALLBACK_VERSION} — the slop gate for AI-written code
@@ -54,7 +55,7 @@ Usage:
   slopgate [path] [options]                scan a directory or file (default: .)
   slopgate rules                           list every rule
   slopgate mcp [path]                      run as an MCP server on stdio
-  slopgate init                            add config + GitHub Action
+  slopgate init [--strict]                 add config + GitHub Action
   slopgate --version | --help
 
 Options:
@@ -71,6 +72,7 @@ Options:
   --quiet                        only print the summary
   --verbose                      print warnings and per-file details
   --force                        overwrite files in \`init\`
+  --strict                       \`init\`: medium confidence + fail-on medium
   -h, --help                     show this help
   -V, --version                  print the version
 
@@ -108,6 +110,7 @@ function defaultOptions(): Options {
     quiet: false,
     verbose: false,
     force: false,
+    strict: false,
   };
 }
 
@@ -171,6 +174,10 @@ function parseArgs(argv: readonly string[]): { options: Options; error?: string 
     }
     if (token === '--force') {
       options.force = true;
+      continue;
+    }
+    if (token === '--strict') {
+      options.strict = true;
       continue;
     }
 
@@ -309,14 +316,18 @@ async function readVersion(): Promise<string> {
  * Deliberately minimal: everything else falls back to the defaults, and a
  * short config is easier to review than a 20-line dump of glob patterns.
  */
-const INIT_CONFIG = {
+const INIT_CONFIG: Partial<Config> = {
   exclude: [],
   rules: {},
   confidence: 'high',
   failOn: 'high',
-} satisfies Partial<Config>;
+};
 
-const INIT_WORKFLOW = (version: string, target: string): string => `name: slopgate
+function initConfig(strict: boolean): Partial<Config> {
+  return strict ? { ...INIT_CONFIG, confidence: 'medium', failOn: 'medium' } : INIT_CONFIG;
+}
+
+const INIT_WORKFLOW = (version: string, target: string, strict: boolean): string => `name: slopgate
 
 on:
   push:
@@ -336,7 +347,7 @@ jobs:
         with:
           node-version: 22
       - name: Scan for AI slop
-        run: npx --yes @voidh4x0r/slopgate@${version} ${target} --fail-on high --format pretty
+        run: npx --yes @voidh4x0r/slopgate@${version} ${target} ${strict ? '--confidence medium --fail-on medium' : '--fail-on high'} --format pretty
 `;
 
 async function runInit(options: Options, io: CliIo, version: string): Promise<number> {
@@ -355,7 +366,7 @@ async function runInit(options: Options, io: CliIo, version: string): Promise<nu
   if (!options.force && (await exists(configPath))) {
     warn(io, options, `${path.relative(process.cwd(), configPath)} already exists (use --force to overwrite)`);
   } else {
-    await writeFile(configPath, JSON.stringify(INIT_CONFIG, null, 2) + '\n', 'utf8');
+    await writeFile(configPath, JSON.stringify(initConfig(options.strict), null, 2) + '\n', 'utf8');
     writeOut(io, `created ${path.relative(process.cwd(), configPath)}`);
   }
 
@@ -363,11 +374,17 @@ async function runInit(options: Options, io: CliIo, version: string): Promise<nu
     warn(io, options, `${path.relative(process.cwd(), workflowPath)} already exists (use --force to overwrite)`);
   } else {
     await mkdir(path.dirname(workflowPath), { recursive: true });
-    await writeFile(workflowPath, INIT_WORKFLOW(version, workflowTarget), 'utf8');
+    await writeFile(workflowPath, INIT_WORKFLOW(version, workflowTarget, options.strict), 'utf8');
     writeOut(io, `created ${path.relative(process.cwd(), workflowPath)}`);
   }
 
-  writeOut(io, `next: npx @voidh4x0r/slopgate ${workflowTarget} --write-baseline, then commit the baseline`);
+  const policy = options.strict
+    ? '--confidence medium --fail-on medium'
+    : '--fail-on high';
+  writeOut(
+    io,
+    `next: npx @voidh4x0r/slopgate ${workflowTarget} ${policy} --write-baseline, then commit the baseline`,
+  );
   return 0;
 }
 

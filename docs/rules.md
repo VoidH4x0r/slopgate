@@ -93,7 +93,7 @@ def sync_accounts(self):
     pass                     # signature without implementation → finding
 ```
 
-**Confidence.** `high` only for a module-level, public, undocumented function whose body is `pass`/`...`. Everything else is `medium` (`raise NotImplementedError`, documented functions, methods, private helpers, `return None` → `low`), because interface placeholders and abstract hooks look identical to abandoned stubs.
+**Confidence.** `high` only for a module-level, public, undocumented function whose body is `pass`/`...`. Everything else is `medium` (`raise NotImplementedError`, documented functions, methods, private helpers, `return None` → `low`), because interface placeholders and abstract hooks look identical to abandoned stubs. When auditing AI-generated code, most real stub findings are `medium`; use `--confidence medium` (see README “Auditing AI-written code”).
 
 **Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op modules with an exact `dummy/`, `_dummy/`, `noop/` or `no-op/` path segment, a file stem starting with `dummy_`/`noop_`/`_dummy_`, or a prefixed `dummy_*`/`noop_*` directory whose module docstring says it is a shim; test files, and anything named `test_*` (handled by `py/noop-test`).
 
@@ -189,7 +189,7 @@ test('creates user', () => {
 
 **What it catches.** A `function` declaration or class method whose body is empty, or only throws an error with a "not implemented" message.
 
-**Confidence.** `high` only for a standalone or exported function with the explicit `throw new Error("not implemented")` placeholder. An empty body is `medium`, and a class method that throws the placeholder is `medium` too: it is the standard way to declare an interface member for subclasses. Callbacks, dispatch tables and interface implementations legitimately do nothing in JavaScript.
+**Confidence.** `high` only for a standalone or exported function with the explicit `throw new Error("not implemented")` placeholder. An empty body is `medium`, and a class method that throws the placeholder is `medium` too: it is the standard way to declare an interface member for subclasses. Callbacks, dispatch tables and interface implementations legitimately do nothing in JavaScript. When auditing AI-generated code, most real stub findings are `medium`; use `--confidence medium` (see README “Auditing AI-written code”).
 
 **Not reported.** Constructors, abstract members, overload signatures, ambient declarations, object-literal methods (`{ native() {} }` is a dispatch table), no-op conventions (`noop`, `noOp`, `nop`, `ignore`, `identity`), members documented with `@abstract` / `@noop`, and test files.
 
