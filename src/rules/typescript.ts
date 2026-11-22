@@ -14,6 +14,7 @@ import {
   truncate,
   walk,
 } from './helpers.ts';
+import { statementDeletionEdits } from './fixes.ts';
 
 const NODE_BUILTINS = new Set(builtinModules.flatMap((name) => [name, `node:${name}`]));
 
@@ -792,6 +793,7 @@ const unreachable: Rule = {
     confidence: 'high',
     languages: ['typescript', 'tsx'],
     tags: ['control-flow', 'dead-code'],
+    fixable: true,
   },
   run(ctx) {
     if (ctx.language === 'python') return [];
@@ -804,9 +806,10 @@ const unreachable: Rule = {
       if (index === -1) continue;
       const terminator = statements[index];
       if (!terminator) continue;
-      const firstUnreachable = statements.slice(index + 1).find((statement) => !isErasedOrHoisted(statement));
+      const trailing = statements.slice(index + 1).filter((statement) => !isErasedOrHoisted(statement));
+      const firstUnreachable = trailing[0];
       if (!firstUnreachable) continue;
-      const count = statements.length - index - 1;
+      const count = trailing.length;
       const keyword = terminator.type.replace('_statement', '');
 
       drafts.push({
@@ -816,6 +819,7 @@ const unreachable: Rule = {
         snippet: snippetOf(ctx, firstUnreachable),
         evidence: [`${count} statement(s) follow the \`${keyword}\` at line ${terminator.startPosition.row + 1}`],
         help: 'Delete the unreachable code, or move it before the exit if it was meant to run.',
+        fix: { edits: statementDeletionEdits(ctx.source, trailing) },
       });
     }
     return drafts;

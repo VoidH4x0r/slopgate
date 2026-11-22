@@ -41,6 +41,17 @@ export interface Finding {
   help?: string;
 }
 
+/** A source edit produced by a rule, in BOM-stripped UTF-16 offsets. */
+export interface FixEdit {
+  start: number;
+  end: number;
+  replacement: string;
+}
+
+export interface RuleFix {
+  edits: readonly FixEdit[];
+}
+
 /** What a rule returns; the engine fills in rule id, file and defaults. */
 export interface RuleDraft {
   message: string;
@@ -51,6 +62,13 @@ export interface RuleDraft {
   help?: string;
   confidence?: Confidence;
   severity?: Severity;
+  /** Safe, rule-authored edits; omitted for findings that must be fixed by hand. */
+  fix?: RuleFix;
+}
+
+/** A project-level finding that carries its own report-relative file. */
+export interface ProjectFindingDraft extends RuleDraft {
+  file: string;
 }
 
 export interface RuleMeta {
@@ -62,6 +80,8 @@ export interface RuleMeta {
   confidence: Confidence;
   languages: LanguageId[];
   tags: string[];
+  /** True when the rule emits a safe `fix` that `--fix` may apply. */
+  fixable?: boolean;
 }
 
 export interface PythonDeps {
@@ -92,6 +112,8 @@ export interface ProjectDeps {
 export interface RuleContext {
   /** Report-root-relative POSIX path. */
   file: string;
+  /** Full BOM-stripped source; offsets in fixes are UTF-16 code units. */
+  source: string;
   lines: string[];
   root: AstNode;
   language: LanguageId;
@@ -103,6 +125,24 @@ export interface RuleContext {
 export interface Rule {
   meta: RuleMeta;
   run(ctx: RuleContext): RuleDraft[];
+}
+
+/** A rule that needs every parsed file before it can report. */
+export interface ProjectRule {
+  meta: RuleMeta;
+  /** Clear per-scan state before the first collect. */
+  reset(): void;
+  /** Called once per cleanly parsed file. Do not retain the AST. */
+  collect(ctx: RuleContext, source: string): void;
+  /** Called after all files have been collected. */
+  finish(): ProjectFindingDraft[];
+}
+
+/** A safe edit attached to one finding, used by the CLI fixer. */
+export interface ScanFix {
+  finding: Finding;
+  fileAbs: string;
+  edits: readonly FixEdit[];
 }
 
 export interface ScanStats {

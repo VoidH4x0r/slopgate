@@ -43,6 +43,7 @@ function scanResult(findings: Finding[], files = 3): ScanResult {
   return {
     findings,
     files: [],
+    fixes: [],
     suppressedCount: 0,
     warnings: [],
     stats: {

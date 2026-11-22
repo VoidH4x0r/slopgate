@@ -91,6 +91,98 @@ test('cli: --diff= falls back to HEAD', async () => {
   // with its error; either way it must not be rejected as an empty ref.
   assert.doesNotMatch(result.stderr, /empty git ref/);
 });
+test('cli: duplicate-block findings are visible at medium confidence', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-duplicate-'));
+  try {
+    const body = [
+      'def build(user):',
+      '    payload = {}',
+      '    payload["id"] = user.id',
+      '    payload["name"] = user.name',
+      '    if not user.active:',
+      '        payload["active"] = False',
+      '    return payload',
+      '',
+    ].join('\n');
+    await writeFile(path.join(dir, 'a.py'), body);
+    await writeFile(path.join(dir, 'b.py'), body.replace('build', 'build_again'));
+    const result = await run([dir, '--format', 'json', '--confidence', 'medium', '--fail-on', 'medium']);
+    assert.equal(result.status, 1);
+    const payload = JSON.parse(result.stdout) as {
+      findings: Array<{ ruleId: string; confidence: string }>;
+    };
+    const duplicates = payload.findings.filter((finding) => finding.ruleId === 'py/duplicate-block');
+    assert.equal(duplicates.length, 2);
+    assert.ok(duplicates.every((finding) => finding.confidence === 'medium'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: --fix applies safe unreachable edits and re-scans', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-'));
+  try {
+    await writeFile(path.join(dir, 'app.py'), 'def f():\n    return 1\n    print("dead")\n');
+    const result = await run([dir, '--fix', '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stderr, /fixed 1 finding/);
+    assert.equal(await readFile(path.join(dir, 'app.py'), 'utf8'), 'def f():\n    return 1\n');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: --fix-dry-run does not write and keeps machine output valid', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-dry-'));
+  try {
+    const original = 'def f():\n    return 1\n    print("dead")\n';
+    await writeFile(path.join(dir, 'app.py'), original);
+    const result = await run([dir, '--fix-dry-run', '--format', 'json']);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /would fix 1 finding/);
+    assert.equal(await readFile(path.join(dir, 'app.py'), 'utf8'), original);
+    assert.doesNotThrow(() => JSON.parse(result.stdout));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: --fix respects the baseline and leaves known findings untouched', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-baseline-'));
+  try {
+    const file = path.join(dir, 'app.py');
+    await writeFile(file, 'def f():\n    return 1\n    print("dead")\n');
+    const baseline = await run([dir, '--write-baseline', '--no-color']);
+    assert.equal(baseline.status, 0, baseline.stderr);
+    const original = await readFile(file, 'utf8');
+    const result = await run([dir, '--fix', '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stderr, /no safe fixes available/);
+    assert.equal(await readFile(file, 'utf8'), original);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: --fix with JSON still writes and emits valid JSON', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-json-'));
+  try {
+    await writeFile(path.join(dir, 'app.py'), 'def f():\n    return 1\n    print("dead")\n');
+    const result = await run([dir, '--fix', '--format', 'json']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.doesNotThrow(() => JSON.parse(result.stdout));
+    assert.doesNotMatch(result.stdout, /dead/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: --fix rejects --write-baseline', async () => {
+  const result = await run(['fixtures/demo', '--fix', '--write-baseline']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /cannot be combined/);
+});
+
 test('cli: a missing path exits 2 instead of silently scanning nothing', async () => {
   const result = await run(['this-path-does-not-exist-42']);
   assert.equal(result.status, 2);
@@ -107,7 +199,7 @@ test('cli: an unknown --rule id exits 2 and lists the rule count', async () => {
   const result = await run(['fixtures/demo', '--rule', 'py/nope']);
   assert.equal(result.status, 2);
   assert.match(result.stderr, /unknown rule id: py\/nope/);
-  assert.match(result.stderr, /14 rule ids/);
+  assert.match(result.stderr, /16 rule ids/);
 });
 
 test('cli: confidence filter hides medium findings', async () => {

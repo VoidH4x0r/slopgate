@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.2.0  ·  4 files  ·  50ms
+slopgate 0.2.1  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -65,13 +65,13 @@ It is built for the people who review AI-generated pull requests: the reviewer w
 
 ## Does it actually catch anything?
 
-Measured on **1,115,177 lines** of real code — the CPython standard library (an adversarial corpus full of test helpers and intentional no-ops) plus nine popular JavaScript packages:
+Measured on **1,115,270 lines** of real code — the CPython standard library (an adversarial corpus full of test helpers and intentional no-ops), nine popular JavaScript packages, and a 20-file AI-generated regression corpus:
 
 | Metric | Result |
 | --- | --- |
-| High-confidence findings | **29** (0.03 per 1,000 lines), in 17 of 1,845 CPython files |
-| Labeled precision of high-confidence findings | **96.6%** (28/29 manually reviewed) |
-| Recall on 14 seeded defects | **14/14** |
+| High-confidence findings | **43** (29 CPython + 14 AI-generated), in 17 of 1,845 CPython files |
+| Labeled precision of high-confidence findings | **97.7%** (42/43 manually reviewed) |
+| Recall on seeded defects | **30/30** (14 demo + 16 AI-generated) |
 | High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
 
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
@@ -121,6 +121,8 @@ slopgate [path] [options]
   --diff [ref]                    only report findings on changed lines (default: HEAD)
   --include/--exclude <glob>      adjust the file set
   --rule <id>                     run a single rule
+  --fix                           apply safe fixes (currently unreachable code)
+  --fix-dry-run                   show safe fixes without writing files
   --no-color --quiet --verbose
   --force                         overwrite files written by `init`
   -h, --help / -V, --version
@@ -230,7 +232,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.2.0 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.2.1 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -238,7 +240,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.2.0 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.2.1 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -260,9 +262,13 @@ try { ... } catch {}
 
 `slopgate-disable-file` at the top of a file disables it entirely. Directives only count inside real comments — a mention in a string or a doc is not a suppression.
 
+### Safe autofix
+
+`slopgate --fix` only removes code that can never execute: statements after `return`, `raise`, `break` or `continue` in the same block. It re-scans after writing, respects `--baseline`, `--diff`, `--confidence` and `--rule`, preserves BOM/CRLF, and writes each file atomically. `--fix-dry-run` validates the same edits without touching disk. All other findings remain report-only; `--fix` is not a general formatter or import rewriter.
+
 ## Rules
 
-14 rules across Python and TypeScript/JavaScript. Full reference with examples: [docs/rules.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/rules.md).
+16 rules across Python and TypeScript/JavaScript. Full reference with examples: [docs/rules.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/rules.md).
 
 | Rule | Catches |
 | --- | --- |
@@ -273,6 +279,7 @@ try { ... } catch {}
 | `py/swallowed-exception` · `ts/swallowed-exception` | `except: pass`, `catch {}` (JS empty catch is medium by design) |
 | `py/dead-branch` · `ts/dead-branch` | `if False:` / `if (false)`, and their always-true twins |
 | `py/unreachable` · `ts/unreachable` | statements after `return` / `raise` / `throw` / `continue` |
+| `py/duplicate-block` · `ts/duplicate-block` | the same normalized function/method body in two or more files |
 
 ## Precision is the product
 
@@ -298,8 +305,10 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 ## Roadmap
 
 - [x] v0.1 — 14 rules, Python + TS/JS, baseline, diff mode, SARIF, GitHub annotations, MCP server, suppression
-- [ ] v0.2 — duplicate-block detection, Go and Rust grammars, `--fix` for the safe subset
-- [ ] v0.3 — published false-positive benchmark across popular repositories, VS Code diagnostics
+- [x] v0.2 — config-root globs, language-aware project registry, MCP cache invalidation, non-git ancestor discovery
+- [x] v0.2.1 — duplicate-block detection, safe `--fix` for unreachable code, AI-generated regression corpus
+- [ ] v0.3 — Go and Rust grammars, VS Code diagnostics
+- [ ] v0.4 — expanded published false-positive benchmark, duplicate-block semantic clones
 
 ## Known limitations
 
@@ -310,6 +319,8 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 - Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
 - The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
+- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.2.1.
+- `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
 
 ## When **not** to use it
 
@@ -325,7 +336,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 308 tests; the tests themselves make no network or child-process calls
+npm test            # 327 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

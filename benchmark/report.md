@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-22T15:01:09.293Z by `scripts/benchmark.mjs` (slopgate 0.2.0, Node v24.19.0).
+Generated 2026-11-22T15:31:23.793Z by `scripts/benchmark.mjs` (slopgate 0.2.1, Node v24.19.0).
 
 ## Summary
 
@@ -16,20 +16,22 @@ Generated 2026-11-22T15:01:09.293Z by `scripts/benchmark.mjs` (slopgate 0.2.0, N
 | eslint | 409 | 100880 | 0 | 0.00 | — | `8d19ccdb8205985c` |
 | glob | 7 | 2217 | 0 | 0.00 | — | `dc4dc56c06b64fb8` |
 | yargs | 5 | 198 | 0 | 0.00 | — | `53ba47a2d90b26ae` |
+| ai-generated | 20 | 93 | 14 | 150.54 | 100.0% | `95d85ff450c21ede` |
 
 ## Recall (seeded defects)
 
-Detected **14/14** seeded defects.
+Detected **30/30** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 10498 ms.
+Scanned **1845** files (**991705** lines) in 11621 ms.
 
 Corpus digest: `027f952580cd6622`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `py/dead-branch` | 0 | 4 | 0 | 0 | — |
+| `py/duplicate-block` | 0 | 16 | 0 | 0 | — |
 | `py/noop-test` | 0 | 5935 | 0 | 0 | — |
 | `py/phantom-import` | 1 | 105 | 0 | 1 | 0.0% |
 | `py/stub-body` | 0 | 281 | 33 | 0 | — |
@@ -38,7 +40,7 @@ Corpus digest: `027f952580cd6622`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 37 ms.
+Scanned **7** files (**2783** lines) in 35 ms.
 
 Package: `express@5.3.0`.
 
@@ -60,7 +62,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 132 ms.
+Scanned **111** files (**8363** lines) in 138 ms.
 
 Package: `execa@10.2.1`.
 
@@ -72,7 +74,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 46 ms.
+Scanned **49** files (**3166** lines) in 52 ms.
 
 Package: `semver@7.8.6`.
 
@@ -83,7 +85,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 38 ms.
+Scanned **7** files (**4225** lines) in 44 ms.
 
 Package: `commander@15.1.0`.
 
@@ -94,7 +96,7 @@ Corpus digest: `a1904525101c27be`.
 
 ## debug
 
-Scanned **4** files (**841** lines) in 9 ms.
+Scanned **4** files (**841** lines) in 11 ms.
 
 Package: `debug@4.4.3`.
 
@@ -106,7 +108,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 822 ms.
+Scanned **409** files (**100880** lines) in 812 ms.
 
 Package: `eslint@10.15.0`.
 
@@ -119,7 +121,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 38 ms.
+Scanned **7** files (**2217** lines) in 46 ms.
 
 Package: `glob@14.0.6`.
 
@@ -130,7 +132,7 @@ Corpus digest: `dc4dc56c06b64fb8`.
 
 ## yargs
 
-Scanned **5** files (**198** lines) in 7 ms.
+Scanned **5** files (**198** lines) in 20 ms.
 
 Package: `yargs@18.2.0`.
 
@@ -138,6 +140,31 @@ Corpus digest: `53ba47a2d90b26ae`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
+
+## ai-generated
+
+Scanned **20** files (**93** lines) in 12 ms.
+
+Package: `ai-generated-corpus@0.0.0`.
+
+Corpus digest: `95d85ff450c21ede`.
+
+| Rule | high | medium | low | Labeled | Precision |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `py/dead-branch` | 1 | 0 | 0 | 1 | 100.0% |
+| `py/duplicate-block` | 0 | 2 | 0 | 0 | — |
+| `py/noop-test` | 1 | 0 | 0 | 1 | 100.0% |
+| `py/phantom-import` | 1 | 0 | 0 | 1 | 100.0% |
+| `py/stub-body` | 2 | 0 | 0 | 2 | 100.0% |
+| `py/swallowed-exception` | 1 | 0 | 0 | 1 | 100.0% |
+| `py/tautological-assert` | 1 | 0 | 0 | 1 | 100.0% |
+| `py/unreachable` | 1 | 0 | 0 | 1 | 100.0% |
+| `ts/dead-branch` | 1 | 0 | 0 | 1 | 100.0% |
+| `ts/noop-test` | 1 | 0 | 0 | 1 | 100.0% |
+| `ts/phantom-import` | 1 | 0 | 0 | 1 | 100.0% |
+| `ts/stub-function` | 1 | 0 | 0 | 1 | 100.0% |
+| `ts/tautological-assert` | 1 | 0 | 0 | 1 | 100.0% |
+| `ts/unreachable` | 1 | 0 | 0 | 1 | 100.0% |
 
 ## Method
 

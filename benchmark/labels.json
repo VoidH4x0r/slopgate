@@ -70,5 +70,61 @@
   "94bb1860c88c8c10": {
     "label": "tp",
     "note": "the described pattern is present in the code as written"
+  },
+  "dd9e5a523805b94d": {
+    "label": "tp",
+    "note": "AI-generated corpus: py/dead-branch pattern is present in the source"
+  },
+  "620b3321c117c8cf": {
+    "label": "tp",
+    "note": "AI-generated corpus: py/stub-body pattern is present in the source"
+  },
+  "eb5795ab2bf3312b": {
+    "label": "tp",
+    "note": "AI-generated corpus: py/phantom-import pattern is present in the source"
+  },
+  "7df5892d92b16181": {
+    "label": "tp",
+    "note": "AI-generated corpus: py/stub-body pattern is present in the source"
+  },
+  "8b6186944f16ac79": {
+    "label": "tp",
+    "note": "AI-generated corpus: py/swallowed-exception pattern is present in the source"
+  },
+  "f4eb059290dee024": {
+    "label": "tp",
+    "note": "AI-generated corpus: py/tautological-assert pattern is present in the source"
+  },
+  "e8de419045b8e3a2": {
+    "label": "tp",
+    "note": "AI-generated corpus: py/noop-test pattern is present in the source"
+  },
+  "4ce581e39f9a294e": {
+    "label": "tp",
+    "note": "AI-generated corpus: py/unreachable pattern is present in the source"
+  },
+  "c550b6330388a966": {
+    "label": "tp",
+    "note": "AI-generated corpus: ts/noop-test pattern is present in the source"
+  },
+  "3f1ba12eebc89d64": {
+    "label": "tp",
+    "note": "AI-generated corpus: ts/dead-branch pattern is present in the source"
+  },
+  "4575c02e91cee80d": {
+    "label": "tp",
+    "note": "AI-generated corpus: ts/phantom-import pattern is present in the source"
+  },
+  "ee0409375fb59da9": {
+    "label": "tp",
+    "note": "AI-generated corpus: ts/stub-function pattern is present in the source"
+  },
+  "7be5af4842822528": {
+    "label": "tp",
+    "note": "AI-generated corpus: ts/tautological-assert pattern is present in the source"
+  },
+  "d268fb701221476c": {
+    "label": "tp",
+    "note": "AI-generated corpus: ts/unreachable pattern is present in the source"
   }
 }

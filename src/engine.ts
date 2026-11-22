@@ -4,15 +4,17 @@ import { asAst, type AstNode } from './ast.ts';
 import { discoverFiles, toPosix } from './files.ts';
 import { getParser } from './parser.ts';
 import { loadProjectRegistry, type ProjectRegistry } from './projects.ts';
-import { ALL_RULES, RULE_BY_ID } from './rules/index.ts';
+import { ALL_RULE_BY_ID, ALL_RULE_METAS, FILE_RULES, PROJECT_RULES } from './rules/index.ts';
 import { collectCommentRanges } from './rules/helpers.ts';
-import { isSuppressed, readSuppressions } from './suppress.ts';
+import { isSuppressed, readSuppressions, type Suppressions } from './suppress.ts';
 import type { Config } from './config.ts';
 import type {
   Finding,
   ProjectDeps,
   RuleContext,
   RuleDraft,
+  ProjectFindingDraft,
+  ScanFix,
   ScanStats,
   SourceDialect,
 } from './types.ts';
@@ -40,6 +42,8 @@ export interface ScanResult {
   findings: Finding[];
   /** Report-root-relative files that were scanned (including parse failures). */
   files: string[];
+  /** Safe edits attached to findings; consumed by the CLI fixer. */
+  fixes: ScanFix[];
   suppressedCount: number;
   stats: ScanStats;
   warnings: string[];
@@ -75,9 +79,9 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   const { config } = options;
 
   for (const ruleId of Object.keys(config.rules)) {
-    if (!RULE_BY_ID.has(ruleId)) {
+    if (!ALL_RULE_BY_ID.has(ruleId)) {
       throw new Error(
-        `unknown rule in config: ${ruleId} (run \`slopgate rules\` to list the ${ALL_RULES.length} rule ids)`,
+        `unknown rule in config: ${ruleId} (run \`slopgate rules\` to list the ${ALL_RULE_METAS.length} rule ids)`,
       );
     }
   }
@@ -100,16 +104,25 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     exclude: config.exclude,
   });
 
-  const enabled = ALL_RULES.filter((rule) => {
+  const enabled = FILE_RULES.filter((rule) => {
     const setting = config.rules[rule.meta.id];
     if (setting === 'off') return false;
     if (options.onlyRules && !options.onlyRules.has(rule.meta.id)) return false;
     return true;
   });
+  const enabledProject = PROJECT_RULES.filter((rule) => {
+    const setting = config.rules[rule.meta.id];
+    if (setting === 'off') return false;
+    if (options.onlyRules && !options.onlyRules.has(rule.meta.id)) return false;
+    return true;
+  });
+  for (const projectRule of enabledProject) projectRule.reset();
 
   const byLanguage: Record<SourceDialect, number> = { python: 0, javascript: 0, typescript: 0, tsx: 0 };
   const findings: Finding[] = [];
+  const fixes: ScanFix[] = [];
   const scannedFiles: string[] = [];
+  const suppressionsByFile = new Map<string, Suppressions>();
   const seen = new Set<string>();
   let suppressedCount = 0;
   let parseErrors = 0;
@@ -162,6 +175,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     }
     const ctx: RuleContext = {
       file: findingFile,
+      source,
       lines: source.split(/\r?\n/),
       root,
       language: file.language,
@@ -169,6 +183,16 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
       comments,
     };
     const suppressions = readSuppressions(source, commentLines);
+    suppressionsByFile.set(findingFile, suppressions);
+
+    for (const projectRule of enabledProject) {
+      if (hadParseError || !projectRule.meta.languages.includes(file.language)) continue;
+      try {
+        projectRule.collect(ctx, source);
+      } catch (error) {
+        warnings.push(`${projectRule.meta.id} crashed while collecting ${file.rel}: ${(error as Error).message}`);
+      }
+    }
 
     for (const rule of enabled) {
       if (!rule.meta.languages.includes(file.language)) continue;
@@ -205,6 +229,9 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
         if (seen.has(key)) continue;
         seen.add(key);
         findings.push(finding);
+        if (!hadParseError && draft.fix && draft.fix.edits.length > 0) {
+          fixes.push({ finding, fileAbs: file.abs, edits: draft.fix.edits });
+        }
       }
     }
 
@@ -213,6 +240,35 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
       disposable.delete?.();
     } catch (error) {
       warnings.push(`could not free parse tree for ${file.rel}: ${(error as Error).message}`);
+    }
+  }
+
+  for (const projectRule of enabledProject) {
+    let drafts: ProjectFindingDraft[];
+    try {
+      drafts = projectRule.finish();
+    } catch (error) {
+      warnings.push(`${projectRule.meta.id} crashed: ${(error as Error).message}`);
+      continue;
+    }
+    const configured = config.rules[projectRule.meta.id];
+    const severity = configured && configured !== 'off' ? configured : projectRule.meta.severity;
+    for (const draft of drafts) {
+      const finding = toFinding(
+        projectRule.meta.id,
+        draft,
+        { severity, confidence: projectRule.meta.confidence },
+        draft.file,
+      );
+      const suppressions = suppressionsByFile.get(draft.file);
+      if (suppressions && isSuppressed(finding, suppressions)) {
+        suppressedCount += 1;
+        continue;
+      }
+      const key = `${finding.ruleId}|${finding.file}|${finding.start.line}|${finding.start.column}|${finding.message}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      findings.push(finding);
     }
   }
 
@@ -232,5 +288,5 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     durationMs: Math.round(performance.now() - started),
   };
 
-  return { findings, files: scannedFiles, suppressedCount, stats, warnings };
+  return { findings, files: scannedFiles, fixes, suppressedCount, stats, warnings };
 }

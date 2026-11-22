@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-22T15:01:09.293Z",
-  "slopgateVersion": "0.2.0",
+  "generatedAt": "2026-11-22T15:31:23.793Z",
+  "slopgateVersion": "0.2.1",
   "nodeVersion": "v24.19.0",
   "corpora": [
     {
@@ -9,8 +9,8 @@
       "digest": "027f952580cd6622",
       "files": 1845,
       "lines": 991705,
-      "durationMs": 10498,
-      "findings": 6814,
+      "durationMs": 11621,
+      "findings": 6830,
       "high": 29,
       "suppressed": 0,
       "parseErrors": 9,
@@ -28,6 +28,11 @@
         "py/dead-branch": {
           "high": 0,
           "medium": 4,
+          "low": 0
+        },
+        "py/duplicate-block": {
+          "high": 0,
+          "medium": 16,
           "low": 0
         },
         "py/noop-test": {
@@ -314,7 +319,7 @@
       "digest": "d2b720bf4294881f",
       "files": 7,
       "lines": 2783,
-      "durationMs": 37,
+      "durationMs": 35,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -364,7 +369,7 @@
       "digest": "4c7472ad58bd8a01",
       "files": 111,
       "lines": 8363,
-      "durationMs": 132,
+      "durationMs": 138,
       "findings": 11,
       "high": 0,
       "suppressed": 0,
@@ -395,7 +400,7 @@
       "digest": "2035d82b564fe0fd",
       "files": 49,
       "lines": 3166,
-      "durationMs": 46,
+      "durationMs": 52,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -420,7 +425,7 @@
       "digest": "a1904525101c27be",
       "files": 7,
       "lines": 4225,
-      "durationMs": 38,
+      "durationMs": 44,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -445,7 +450,7 @@
       "digest": "423d0332532c2e32",
       "files": 4,
       "lines": 841,
-      "durationMs": 9,
+      "durationMs": 11,
       "findings": 4,
       "high": 0,
       "suppressed": 0,
@@ -476,7 +481,7 @@
       "digest": "8d19ccdb8205985c",
       "files": 409,
       "lines": 100880,
-      "durationMs": 822,
+      "durationMs": 812,
       "findings": 3,
       "high": 0,
       "suppressed": 0,
@@ -512,7 +517,7 @@
       "digest": "dc4dc56c06b64fb8",
       "files": 7,
       "lines": 2217,
-      "durationMs": 38,
+      "durationMs": 46,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -537,7 +542,7 @@
       "digest": "53ba47a2d90b26ae",
       "files": 5,
       "lines": 198,
-      "durationMs": 7,
+      "durationMs": 20,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -552,13 +557,302 @@
         "byRule": {}
       },
       "findingsList": []
+    },
+    {
+      "name": "ai-generated",
+      "package": {
+        "name": "ai-generated-corpus",
+        "version": "0.0.0"
+      },
+      "digest": "95d85ff450c21ede",
+      "files": 20,
+      "lines": 93,
+      "durationMs": 12,
+      "findings": 16,
+      "high": 14,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {
+        "py/dead-branch": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/stub-body": {
+          "high": 2,
+          "medium": 0,
+          "low": 0
+        },
+        "py/duplicate-block": {
+          "high": 0,
+          "medium": 2,
+          "low": 0
+        },
+        "py/phantom-import": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/swallowed-exception": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/tautological-assert": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/noop-test": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/unreachable": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/noop-test": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/dead-branch": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/phantom-import": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/stub-function": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/tautological-assert": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/unreachable": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 14,
+          "fp": 0,
+          "precision": 1
+        },
+        "byRule": {
+          "py/dead-branch": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/stub-body": {
+            "tp": 2,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/phantom-import": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/swallowed-exception": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/tautological-assert": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/noop-test": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/unreachable": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/noop-test": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/dead-branch": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/phantom-import": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/stub-function": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/tautological-assert": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/unreachable": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          }
+        }
+      },
+      "findingsList": [
+        {
+          "fingerprint": "dd9e5a523805b94d",
+          "ruleId": "py/dead-branch",
+          "file": "python/dead_branch.py",
+          "line": 2,
+          "confidence": "high",
+          "snippet": "if False:"
+        },
+        {
+          "fingerprint": "620b3321c117c8cf",
+          "ruleId": "py/stub-body",
+          "file": "python/decorated_route.py",
+          "line": 2,
+          "confidence": "high",
+          "snippet": "def health():"
+        },
+        {
+          "fingerprint": "eb5795ab2bf3312b",
+          "ruleId": "py/phantom-import",
+          "file": "python/phantom_import.py",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "import ai_sdk"
+        },
+        {
+          "fingerprint": "7df5892d92b16181",
+          "ruleId": "py/stub-body",
+          "file": "python/stub_service.py",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "def persist_invoice(invoice):"
+        },
+        {
+          "fingerprint": "8b6186944f16ac79",
+          "ruleId": "py/swallowed-exception",
+          "file": "python/swallow.py",
+          "line": 4,
+          "confidence": "high",
+          "snippet": "except Exception as error:"
+        },
+        {
+          "fingerprint": "f4eb059290dee024",
+          "ruleId": "py/tautological-assert",
+          "file": "python/tautology.py",
+          "line": 2,
+          "confidence": "high",
+          "snippet": "assert True"
+        },
+        {
+          "fingerprint": "e8de419045b8e3a2",
+          "ruleId": "py/noop-test",
+          "file": "python/tests/test_checkout.py",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "def test_checkout():"
+        },
+        {
+          "fingerprint": "4ce581e39f9a294e",
+          "ruleId": "py/unreachable",
+          "file": "python/unreachable.py",
+          "line": 3,
+          "confidence": "high",
+          "snippet": "print(\"never\")"
+        },
+        {
+          "fingerprint": "c550b6330388a966",
+          "ruleId": "ts/noop-test",
+          "file": "typescript/checkout.test.ts",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "test(\"checkout\", () => {"
+        },
+        {
+          "fingerprint": "3f1ba12eebc89d64",
+          "ruleId": "ts/dead-branch",
+          "file": "typescript/dead.ts",
+          "line": 2,
+          "confidence": "high",
+          "snippet": "if (false) {"
+        },
+        {
+          "fingerprint": "4575c02e91cee80d",
+          "ruleId": "ts/phantom-import",
+          "file": "typescript/phantom.ts",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "import { z } from \"zod\";"
+        },
+        {
+          "fingerprint": "ee0409375fb59da9",
+          "ruleId": "ts/stub-function",
+          "file": "typescript/stub.ts",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "function saveInvoice(): void {"
+        },
+        {
+          "fingerprint": "7be5af4842822528",
+          "ruleId": "ts/tautological-assert",
+          "file": "typescript/tautology.test.ts",
+          "line": 2,
+          "confidence": "high",
+          "snippet": "expect(value).toEqual(value)"
+        },
+        {
+          "fingerprint": "d268fb701221476c",
+          "ruleId": "ts/unreachable",
+          "file": "typescript/unreachable.ts",
+          "line": 3,
+          "confidence": "high",
+          "snippet": "console.log(\"never\");"
+        }
+      ]
     }
   ],
   "staleLabels": [],
   "unlabeledHigh": [],
   "recall": {
-    "total": 14,
-    "detected": 14,
-    "missed": []
+    "total": 30,
+    "detected": 30,
+    "missed": [],
+    "byCorpus": [
+      {
+        "fixture": "fixtures/demo",
+        "total": 14,
+        "detected": 14,
+        "missed": []
+      },
+      {
+        "fixture": "fixtures/ai-generated",
+        "total": 16,
+        "detected": 16,
+        "missed": []
+      }
+    ]
   }
 }

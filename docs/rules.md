@@ -134,6 +134,16 @@ if False:
 
 ---
 
+## py/duplicate-block
+
+**What it catches.** The same normalized function body in two or more Python files. Comments and whitespace are ignored; identifiers and literals are preserved, so renaming a local variable makes the bodies different. A body must span at least **6 lines** and contain at least **15 leaf tokens**.
+
+**Not reported.** Copies inside a single file, test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers. This is deliberately exact normalization, not a clone detector.
+
+**Confidence.** `medium`: duplication can be intentional boilerplate. Each occurrence is reported with the other locations.
+
+---
+
 ## py/unreachable
 
 **What it catches.** Statements after `return`, `raise`, `break` or `continue` in the same block.
@@ -145,6 +155,8 @@ def get_user(user_id):
 ```
 
 Only the same-block case is reported. Test files are skipped — generators there deliberately place `yield` after `raise`.
+
+**Fixable.** `slopgate --fix` deletes every statement after the terminator in that block. `--fix-dry-run` validates the edit without writing.
 
 ---
 
@@ -222,8 +234,20 @@ try {
 
 ---
 
+## ts/duplicate-block
+
+**What it catches.** The same normalized function or method body in two or more TypeScript/JavaScript files. Function declarations, class methods, and function/arrow values assigned to variables are considered. Comments and whitespace are ignored; identifiers and literals are preserved. A body must span at least **6 lines** and contain at least **15 leaf tokens**.
+
+**Not reported.** Callbacks passed to other calls, copies inside a single file, test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
+
+**Confidence.** `medium`: duplication can be intentional boilerplate. Each occurrence is reported with the other locations.
+
+---
+
 ## ts/unreachable
 
 **What it catches.** Statements after `return`, `throw`, `break` or `continue` in the same block. Test files are skipped.
 
 **Not reported.** Hoisted declarations after the exit (`function` declarations and generators, bare `var a, b;`) and type-only declarations erased at compile time (`type`, `interface`, `declare`). `enum` declarations, classes, `let`/`const` and initialised `var` statements execute at their position and are reported.
+
+**Fixable.** `slopgate --fix` deletes the unreachable runtime statements but leaves hoisted/erased declarations in place. `--fix-dry-run` validates the edits without writing.

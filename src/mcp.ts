@@ -14,7 +14,7 @@ import {
 import { diffSince, isInDiff, type DiffSet } from './diff.ts';
 import { resolveProjectRoot } from './deps.ts';
 import { scanProject, type ScanResult } from './engine.ts';
-import { ALL_RULES } from './rules/index.ts';
+import { ALL_RULE_METAS } from './rules/index.ts';
 import type { Confidence, Finding } from './types.ts';
 
 /**
@@ -167,9 +167,9 @@ export function createMcpServer(deps: McpDeps) {
   async function callTool(name: string, params: Record<string, unknown>): Promise<unknown> {
     if (name === 'list_rules') {
       const lines = ['id\tseverity\tconfidence\tlanguages\ttitle'];
-      for (const rule of ALL_RULES) {
+      for (const meta of ALL_RULE_METAS) {
         lines.push(
-          `${rule.meta.id}\t${rule.meta.severity}\t${rule.meta.confidence}\t${rule.meta.languages.join(',')}\t${rule.meta.title}`,
+          `${meta.id}\t${meta.severity}\t${meta.confidence}\t${meta.languages.join(',')}\t${meta.title}`,
         );
       }
       return textResult(lines.join('\n'));

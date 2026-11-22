@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-22
+
+### Added
+- `py/duplicate-block` and `ts/duplicate-block`: exact normalized function/method bodies duplicated across files, at medium confidence. Bodies must span at least 6 lines and 15 leaf tokens; test files, same-file copies and parse-error files are skipped.
+- `slopgate --fix` / `--fix-dry-run` for the safe subset: unreachable statements after `return` / `raise` / `break` / `continue`. Fixes are atomic, preserve BOM/CRLF, respect baseline/diff/confidence/rule filters, and are followed by a re-scan.
+- `fixtures/ai-generated`: 20-file AI-generated regression corpus with provenance, 32 labeled high-confidence fingerprints and 30/30 seeded recall.
+
+### Changed
+- 327 tests.
+- Benchmark: **43 high-confidence findings** across 1,115,270 lines, **97.7% labeled precision (42/43)**, **30/30 seeded defects**, 0 high findings on 601 JavaScript files.
+- `slopgate rules` now lists 16 rules.
+
+### Planned
+- Go and Rust grammars.
+- VS Code diagnostics.
+- Semantic clone detection beyond exact normalized bodies.
+
 ## [0.2.0] - 2026-11-22
 
 ### Fixed
@@ -34,11 +51,6 @@ All notable changes to this project are documented here. The format follows [Kee
 - `requirements.in` and `environment.yml` dependency declarations are parsed.
 - A `tsconfig.json` `baseUrl` contributes import aliases.
 - `slopgate --help` reports the actual package version instead of the fallback.
-
-### Planned
-- Duplicate-block detection across files.
-- Go and Rust grammars.
-- VS Code diagnostics.
 
 ## [0.1.18] - 2026-11-22
 

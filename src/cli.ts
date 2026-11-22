@@ -16,15 +16,16 @@ import {
 import { assertSafeRef, diffSince, findRepoRoot, isInDiff } from './diff.ts';
 import { resolveProjectRoot, isProjectDir } from './deps.ts';
 import { scanProject } from './engine.ts';
+import { applyFixes } from './fix.ts';
 import { serveMcp } from './mcp.ts';
 import { renderGithub } from './reporters/github.ts';
 import { renderJson } from './reporters/json.ts';
 import { renderPretty } from './reporters/pretty.ts';
 import { renderSarif } from './reporters/sarif.ts';
-import { ALL_RULES, RULE_BY_ID } from './rules/index.ts';
+import { ALL_RULE_BY_ID, ALL_RULE_METAS } from './rules/index.ts';
 import type { Confidence, Finding } from './types.ts';
 
-const FALLBACK_VERSION = '0.2.0';
+const FALLBACK_VERSION = '0.2.1';
 const DEFAULT_BASELINE = '.slopgate-baseline.json';
 const CONFIDENCES: readonly Confidence[] = ['high', 'medium', 'low'];
 const FAIL_ON: readonly FailOn[] = ['high', 'medium', 'low', 'none'];
@@ -48,6 +49,8 @@ interface Options {
   verbose: boolean;
   force: boolean;
   strict: boolean;
+  fix: boolean;
+  fixDryRun: boolean;
 }
 
 const helpText = (version: string = FALLBACK_VERSION): string => `slopgate ${version} — the slop gate for AI-written code
@@ -74,6 +77,8 @@ Options:
   --verbose                      print config, include, baseline and diff details
   --force                        overwrite files in \`init\`
   --strict                       \`init\`: medium confidence + fail-on medium
+  --fix                          apply safe fixes (currently unreachable code)
+  --fix-dry-run                  show safe fixes without writing files
   -h, --help                     show this help
   -V, --version                  print the version
 
@@ -112,6 +117,8 @@ function defaultOptions(): Options {
     verbose: false,
     force: false,
     strict: false,
+    fix: false,
+    fixDryRun: false,
   };
 }
 
@@ -175,6 +182,14 @@ function parseArgs(argv: readonly string[]): { options: Options; error?: string 
     }
     if (token === '--force') {
       options.force = true;
+      continue;
+    }
+    if (token === '--fix') {
+      options.fix = true;
+      continue;
+    }
+    if (token === '--fix-dry-run') {
+      options.fixDryRun = true;
       continue;
     }
     if (token === '--strict') {
@@ -252,6 +267,13 @@ function parseArgs(argv: readonly string[]): { options: Options; error?: string 
     }
   }
 
+  if (options.fix && options.fixDryRun) {
+    return { options, error: '--fix and --fix-dry-run cannot be combined' };
+  }
+  if ((options.fix || options.fixDryRun) && options.writeBaseline !== undefined) {
+    return { options, error: '--fix cannot be combined with --write-baseline' };
+  }
+
   return { options };
 }
 
@@ -282,12 +304,12 @@ function warn(io: CliIo, options: Options, message: string): void {
 }
 
 async function runRules(options: Options, io: CliIo): Promise<number> {
-  const rows = ALL_RULES.map((rule) => ({
-    id: rule.meta.id,
-    severity: rule.meta.severity,
-    confidence: rule.meta.confidence,
-    languages: rule.meta.languages.join(','),
-    title: rule.meta.title,
+  const rows = ALL_RULE_METAS.map((meta) => ({
+    id: meta.id,
+    severity: meta.severity,
+    confidence: meta.confidence,
+    languages: meta.languages.join(','),
+    title: meta.title,
   }));
   const idWidth = Math.max(...rows.map((row) => row.id.length), 2);
   const sevWidth = Math.max(...rows.map((row) => row.severity.length), 8);
@@ -454,10 +476,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const globRoot = configFile ? configRoot : projectRoot;
 
   if (options.rules.length > 0) {
-    const unknown = options.rules.filter((id) => !RULE_BY_ID.has(id));
+    const unknown = options.rules.filter((id) => !ALL_RULE_BY_ID.has(id));
     if (unknown.length > 0) {
       throw new Error(
-        `unknown rule id: ${unknown.join(', ')} (run \`slopgate rules\` to list the ${ALL_RULES.length} rule ids)`,
+        `unknown rule id: ${unknown.join(', ')} (run \`slopgate rules\` to list the ${ALL_RULE_METAS.length} rule ids)`,
       );
     }
   }
@@ -538,6 +560,29 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
       : merged.failOn;
   const visible = fresh.filter((finding) => meetsConfidence(finding.confidence, displayConfidence));
   const hidden = fresh.length - visible.length;
+
+  if (options.fix || options.fixDryRun) {
+    const visibleSet = new Set(visible);
+    const candidates = result.fixes.filter((fix) => visibleSet.has(fix.finding));
+    if (candidates.length === 0) {
+      if (!options.quiet) io.err('no safe fixes available for the selected findings\n');
+    } else {
+      const applied = await applyFixes(candidates, { write: options.fix && !options.fixDryRun });
+      for (const message of applied.warnings) warn(io, options, message);
+      if (!options.quiet) {
+        const verb = options.fixDryRun ? 'would fix' : 'fixed';
+        io.err(
+          `${verb} ${applied.fixedFindings} finding(s) in ${applied.fixedFiles.length} file(s)` +
+            (applied.skippedFindings > 0 ? `; skipped ${applied.skippedFindings}` : '') +
+            '\n',
+        );
+      }
+      if (!options.fixDryRun && applied.fixedFindings > 0) {
+        // Re-scan so positions, baseline and exit code describe the fixed tree.
+        return await runScan({ ...options, fix: false, fixDryRun: false }, io);
+      }
+    }
+  }
 
   const run: ScanRun = {
     visible,

@@ -1,19 +1,44 @@
 {
-  "fixture": "fixtures/demo",
-  "expected": [
-    { "file": "app.py", "ruleId": "py/phantom-import" },
-    { "file": "app.py", "ruleId": "py/stub-body" },
-    { "file": "app.py", "ruleId": "py/swallowed-exception" },
-    { "file": "app.py", "ruleId": "py/dead-branch" },
-    { "file": "app.py", "ruleId": "py/unreachable" },
-    { "file": "app.py", "ruleId": "py/tautological-assert" },
-    { "file": "tests/test_users.py", "ruleId": "py/noop-test" },
-    { "file": "src/agent.ts", "ruleId": "ts/phantom-import" },
-    { "file": "src/agent.ts", "ruleId": "ts/stub-function" },
-    { "file": "src/agent.ts", "ruleId": "ts/swallowed-exception" },
-    { "file": "src/agent.ts", "ruleId": "ts/dead-branch" },
-    { "file": "src/agent.ts", "ruleId": "ts/unreachable" },
-    { "file": "src/agent.ts", "ruleId": "ts/noop-test" },
-    { "file": "src/agent.ts", "ruleId": "ts/tautological-assert" }
+  "corpora": [
+    {
+      "fixture": "fixtures/demo",
+      "expected": [
+        { "file": "app.py", "ruleId": "py/phantom-import" },
+        { "file": "app.py", "ruleId": "py/stub-body" },
+        { "file": "app.py", "ruleId": "py/swallowed-exception" },
+        { "file": "app.py", "ruleId": "py/dead-branch" },
+        { "file": "app.py", "ruleId": "py/unreachable" },
+        { "file": "app.py", "ruleId": "py/tautological-assert" },
+        { "file": "tests/test_users.py", "ruleId": "py/noop-test" },
+        { "file": "src/agent.ts", "ruleId": "ts/phantom-import" },
+        { "file": "src/agent.ts", "ruleId": "ts/stub-function" },
+        { "file": "src/agent.ts", "ruleId": "ts/swallowed-exception" },
+        { "file": "src/agent.ts", "ruleId": "ts/dead-branch" },
+        { "file": "src/agent.ts", "ruleId": "ts/unreachable" },
+        { "file": "src/agent.ts", "ruleId": "ts/noop-test" },
+        { "file": "src/agent.ts", "ruleId": "ts/tautological-assert" }
+      ]
+    },
+    {
+      "fixture": "fixtures/ai-generated",
+      "expected": [
+        { "file": "python/dead_branch.py", "ruleId": "py/dead-branch" },
+        { "file": "python/decorated_route.py", "ruleId": "py/stub-body" },
+        { "file": "python/phantom_import.py", "ruleId": "py/phantom-import" },
+        { "file": "python/stub_service.py", "ruleId": "py/stub-body" },
+        { "file": "python/swallow.py", "ruleId": "py/swallowed-exception" },
+        { "file": "python/tautology.py", "ruleId": "py/tautological-assert" },
+        { "file": "python/tests/test_checkout.py", "ruleId": "py/noop-test" },
+        { "file": "python/unreachable.py", "ruleId": "py/unreachable" },
+        { "file": "python/duplicate_a.py", "ruleId": "py/duplicate-block" },
+        { "file": "python/duplicate_b.py", "ruleId": "py/duplicate-block" },
+        { "file": "typescript/checkout.test.ts", "ruleId": "ts/noop-test" },
+        { "file": "typescript/dead.ts", "ruleId": "ts/dead-branch" },
+        { "file": "typescript/phantom.ts", "ruleId": "ts/phantom-import" },
+        { "file": "typescript/stub.ts", "ruleId": "ts/stub-function" },
+        { "file": "typescript/tautology.test.ts", "ruleId": "ts/tautological-assert" },
+        { "file": "typescript/unreachable.ts", "ruleId": "ts/unreachable" }
+      ]
+    }
   ]
 }

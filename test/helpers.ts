@@ -55,6 +55,7 @@ export async function contextFor(
   const root = asAst(tree.rootNode);
   return {
     file,
+    source,
     lines: source.split(/\r?\n/),
     root,
     language,

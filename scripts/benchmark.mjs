@@ -135,12 +135,28 @@ function precisionFor(allFindings, labels) {
 }
 
 async function recallAgainstSeeded(seeded) {
-  const fixtureRoot = path.join(ROOT, seeded.fixture);
-  const result = await scanProject({ root: fixtureRoot, config: { ...DEFAULT_CONFIG } });
-  const found = new Set(result.findings.map((finding) => `${finding.file}|${finding.ruleId}`));
-  const expected = seeded.expected;
-  const hits = expected.filter((entry) => found.has(`${entry.file}|${entry.ruleId}`));
-  return { total: expected.length, detected: hits.length, missed: expected.filter((entry) => !hits.includes(entry)) };
+  const corpora = Array.isArray(seeded.corpora)
+    ? seeded.corpora
+    : [{ fixture: seeded.fixture, expected: seeded.expected }];
+  const result = { total: 0, detected: 0, missed: [], byCorpus: [] };
+  for (const corpus of corpora) {
+    const fixtureRoot = path.join(ROOT, corpus.fixture);
+    const scan = await scanProject({ root: fixtureRoot, config: { ...DEFAULT_CONFIG } });
+    const found = new Set(scan.findings.map((finding) => `${finding.file}|${finding.ruleId}`));
+    const expected = corpus.expected ?? [];
+    const hits = expected.filter((entry) => found.has(`${entry.file}|${entry.ruleId}`));
+    const missed = expected.filter((entry) => !hits.includes(entry));
+    result.total += expected.length;
+    result.detected += hits.length;
+    result.missed.push(...missed);
+    result.byCorpus.push({
+      fixture: corpus.fixture,
+      total: expected.length,
+      detected: hits.length,
+      missed,
+    });
+  }
+  return result;
 }
 
 async function main() {
