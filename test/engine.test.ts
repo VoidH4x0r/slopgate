@@ -153,6 +153,34 @@ test('non-git package scans see ancestor manifests through lookupRoot', async ()
   }
 });
 
+test('non-git ancestor indexing does not treat non-Python workspace names as modules', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-nongit-nonpython-'));
+  try {
+    await mkdir(path.join(dir, 'scripts'), { recursive: true });
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await writeFile(path.join(dir, 'scripts', 'run.sh'), '#!/bin/sh\n');
+    await writeFile(
+      path.join(dir, 'packages', 'app', 'pyproject.toml'),
+      '[project]\nname = "app"\nversion = "0.0.0"\ndependencies = []\n',
+    );
+    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'import scripts\n');
+
+    const result = await scanProject({
+      root: path.join(dir, 'packages', 'app'),
+      projectRoot: path.join(dir, 'packages', 'app'),
+      indexRoot: path.join(dir, 'packages', 'app'),
+      lookupRoot: dir,
+      reportRoot: dir,
+      config: { ...DEFAULT_CONFIG, rules: {} },
+    });
+    assert.equal(
+      result.findings.filter((finding) => finding.ruleId === 'py/phantom-import').length,
+      1,
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
 test('non-git package scans see sibling local modules through lookupRoot', async () => {
   const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-nongit-sibling-'));
   try {

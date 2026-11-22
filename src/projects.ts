@@ -8,6 +8,15 @@ const MAX_WALK_DEPTH = 12;
 const PYTHON_FILE = /\.pyi?$/;
 const VALID_MODULE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
+async function hasPythonFiles(dir: string): Promise<boolean> {
+  try {
+    const entries = await readdir(dir, { withFileTypes: true });
+    return entries.some((entry) => entry.isFile() && PYTHON_FILE.test(entry.name));
+  } catch {
+    return false;
+  }
+}
+
 export interface ProjectRegistryOptions {
   /** Directory to index for projects and local modules. */
   scopeRoot: string;
@@ -56,6 +65,7 @@ export async function loadProjectRegistry(
   const ignoredModules = new Set(options.ignoreModules ?? []);
   const localModules = new Set<string>();
   const projectDirs = new Set<string>();
+  const projectCheckCache = new Map<string, boolean>();
   const depsCache = new Map<string, Promise<ProjectDeps>>();
   const warnedProjects = new Set<string>();
 
@@ -77,7 +87,9 @@ export async function loadProjectRegistry(
     } catch {
       return;
     }
-    if (await isProjectDirFromEntries(dir, entries)) projectDirs.add(dir);
+    const isProject = await isProjectDirFromEntries(dir, entries);
+    projectCheckCache.set(dir, isProject);
+    if (isProject) projectDirs.add(dir);
 
     for (const entry of entries) {
       if (entry.isSymbolicLink()) continue;
@@ -110,7 +122,9 @@ export async function loadProjectRegistry(
           const abs = path.join(dir, entry.name);
           if (DEFAULT_IGNORE_DIRS.has(entry.name) || isExcluded(abs, entry.isDirectory())) continue;
           if (entry.isDirectory() && VALID_MODULE.test(entry.name)) {
-            localModules.add(entry.name);
+            // Only directories that actually contain Python are import roots;
+            // this keeps broad workspace names from becoming false negatives.
+            if (await hasPythonFiles(abs)) localModules.add(entry.name);
           } else if (entry.isFile() && PYTHON_FILE.test(entry.name)) {
             const stem = entry.name.replace(PYTHON_FILE, '');
             if (VALID_MODULE.test(stem)) localModules.add(stem);
@@ -158,10 +172,17 @@ export async function loadProjectRegistry(
         if (projectDirs.has(dir)) {
           const deps = await loadProject(dir);
           if (matchesLanguage(deps, language)) return deps;
-        } else if (dir !== scope && (await isProjectDir(dir))) {
-          projectDirs.add(dir);
-          const deps = await loadProject(dir);
-          if (matchesLanguage(deps, language)) return deps;
+        } else if (dir !== scope) {
+          let isProject = projectCheckCache.get(dir);
+          if (isProject === undefined) {
+            isProject = await isProjectDir(dir);
+            projectCheckCache.set(dir, isProject);
+          }
+          if (isProject) {
+            projectDirs.add(dir);
+            const deps = await loadProject(dir);
+            if (matchesLanguage(deps, language)) return deps;
+          }
         }
         if (dir === lookup) break;
         const parent = path.dirname(dir);

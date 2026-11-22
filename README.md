@@ -155,7 +155,7 @@ In a monorepo, dependencies are resolved per file from the nearest manifest **fo
 
 The default `.slopgate-baseline.json` also lives at the repository root. `--baseline` and `--write-baseline` paths resolve there, so scanning `src` and then the repository root share one baseline. Baseline fingerprints use the same repository-relative paths as reports, so one root baseline works for `slopgate .`, `slopgate src`, and `slopgate path/to/file.py`.
 
-Reported paths (including SARIF and GitHub annotations) are relative to the nearest git repository root. If the target is outside a git repository, paths stay relative to the scan target; manifest lookup still walks up to the current working directory when it contains the target, top-level modules of the ancestors between the package and that boundary are indexed, and config lookup stops at the nearest project boundary.
+Reported paths (including SARIF and GitHub annotations) are relative to the nearest git repository root. If the target is outside a git repository, paths stay relative to the scan target; manifest lookup still walks up to the current working directory when it contains the target, Python-bearing top-level modules of the ancestors between the package and that boundary are indexed, and config lookup stops at the nearest project boundary.
 
 `slopgate init` writes a minimal config at the requested directory and a GitHub Actions workflow at the repository root; the workflow targets that directory. Run it at the repository root for a repo-wide config.
 
@@ -321,7 +321,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 305 tests; the tests themselves make no network or child-process calls
+npm test            # 306 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

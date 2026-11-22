@@ -490,17 +490,22 @@ test('cli: a non-git package sees sibling modules from a workspace cwd', async (
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cwd-crosspkg-'));
   const previousCwd = process.cwd();
   try {
-    await mkdir(path.join(dir, 'lib'), { recursive: true });
-    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
-    await writeFile(path.join(dir, 'lib', 'util.py'), 'def f():\n    return 1\n');
+    await mkdir(path.join(dir, 'project', 'lib'), { recursive: true });
+    await mkdir(path.join(dir, 'project', 'packages', 'app'), { recursive: true });
+    await writeFile(path.join(dir, 'project', 'lib', 'util.py'), 'def f():\n    return 1\n');
     await writeFile(
-      path.join(dir, 'packages', 'app', 'pyproject.toml'),
+      path.join(dir, 'project', 'packages', 'app', 'pyproject.toml'),
       '[project]\nname = "app"\nversion = "0.0.0"\ndependencies = []\n',
     );
-    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'from lib.util import f\n');
+    await writeFile(
+      path.join(dir, 'project', 'packages', 'app', 'app.py'),
+      'from lib.util import f\n',
+    );
 
+    // cwd is the *parent* of the project root, so the ancestor-chain indexing
+    // (not just lookup-root indexing) is required to see project/lib.
     process.chdir(dir);
-    const result = await run([path.join(dir, 'packages', 'app'), '--no-color']);
+    const result = await run([path.join(dir, 'project', 'packages', 'app'), '--no-color']);
     assert.equal(result.status, 0, result.stderr);
     assert.doesNotMatch(result.stdout, /phantom-import/);
   } finally {
