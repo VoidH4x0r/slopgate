@@ -10,6 +10,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - VS Code diagnostics.
 
 ### Changed
+- The README now leads with what the defects cost, documents `.slopgate.json`, lists exit codes, and explains the scoped npm name.
+- The demo GIF is rendered at 1440px with vectorised monospace text instead of a blurry 720px raster.
 - The npm package is published as `@voidh4x0r/slopgate`: npm rejects the unscoped name as too similar to the existing `slop-gate` package. The CLI command remains `slopgate`.
 
 ## [0.1.0] - 2026-11-22

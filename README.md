@@ -8,13 +8,13 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 
 [![npm](https://img.shields.io/npm/v/@voidh4x0r/slopgate.svg)](https://www.npmjs.com/package/@voidh4x0r/slopgate)
 [![CI](https://github.com/VoidH4x0r/slopgate/actions/workflows/ci.yml/badge.svg)](https://github.com/VoidH4x0r/slopgate/actions/workflows/ci.yml)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![node](https://img.shields.io/node/v/slopgate.svg)](package.json)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/VoidH4x0r/slopgate/blob/main/LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A520-3fb950.svg)](https://github.com/VoidH4x0r/slopgate/blob/main/package.json)
 
 ```console
-$ npx @voidh4x0r/slopgate fixtures/demo
+$ npx @voidh4x0r/slopgate .
 
-slopgate 0.1.0  ·  4 files  ·  41ms
+slopgate 0.1.0  ·  4 files  ·  39ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -40,12 +40,28 @@ tests/test_users.py
             │ def test_get_user():
             ↳ Every test should be able to fail. Add an assertion that depends on the behaviour under test.
 
-  13 findings in 3 files  ·  4 files scanned in 41ms
+  13 findings in 3 files  ·  4 files scanned in 39ms
   4 error · 9 warning · 0 info   (13 high · 0 medium · 0 low confidence)
   hidden: 1 below confidence threshold
 ```
 
 No API keys. No telemetry. No network calls at runtime. One command, works offline, exits non-zero in CI.
+
+## What it catches
+
+Models are good at producing code that compiles, imports cleanly in the editor where the package happened to be installed, and passes tests that assert nothing. These failures are boring, repetitive, and invisible to a green CI run:
+
+| What the model wrote | What it costs you |
+| --- | --- |
+| `import requests_v2` — the package does not exist | `ModuleNotFoundError` in CI, or a malicious package if that name is ever registered |
+| `def test_create(): service.create()` — no assertion | A green test with zero coverage |
+| `def sync(self): pass` — real signature, empty body | Callers get `None` and the failure surfaces three layers downstream |
+| `except Exception: pass` | The error disappears; the incident does not |
+| `return user` followed by 12 lines of code | Dead code that nobody notices until it rots |
+
+`slopgate` is a **precision-first** linter for exactly this class of defect, for Python and TypeScript/JavaScript.
+
+It is built for the people who review AI-generated pull requests: the reviewer who cannot read every line, the maintainer who needs CI to say "this is not finished", and the coding agent that should check itself before declaring done.
 
 ## Does it actually catch anything?
 
@@ -61,20 +77,6 @@ Measured on **1,115,177 lines** of real code — the CPython standard library (a
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
 
 ---
-
-## Why
-
-Models are good at producing code that compiles, imports cleanly in the editor where the package happened to be installed, and passes tests that assert nothing. These failures are boring, repetitive, and invisible to a green CI run:
-
-| What actually happened | What a normal linter sees |
-| --- | --- |
-| `import requests_v2` — the package does not exist | valid import |
-| `def test_create(): service.create()` — no assertion | valid function call |
-| `def sync(self): pass` — implemented signature, empty body | valid method |
-| `except Exception: pass` — errors disappear | valid exception handler |
-| `return user` followed by 12 lines of code | valid statements |
-
-`slopgate` is a **precision-first** linter for exactly this class of defect, for Python and TypeScript/JavaScript.
 
 ## Why another linter
 
@@ -103,6 +105,8 @@ npx @voidh4x0r/slopgate init               # write .slopgate.json + a GitHub Act
 
 Requires Node 20+. Python and TypeScript grammars are bundled — no Python or `tsc` needed at scan time.
 
+The npm scope is `@voidh4x0r` because the unscoped name `slopgate` was rejected as too similar to the existing `slop-gate` package; the command is still `slopgate`.
+
 ## Usage
 
 ```bash
@@ -120,6 +124,31 @@ slopgate [path] [options]
   --force                         overwrite files written by `init`
   -h, --help / -V, --version
 ```
+
+### Configuration
+
+`slopgate` reads `.slopgate.json` (or `slopgate.config.json`) from the project root. Every key is optional:
+
+```json
+{
+  "include": ["src/**", "tests/**"],
+  "exclude": ["vendor/**", "migrations/**"],
+  "ignoreModules": ["my_private_pkg"],
+  "rules": {
+    "ts/swallowed-exception": "off",
+    "py/stub-body": "warning"
+  },
+  "confidence": "high",
+  "failOn": "high"
+}
+```
+
+- `include` / `exclude` — globs relative to the project root; the defaults cover Python and TS/JS sources.
+- `ignoreModules` — top-level modules to always treat as declared (dynamic imports, private packages).
+- `rules` — `"off"` or an explicit severity (`"error"`, `"warning"`, `"info"`).
+- `confidence` / `failOn` — same meaning as the CLI flags; CLI flags win.
+
+`slopgate init` writes a minimal config plus a GitHub Actions workflow.
 
 ### Adopting it on an existing repository
 
@@ -186,6 +215,8 @@ For inline pull-request annotations **without** code scanning, use `--format git
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
+
+Exit codes: `0` no findings at or above `--fail-on`, `1` findings at or above the threshold, `2` usage or configuration error (missing path, unknown rule id, invalid config, git failure).
 
 ### Suppressing a finding
 
