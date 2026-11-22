@@ -62,9 +62,11 @@ jobs:
         run: |
           set -euo pipefail
           npm pack
+          TARBALL=$(ls -1 "${GITHUB_WORKSPACE}"/*.tgz | head -n 1)
+          echo "tarball: ${TARBALL}"
           mkdir -p /tmp/smoke && cd /tmp/smoke
           npm init -y > /dev/null
-          npm install "${GITHUB_WORKSPACE}"/slopgate-*.tgz
+          npm install "${TARBALL}"
           printf 'import requests_v2\n\n\ndef handler():\n    pass\n' > sample.py
           ./node_modules/.bin/slopgate --version
           set +e
