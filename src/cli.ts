@@ -228,15 +228,30 @@ function parseArgs(argv: readonly string[]): { options: Options; error?: string 
   return { options };
 }
 
-function writeOut(text: string): void {
-  process.stdout.write(text.endsWith('\n') ? text : text + '\n');
+export interface CliIo {
+  out(text: string): void;
+  err(text: string): void;
+  isTTY: boolean;
 }
 
-function warn(options: Options, message: string): void {
-  if (!options.quiet) process.stderr.write(`slopgate: ${message}\n`);
+/** Real process streams. Tests pass their own collector instead. */
+export function defaultIo(): CliIo {
+  return {
+    out: (text) => process.stdout.write(text),
+    err: (text) => process.stderr.write(text),
+    isTTY: process.stdout.isTTY === true,
+  };
 }
 
-async function runRules(options: Options): Promise<number> {
+function writeOut(io: CliIo, text: string): void {
+  io.out(text.endsWith('\n') ? text : text + '\n');
+}
+
+function warn(io: CliIo, options: Options, message: string): void {
+  if (!options.quiet) io.err(`slopgate: ${message}\n`);
+}
+
+async function runRules(options: Options, io: CliIo): Promise<number> {
   const rows = ALL_RULES.map((rule) => ({
     id: rule.meta.id,
     severity: rule.meta.severity,
@@ -249,14 +264,16 @@ async function runRules(options: Options): Promise<number> {
   const confWidth = Math.max(...rows.map((row) => row.confidence.length), 10);
   const langWidth = Math.max(...rows.map((row) => row.languages.length), 9);
   writeOut(
+    io,
     `\n${'id'.padEnd(idWidth)}  ${'severity'.padEnd(sevWidth)}  ${'confidence'.padEnd(confWidth)}  ${'languages'.padEnd(langWidth)}  title\n`,
   );
   for (const row of rows) {
     writeOut(
+      io,
       `${row.id.padEnd(idWidth)}  ${row.severity.padEnd(sevWidth)}  ${row.confidence.padEnd(confWidth)}  ${row.languages.padEnd(langWidth)}  ${row.title}\n`,
     );
   }
-  writeOut('');
+  writeOut(io, '');
   void options;
   return 0;
 }
@@ -314,28 +331,28 @@ jobs:
         run: npx --yes slopgate@latest . --fail-on high --format pretty
 `;
 
-async function runInit(options: Options): Promise<number> {
+async function runInit(options: Options, io: CliIo): Promise<number> {
   const root = path.resolve(options.paths[0] ?? '.');
   await mkdir(root, { recursive: true });
   const configPath = path.join(root, '.slopgate.json');
   const workflowPath = path.join(root, '.github', 'workflows', 'slopgate.yml');
 
   if (!options.force && (await exists(configPath))) {
-    warn(options, `${configPath} already exists (use --force to overwrite)`);
+    warn(io, options, `${configPath} already exists (use --force to overwrite)`);
   } else {
     await writeFile(configPath, JSON.stringify(INIT_CONFIG, null, 2) + '\n', 'utf8');
-    writeOut(`created ${path.relative(process.cwd(), configPath)}`);
+    writeOut(io, `created ${path.relative(process.cwd(), configPath)}`);
   }
 
   if (!options.force && (await exists(workflowPath))) {
-    warn(options, `${workflowPath} already exists (use --force to overwrite)`);
+    warn(io, options, `${workflowPath} already exists (use --force to overwrite)`);
   } else {
     await mkdir(path.dirname(workflowPath), { recursive: true });
     await writeFile(workflowPath, INIT_WORKFLOW, 'utf8');
-    writeOut(`created ${path.relative(process.cwd(), workflowPath)}`);
+    writeOut(io, `created ${path.relative(process.cwd(), workflowPath)}`);
   }
 
-  writeOut('next: npx slopgate . --write-baseline, then commit the baseline');
+  writeOut(io, 'next: npx slopgate . --write-baseline, then commit the baseline');
   return 0;
 }
 
@@ -358,7 +375,7 @@ async function runMcp(options: Options): Promise<number> {
   return 0;
 }
 
-async function runScan(options: Options): Promise<number> {
+async function runScan(options: Options, io: CliIo): Promise<number> {
   if (options.paths.length > 1) {
     throw new Error('only one path is supported; run slopgate once per path');
   }
@@ -400,12 +417,13 @@ async function runScan(options: Options): Promise<number> {
 
   if (result.stats.files === 0) {
     warn(
+      io,
       options,
       `no files matched under ${path.relative(process.cwd(), target) || '.'} (check include/exclude patterns)`,
     );
   }
 
-  for (const message of result.warnings) warn(options, message);
+  for (const message of result.warnings) warn(io, options, message);
 
   let findings: Finding[] = result.findings;
   let onlyDiff = 0;
@@ -424,7 +442,7 @@ async function runScan(options: Options): Promise<number> {
   if (explicitWrite) {
     const writeTarget = path.resolve(projectRoot, explicitWrite);
     await writeBaseline(writeTarget, findings);
-    writeOut(`wrote ${findings.length} findings to ${path.relative(process.cwd(), writeTarget)}`);
+    writeOut(io, `wrote ${findings.length} findings to ${path.relative(process.cwd(), writeTarget)}`);
     return 0;
   }
 
@@ -449,6 +467,7 @@ async function runScan(options: Options): Promise<number> {
 
   if (options.format === 'json') {
     writeOut(
+      io,
       renderJson({
         findings: visible,
         stats: run.stats,
@@ -459,11 +478,12 @@ async function runScan(options: Options): Promise<number> {
       }),
     );
   } else if (options.format === 'sarif') {
-    writeOut(renderSarif(visible, version));
+    writeOut(io, renderSarif(visible, version));
   } else if (options.format === 'github') {
-    writeOut(renderGithub(visible, run.stats));
+    writeOut(io, renderGithub(visible, run.stats));
   } else {
     writeOut(
+      io,
       renderPretty({
         findings: visible,
         stats: run.stats,
@@ -471,12 +491,13 @@ async function runScan(options: Options): Promise<number> {
         baselined: run.baselined,
         hiddenByConfidence: run.hidden,
         version,
-        color: options.color && process.stdout.isTTY === true && !process.env.NO_COLOR,
+        color: options.color && io.isTTY && !process.env.NO_COLOR,
         quiet: options.quiet,
       }),
     );
     if (options.verbose) {
       writeOut(
+        io,
         `  config: ${configFile ?? '(none)'}  baseline: ${baseline ? path.relative(process.cwd(), baselinePath) : '(none)'}` +
           (onlyDiff > 0 ? `  diff-only: ${onlyDiff} finding(s) outside the diff were ignored` : '') +
           '\n',
@@ -489,35 +510,35 @@ async function runScan(options: Options): Promise<number> {
   return failing ? 1 : 0;
 }
 
-export async function main(argv: readonly string[]): Promise<number> {
+export async function main(argv: readonly string[], io: CliIo = defaultIo()): Promise<number> {
   const { options, error } = parseArgs(argv);
   if (error) {
-    process.stderr.write(`slopgate: ${error}\n\n${HELP}`);
+    io.err(`slopgate: ${error}\n\n${HELP}`);
     return 2;
   }
 
   try {
     switch (options.command) {
       case 'help':
-        writeOut(HELP);
+        writeOut(io, HELP);
         return 0;
       case 'version':
-        writeOut(await readVersion());
+        writeOut(io, await readVersion());
         return 0;
       case 'rules':
-        return await runRules(options);
+        return await runRules(options, io);
       case 'init':
-        return await runInit(options);
+        return await runInit(options, io);
       case 'mcp':
         return await runMcp(options);
       case 'scan':
-        return await runScan(options);
+        return await runScan(options, io);
       default:
-        process.stderr.write(`slopgate: unknown command\n\n${HELP}`);
+        io.err(`slopgate: unknown command\n\n${HELP}`);
         return 2;
     }
   } catch (caught) {
-    process.stderr.write(`slopgate: ${(caught as Error).message}\n`);
+    io.err(`slopgate: ${(caught as Error).message}\n`);
     return 2;
   }
 }
@@ -527,7 +548,7 @@ if (entry !== undefined) {
   try {
     const [realEntry, self] = await Promise.all([realpath(entry), realpath(fileURLToPath(import.meta.url))]);
     if (realEntry === self) {
-      process.exitCode = await main(process.argv.slice(2));
+      process.exitCode = await main(process.argv.slice(2), defaultIo());
     }
   } catch (error) {
     if (process.env.SLOPGATE_DEBUG) {

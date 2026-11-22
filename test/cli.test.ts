@@ -12,34 +12,24 @@ interface CliResult {
 }
 
 /**
- * Runs the CLI in-process. Spawning a child process would be closer to the
- * real thing, but it also makes the suite fail under sandboxes that block
- * piped stdio, so we capture the streams ourselves.
+ * Runs the CLI in-process with an injected output collector. Never patches
+ * process.stdout: Node's test runner uses stdout for its own protocol when
+ * test files run in separate processes (the default), and capturing it there
+ * corrupts the report.
  */
 async function run(args: readonly string[]): Promise<CliResult> {
   const stdoutChunks: string[] = [];
   const stderrChunks: string[] = [];
-  const stdout = process.stdout as unknown as { write: (chunk: unknown) => boolean };
-  const stderr = process.stderr as unknown as { write: (chunk: unknown) => boolean };
-  const originalOut = stdout.write;
-  const originalErr = stderr.write;
-
-  stdout.write = (chunk: unknown) => {
-    stdoutChunks.push(String(chunk));
-    return true;
-  };
-  stderr.write = (chunk: unknown) => {
-    stderrChunks.push(String(chunk));
-    return true;
-  };
-
-  try {
-    const status = await main(args);
-    return { status, stdout: stdoutChunks.join(''), stderr: stderrChunks.join('') };
-  } finally {
-    stdout.write = originalOut;
-    stderr.write = originalErr;
-  }
+  const status = await main(args, {
+    out: (text) => {
+      stdoutChunks.push(text);
+    },
+    err: (text) => {
+      stderrChunks.push(text);
+    },
+    isTTY: false,
+  });
+  return { status, stdout: stdoutChunks.join(''), stderr: stderrChunks.join('') };
 }
 
 test('cli: json output exits 1 when findings exist', async () => {

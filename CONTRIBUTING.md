@@ -90,6 +90,7 @@ Never raise confidence to make a rule more visible. Lower it, or drop the rule.
 ## Tests
 
 - Tests must not touch the network and must not spawn processes; they run in-process in milliseconds.
+- CLI tests pass an output collector to `main(argv, io)`; never replace `process.stdout` / `process.stderr`, because Node's test runner uses them for its own protocol when test files run in separate processes.
 - Use `runRule(ruleId, source, language, deps)` for unit tests and `scanFixture(name)` for integration tests.
 - MCP tools are tested by calling `createMcpServer({...}).handle(line)` with injected `scan`/`diff` functions — see `test/mcp.test.ts`.
 - Fixtures live in `fixtures/`; a fixture is a miniature repository with manifests, not just source files.

@@ -47,6 +47,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - A missing path or an unknown `--rule` id exits 2 with a message instead of silently reporting nothing.
 - `slopgate init` writes a four-key config instead of a full dump of defaults.
 - The published tarball no longer ships the demo GIF (the README uses an absolute raw URL after `scripts/set-repo.mjs`).
+- The CLI accepts an injected output writer (`main(argv, io)`), so tests no longer replace `process.stdout`. Replacing it corrupted Node's test-runner protocol in CI, which made one test fail and hid 16 others.
 - An explicitly requested `--baseline` file that does not exist now exits 2 instead of silently disabling the baseline.
 - Scanning zero files prints a warning (empty `include` list, wrong path, or everything ignored).
 - `slopgate mcp` refuses a root that is not a directory, and `scan_path` refuses symlinks that escape the repository.
