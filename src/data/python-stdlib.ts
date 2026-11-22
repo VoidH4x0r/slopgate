@@ -74,6 +74,7 @@ export const IMPORT_TO_DISTRIBUTION: Readonly<Record<string, string>> = {
   psycopg2: 'psycopg2-binary',
   rest_framework: 'djangorestframework',
   serial: 'pyserial',
+  usb: 'pyusb',
   skimage: 'scikit-image',
   sklearn: 'scikit-learn',
   slugify: 'python-slugify',

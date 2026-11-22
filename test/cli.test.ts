@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import test from 'node:test';
@@ -216,6 +216,36 @@ test('cli: --fix supports github output and quiet mode', async () => {
     assert.equal(result.stderr, '');
     assert.doesNotMatch(await readFile(path.join(dir, 'app.py'), 'utf8'), /dead/);
   } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: --fix supports --confidence and --verbose', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-verbose-'));
+  try {
+    await writeFile(path.join(dir, 'app.py'), 'def f():\n    return 1\n    print("dead")\n');
+    const result = await run([dir, '--fix', '--confidence', 'medium', '--verbose', '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stderr, /fixed 1 finding/);
+    assert.match(result.stdout, /config:/);
+    assert.doesNotMatch(await readFile(path.join(dir, 'app.py'), 'utf8'), /dead/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: --fix-dry-run works on a read-only file', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-readonly-'));
+  const file = path.join(dir, 'app.py');
+  try {
+    await writeFile(file, 'def f():\n    return 1\n    print("dead")\n');
+    await chmod(file, 0o444);
+    const result = await run([dir, '--fix-dry-run', '--no-color']);
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stderr, /would fix 1 finding/);
+    assert.match(await readFile(file, 'utf8'), /dead/);
+  } finally {
+    await chmod(file, 0o644).catch(() => undefined);
     await rm(dir, { recursive: true, force: true });
   }
 });

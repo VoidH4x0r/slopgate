@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-11-23
+
+### Fixed
+- Unknown `.slopgate.json` keys are rejected with exit 2 instead of being silently ignored.
+- `import usb` maps to the `pyusb` distribution, avoiding a phantom-import false positive.
+- The markdown encoding guard is language-aware: Chinese documents may contain legitimate `路` and rare CJK characters, while English documents still reject known mojibake.
+- Added `--fix` coverage for `--confidence`, `--verbose`, and read-only `--fix-dry-run`.
+
+### Changed
+- 342 tests.
+- Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**.
+
 ## [0.2.3] - 2026-11-23
 
 ### Fixed

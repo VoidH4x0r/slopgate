@@ -81,6 +81,14 @@ export const DEFAULT_CONFIG: Config = {
 const CONFIDENCE_RANK: Record<Confidence, number> = { low: 0, medium: 1, high: 2 };
 const SEVERITIES: readonly Severity[] = ['error', 'warning', 'info'];
 const FAIL_ON: readonly FailOn[] = ['high', 'medium', 'low', 'none'];
+const CONFIG_FIELDS = new Set([
+  'include',
+  'exclude',
+  'ignoreModules',
+  'rules',
+  'confidence',
+  'failOn',
+]);
 
 export function confidenceRank(c: Confidence): number {
   return CONFIDENCE_RANK[c];
@@ -104,6 +112,11 @@ export function normalizeConfig(raw: unknown): Config {
     throw new Error('config must be a JSON object');
   }
   const input = raw as Record<string, unknown>;
+  for (const key of Object.keys(input)) {
+    if (!CONFIG_FIELDS.has(key)) {
+      throw new Error(`unknown config field "${key}"`);
+    }
+  }
   const config: Config = { ...DEFAULT_CONFIG, rules: {} };
 
   config.include = asStringArray(input.include, 'include') ?? config.include;

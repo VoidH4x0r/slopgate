@@ -37,6 +37,7 @@ test('normalizeConfig rejects invalid values', () => {
   assert.throws(() => normalizeConfig({ rules: { 'py/noop-test': 'loud' } }), /must be/);
   assert.throws(() => normalizeConfig({ include: 'not-an-array' }), /array of strings/);
   assert.throws(() => normalizeConfig({ failOn: 'sometimes' }), /failOn/);
+  assert.throws(() => normalizeConfig({ typo: true }), /unknown config field "typo"/);
   assert.throws(() => normalizeConfig([]), /JSON object/);
 });
 

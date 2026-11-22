@@ -40,6 +40,12 @@ test('py/phantom-import understands import-name to distribution-name mappings', 
   assert.deepEqual(drafts, []);
 });
 
+test('py/phantom-import maps usb to pyusb', async () => {
+  const deps = makeDeps({ pythonDeclared: ['pyusb'] });
+  const drafts = await runRule('py/phantom-import', 'import usb\n', 'python', deps);
+  assert.deepEqual(drafts, []);
+});
+
 test('py/phantom-import does not map every google import to protobuf', async () => {
   const drafts = await runRule(
     'py/phantom-import',
