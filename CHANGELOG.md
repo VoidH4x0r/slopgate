@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-22
+
 ### Fixed
 - Config `include` / `exclude` globs are matched relative to the config file's directory (or the project root when no config exists), so a root config still governs `slopgate backend` and CLI `--exclude generated/**` works without a config file.
 - Registry indexing is scoped to the repository/target, lazy-loads project deps, caches project/non-project ancestor checks, and respects `config.exclude`; MCP rebuilds the index per call so new modules and projects are visible, while configs invalidate on mtime. Non-git scans use a lookup boundary for ancestor manifests and bounded-recursion Python top-level modules (including namespace packages without `__init__.py`) between the package and cwd; this intentionally trades some precision for fewer false positives when a Python-bearing sibling exists above the project.
@@ -67,7 +69,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 - 270 tests, including `as-binding` and `as-binding-more` fixtures covering bindings, `except*`, single-element and mixed tuples.
-- Docs note that human-written benchmark corpora rarely exercise AI-specific `except … as e: pass` shapes; regression fixtures cover them until the 0.2.0 AI corpus.
+- Docs note that human-written benchmark corpora rarely exercise AI-specific `except … as e: pass` shapes; regression fixtures cover them until the AI corpus.
 - Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
 
 ## [0.1.15] - 2026-11-22
@@ -212,7 +214,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 - 228 tests, including fourth-round regression fixtures for `tape-assert`, `hoisted-fn`, `assert-forms`, `above-heuristic`, `above-trailing`, `between-asymmetry` and `dummy-dir-shim`.
 - Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
-- Docs now state that the nine JS packages do not exercise Tape/TAP or bundled output, and record the Electron-asar corpus findings as the motivation for the 0.2.0 JS corpus expansion.
+- Docs now state that the nine JS packages do not exercise Tape/TAP or bundled output, and record the Electron-asar corpus findings as the motivation for a future JS corpus expansion.
 
 ## [0.1.3] - 2026-11-22
 

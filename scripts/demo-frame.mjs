@@ -27,8 +27,8 @@ export const LINES = [
   { segments: [] },
   {
     segments: [
-      { text: 'slopgate 0.1.18', color: COLORS.fg },
-      { text: '  ·  4 files  ·  39ms', color: COLORS.dim },
+      { text: 'slopgate 0.2.0', color: COLORS.fg },
+      { text: '  ·  4 files  ·  50ms', color: COLORS.dim },
     ],
   },
   { segments: [] },
@@ -69,7 +69,7 @@ export const LINES = [
   {
     segments: [
       { text: '  13 findings in 3 files', color: COLORS.fg },
-      { text: '  ·  4 files scanned in 39ms', color: COLORS.dim },
+      { text: '  ·  4 files scanned in 50ms', color: COLORS.dim },
     ],
   },
   {

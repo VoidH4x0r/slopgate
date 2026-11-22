@@ -68,9 +68,12 @@ test('cli: rules lists every rule id', async () => {
 
 test('cli: unknown options exit 2 with a helpful message', async () => {
   const result = await run(['fixtures/demo', '--nope']);
+  const pkg = JSON.parse(await readFile(path.join(ROOT, 'package.json'), 'utf8')) as {
+    version: string;
+  };
   assert.equal(result.status, 2);
   assert.match(result.stderr, /unknown option: --nope/);
-  assert.match(result.stderr, /slopgate 0\.1\.\d+/);
+  assert.match(result.stderr, new RegExp(`slopgate ${pkg.version.replaceAll('.', '\\.')}`));
   assert.doesNotMatch(result.stderr, /slopgate 0\.1\.0 —/);
 });
 

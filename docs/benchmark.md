@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.1.18): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
+> Status (0.2.0): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
 
 ## The claim
 
@@ -23,11 +23,11 @@ Known false positive in the published run: `platform.py` imports `java.lang` ins
 
 ### Human-written corpus caveat
 
-The false-positive corpus is human-written code, which rarely contains AI-specific shapes such as `except Exception as error:` followed by `pass`. Those patterns are covered by `fixtures/regressions` instead; 0.2.0 should add an AI-generated corpus so the benchmark exercises them directly.
+The false-positive corpus is human-written code, which rarely contains AI-specific shapes such as `except Exception as error:` followed by `pass`. Those patterns are covered by `fixtures/regressions` instead; a future release should add an AI-generated corpus so the benchmark exercises them directly.
 
 ### What the JavaScript half does not cover
 
-The nine packages are popular, hand-maintained libraries, not a hostile JavaScript corpus. They contain **no Tape/TAP test suites, no bundler chunks, and no interface-stub class methods**, so their 0-high result is evidence for those packages, not for JavaScript generally. A separate 6,012-file Electron `app.asar` corpus (not bundled here) exposed three pattern classes: 126 `t.equal`-style assertions, 83 hoisted declarations after `return`, and 65 class methods that throw `Not implemented`. Version 0.1.4 fixes the underlying rules and adds small regression fixtures for each pattern; version 0.2.0 will add a real Tape/TAP package and a bundled-app corpus to this benchmark.
+The nine packages are popular, hand-maintained libraries, not a hostile JavaScript corpus. They contain **no Tape/TAP test suites, no bundler chunks, and no interface-stub class methods**, so their 0-high result is evidence for those packages, not for JavaScript generally. A separate 6,012-file Electron `app.asar` corpus (not bundled here) exposed three pattern classes: 126 `t.equal`-style assertions, 83 hoisted declarations after `return`, and 65 class methods that throw `Not implemented`. Version 0.1.4 fixes the underlying rules and adds small regression fixtures for each pattern; a future release will add a real Tape/TAP package and a bundled-app corpus to this benchmark.
 
 ## Reproducing
 
