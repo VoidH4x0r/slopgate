@@ -9,6 +9,19 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.7] - 2026-11-22
+
+### Fixed
+- `py/noop-test` builds its local-helper index lazily, only when a test actually lacks an assertion. This removes the unconditional full-tree walk introduced in 0.1.6 and restores the rule’s scan cost (≈10.4 s → 9.9 s for `--rule py/noop-test` on the full CPython corpus).
+- `py/swallowed-exception` checks whether a comment is a real explanation before applying future-work noise. “The caller retries later, so we ignore this error” demotes, while “refactor this later” stays high.
+
+### Added
+- Benchmark performance guard: `--max-regression <percent>` compares per-corpus `durationMs` with the previous results file, ignores corpora under 100 ms, and exits 1 on a regression. Intended for same-machine runs.
+
+### Changed
+- 250 tests, including the `future-words` fixture and performance-guard unit tests.
+- Benchmark findings unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.6] - 2026-11-22
 
 ### Fixed

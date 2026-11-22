@@ -15,12 +15,13 @@ import { fileURLToPath } from 'node:url';
 import { findingFingerprint } from '../dist/baseline.js';
 import { DEFAULT_CONFIG } from '../dist/config.js';
 import { scanProject } from '../dist/engine.js';
+import { compareDurations } from './benchmark-perf.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 
 function parseArgs(argv) {
-  const options = { corpora: [], out: 'benchmark/results.json', report: 'benchmark/report.md', labels: 'benchmark/labels.json', seeded: 'benchmark/seeded.json' };
+  const options = { corpora: [], out: 'benchmark/results.json', report: 'benchmark/report.md', labels: 'benchmark/labels.json', seeded: 'benchmark/seeded.json', maxRegression: undefined };
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--corpus') {
@@ -33,7 +34,12 @@ function parseArgs(argv) {
     else if (token === '--report') { options.report = argv[++i]; }
     else if (token === '--labels') { options.labels = argv[++i]; }
     else if (token === '--seeded') { options.seeded = argv[++i]; }
-    else if (token === '--help' || token === '-h') { console.log('usage: node scripts/benchmark.mjs --corpus name=/path [--corpus ...] [--out file] [--report file]'); process.exit(0); }
+    else if (token === '--max-regression') {
+      const value = Number(argv[++i]);
+      if (!Number.isFinite(value) || value < 0) throw new Error('--max-regression expects a non-negative percentage');
+      options.maxRegression = value;
+    }
+    else if (token === '--help' || token === '-h') { console.log('usage: node scripts/benchmark.mjs --corpus name=/path [--corpus ...] [--out file] [--report file] [--max-regression percent]'); process.exit(0); }
     else throw new Error(`unknown option: ${token}`);
   }
   if (options.corpora.length === 0) throw new Error('at least one --corpus name=/path is required');
@@ -145,6 +151,10 @@ async function main() {
   const labels = loadJson(options.labels, {});
   const seeded = loadJson(options.seeded, undefined);
   const packageJson = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const outPath = path.resolve(ROOT, options.out);
+  // Read the baseline before the new results overwrite it. The guard is opt-in
+  // and only meaningful for repeated runs on the same machine.
+  const previous = existsSync(outPath) ? JSON.parse(readFileSync(outPath, 'utf8')) : undefined;
   const report = {
     schemaVersion: 2,
     generatedAt: new Date().toISOString(),
@@ -192,9 +202,8 @@ async function main() {
 
   if (seeded) report.recall = await recallAgainstSeeded(seeded);
 
-  const outPath = path.resolve(ROOT, options.out);
-  writeFileSync(outPath, JSON.stringify(report, null, 2) + '\n', 'utf8');
   const reportPath = path.resolve(ROOT, options.report);
+  writeFileSync(outPath, JSON.stringify(report, null, 2) + '\n', 'utf8');
   writeFileSync(reportPath, renderMarkdown(report), 'utf8');
 
   for (const corpus of report.corpora) {
@@ -206,6 +215,23 @@ async function main() {
   }
   if (report.recall) console.log(`recall (seeded): ${report.recall.detected}/${report.recall.total}`);
   console.log(`wrote ${path.relative(ROOT, outPath)} and ${path.relative(ROOT, reportPath)}`);
+  if (options.maxRegression !== undefined) {
+    if (!previous) {
+      console.log('performance: no previous results file; skipping guard');
+    } else {
+      const regressions = compareDurations(previous, report, options.maxRegression);
+      if (regressions.length > 0) {
+        for (const regression of regressions) {
+          console.error(
+            `performance regression: ${regression.name} ${regression.previousMs}ms -> ${regression.currentMs}ms`,
+          );
+        }
+        process.exitCode = 1;
+      } else {
+        console.log(`performance: within ${options.maxRegression}% of the previous run`);
+      }
+    }
+  }
   if (report.staleLabels.length > 0) {
     console.warn(`stale labels (no matching high finding): ${report.staleLabels.length}`);
   }

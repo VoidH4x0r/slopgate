@@ -322,7 +322,13 @@ const noopTest: Rule = {
     if (ctx.language !== 'python') return [];
     if (isStubFile(ctx.file)) return [];
     const drafts: RuleDraft[] = [];
-    const helpers = localAssertionHelpers(ctx.root);
+    // Building the helper index costs a full-tree walk plus an assertion walk
+    // per function. Only do it when a test actually lacks an assertion.
+    let helperIndex: Map<string, AstNode> | undefined;
+    const helpers = (): Map<string, AstNode> => {
+      helperIndex ??= localAssertionHelpers(ctx.root);
+      return helperIndex;
+    };
 
     for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
       const name = testFunctionName(fn);
@@ -357,7 +363,7 @@ const noopTest: Rule = {
       }
       if (!hasAssertion(body)) {
         const delegatesToSelf = bodyCallsSelf(body);
-        const delegatedTo = delegatesToLocalHelper(statements, helpers);
+        const delegatedTo = delegatesToLocalHelper(statements, helpers());
         const parameters = fn.childForFieldName('parameters');
         const parameterCount = parameters
           ? parameters.namedChildren.filter((child) => child.type !== 'comment').length
@@ -551,13 +557,13 @@ function supportingCommentBetween(
 ): boolean {
   return ctx.comments.some((comment) => {
     if (!overlaps(comment, fromLine, toLine)) return false;
+    const positioned = isStandaloneComment(ctx, comment) || comment.startLine >= handlerStartLine;
+    if (!positioned) return false;
     const text = commentText(ctx, comment);
-    if (NOISE_COMMENT.test(text)) return false;
-    // A comment on the `pass` line is unambiguously about that handler, so it
-    // may be inline. Comments before the handler must start their own line:
-    // a trailing comment on a previous statement often describes that
-    // statement, not the exception.
-    return isStandaloneComment(ctx, comment) || comment.startLine >= handlerStartLine;
+    // A stated explanation wins over future-work wording: "the caller retries
+    // later, so we ignore this error" is an explanation, not a TODO.
+    if (isExplanationText(text)) return true;
+    return !NOISE_COMMENT.test(text);
   });
 }
 

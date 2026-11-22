@@ -245,3 +245,21 @@ test('regression: verify-named Python delegation stays clean', async () => {
   assert.equal(findings[0]?.start.line, 12);
   assert.equal(findings[0]?.confidence, 'high');
 });
+
+test('regression: explanations containing future words still demote', async () => {
+  const result = await scanFixture('regressions/future-words');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 3);
+  const high = findings.filter((finding) => finding.confidence === 'high');
+  assert.deepEqual(
+    high.map((finding) => finding.start.line),
+    [26],
+  );
+  assert.deepEqual(
+    findings
+      .filter((finding) => finding.confidence === 'medium')
+      .map((finding) => finding.start.line)
+      .sort((a, b) => a - b),
+    [10, 18],
+  );
+});
