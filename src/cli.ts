@@ -53,7 +53,7 @@ Options:
   --format <pretty|json|sarif|github>  output format (default: pretty)
   --confidence <high|medium|low> minimum confidence to show (default: high)
   --fail-on <high|medium|low|none> minimum confidence that fails the run (default: high)
-  --baseline [path]              findings file to ignore (default: ${DEFAULT_BASELINE})
+  --baseline [path]              findings file to ignore (default: ${DEFAULT_BASELINE} at the repo root)
   --write-baseline [path]        record current findings as the baseline, then exit 0
   --diff [ref]                   only report findings on lines changed since ref (default: HEAD)
   --include <glob>               extra include pattern (repeatable)
@@ -404,7 +404,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     throw new Error(`path not found: ${target}`);
   }
   const projectRoot = targetInfo.isFile() ? path.dirname(target) : target;
-  const { config, file: configFile } = await loadConfig(projectRoot);
+  // Config and the default baseline belong to the repository, not to the
+  // directory being scanned. Manifests stay target-scoped inside scanProject.
+  const configRoot = (await findGitRoot(projectRoot)) ?? projectRoot;
+  const { config, file: configFile } = await loadConfig(configRoot);
 
   if (options.rules.length > 0) {
     const unknown = options.rules.filter((id) => !RULE_BY_ID.has(id));
@@ -442,10 +445,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     );
   }
 
-  const baselinePath = path.resolve(projectRoot, options.baseline ?? DEFAULT_BASELINE);
+  const baselinePath = path.resolve(configRoot, options.baseline ?? DEFAULT_BASELINE);
   const explicitWrite = options.writeBaseline;
   if (explicitWrite) {
-    const writeTarget = path.resolve(projectRoot, explicitWrite);
+    const writeTarget = path.resolve(configRoot, explicitWrite);
     // Record the current findings, not the diff-filtered subset.
     await writeBaseline(writeTarget, result.findings);
     writeOut(io, `wrote ${result.findings.length} findings to ${path.relative(process.cwd(), writeTarget)}`);

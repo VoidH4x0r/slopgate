@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.1.10): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
+> Status (0.1.11): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
 
 ## The claim
 
@@ -44,7 +44,7 @@ Timings are machine- and load-dependent, so the guard is opt-in and intended for
 node scripts/benchmark.mjs … --max-regression 5
 ```
 
-It compares each corpus’s `durationMs` with the existing `--out` file before overwriting it, prints any corpus that is more than the given percentage slower, and exits 1. Corpora whose baseline is under 100 ms are ignored because startup/timer noise dominates them; new or missing corpora are ignored too.
+It compares each corpus’s `durationMs` with the existing `--out` file before overwriting it, prints any corpus that is more than the given percentage slower, and exits 1. Corpora whose baseline is under 500 ms are ignored because startup/timer noise dominates them; new or missing corpora are ignored too.
 
 ## Metrics reported
 

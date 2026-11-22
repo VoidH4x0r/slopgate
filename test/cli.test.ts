@@ -134,15 +134,34 @@ test('cli: scanning zero files exits 2 instead of reporting a clean run', async 
 });
 
 test('cli: a config value from Object.prototype is rejected', async () => {
-  const result = await run(['fixtures/regressions/cfg', '--no-color']);
-  assert.equal(result.status, 2);
-  assert.match(result.stderr, /confidence/);
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cfg-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await writeFile(path.join(dir, '.slopgate.json'), '{"confidence":"toString"}');
+    await writeFile(path.join(dir, 'app.py'), 'def f():\n    pass\n');
+    const result = await run([dir, '--no-color']);
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /confidence/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test('cli: an unknown rule id in config exits 2 even with --quiet', async () => {
-  const result = await run(['fixtures/regressions/bad-rule-config', '--quiet', '--no-color']);
-  assert.equal(result.status, 2);
-  assert.match(result.stderr, /unknown rule in config: py\/does-not-exist/);
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-bad-rule-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await writeFile(
+      path.join(dir, '.slopgate.json'),
+      '{"rules":{"py/does-not-exist":"off"}}',
+    );
+    await writeFile(path.join(dir, 'app.py'), 'def f():\n    pass\n');
+    const result = await run([dir, '--quiet', '--no-color']);
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /unknown rule in config: py\/does-not-exist/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test('cli: --include appends to the default pattern set', async () => {
@@ -259,11 +278,69 @@ test('cli: reports from a subdirectory use repo-relative paths', async () => {
   }
 });
 
+test('cli: repository-root config applies to subdirectory and file scans', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-root-config-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'));
+    await writeFile(
+      path.join(dir, '.slopgate.json'),
+      '{"rules":{"py/stub-body":"off"}}',
+    );
+    await writeFile(path.join(dir, 'src', 'a.py'), 'def stubbed():\n    pass\n');
+
+    for (const target of [dir, path.join(dir, 'src'), path.join(dir, 'src', 'a.py')]) {
+      const result = await run([target, '--format', 'json']);
+      assert.equal(result.status, 0, result.stderr);
+      const payload = JSON.parse(result.stdout) as { findings: unknown[] };
+      assert.deepEqual(payload.findings, []);
+    }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: the default baseline is written and read at the repository root', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-root-baseline-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'));
+    await writeFile(path.join(dir, 'src', 'a.py'), 'def stubbed():\n    pass\n');
+
+    const write = await run([path.join(dir, 'src'), '--write-baseline']);
+    assert.equal(write.status, 0, write.stderr);
+    await readFile(path.join(dir, '.slopgate-baseline.json'), 'utf8');
+    await assert.rejects(readFile(path.join(dir, 'src', '.slopgate-baseline.json'), 'utf8'));
+
+    const rerun = await run([path.join(dir, 'src'), '--format', 'json']);
+    assert.equal(rerun.status, 0, rerun.stderr);
+    const payload = JSON.parse(rerun.stdout) as {
+      findings: unknown[];
+      summary: { baselined: number };
+    };
+    assert.deepEqual(payload.findings, []);
+    assert.equal(payload.summary.baselined, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: severity info stays visible but still fails CI', async () => {
-  const result = await run(['fixtures/regressions/severity-override', '--format', 'json']);
-  assert.equal(result.status, 1, result.stderr);
-  const payload = JSON.parse(result.stdout) as { findings: Array<{ severity: string }> };
-  assert.ok(payload.findings.some((finding) => finding.severity === 'info'));
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-severity-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await writeFile(
+      path.join(dir, '.slopgate.json'),
+      '{"rules":{"py/stub-body":"info"}}',
+    );
+    await writeFile(path.join(dir, 'app.py'), 'def stubbed():\n    pass\n');
+    const result = await run([dir, '--format', 'json']);
+    assert.equal(result.status, 1, result.stderr);
+    const payload = JSON.parse(result.stdout) as { findings: Array<{ severity: string }> };
+    assert.ok(payload.findings.some((finding) => finding.severity === 'info'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test('cli: --rule restricts the run to one rule', async () => {

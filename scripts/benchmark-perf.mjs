@@ -8,8 +8,9 @@ export function compareDurations(previous, current, thresholdPercent) {
   const before = new Map((previous.corpora ?? []).map((corpus) => [corpus.name, corpus.durationMs]));
   return (current.corpora ?? []).flatMap((corpus) => {
     const previousMs = before.get(corpus.name);
-    // Very short scans are dominated by process startup and timer noise.
-    if (previousMs === undefined || previousMs < 100) return [];
+    // Short scans are dominated by process startup and timer noise. Only gate
+    // corpora large enough for a 5% threshold to be meaningful.
+    if (previousMs === undefined || previousMs < 500) return [];
     const limit = previousMs * (1 + thresholdPercent / 100);
     return corpus.durationMs > limit
       ? [{ name: corpus.name, previousMs, currentMs: corpus.durationMs }]

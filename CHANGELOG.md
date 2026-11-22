@@ -9,6 +9,19 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.11] - 2026-11-22
+
+### Fixed
+- `.slopgate.json` and `.slopgate-baseline.json` are now loaded from the nearest git repository root, not from the scan target. `slopgate src` and `slopgate src/a.py` see the same `rules` / `include` / `exclude` / `ignoreModules` / `confidence` / `failOn` settings as `slopgate .`, matching MCP.
+- Default and explicit baseline paths resolve from the repository root. `--write-baseline` started from `src` now writes `<repo>/.slopgate-baseline.json`, and later scans from any subdirectory read it.
+- Manifest and local-module resolution remains target-scoped, so monorepo packages still use their own `package.json` / `pyproject.toml`.
+
+### Changed
+- **Behavior change:** a baseline written by an older version inside a scanned subdirectory is no longer found automatically; move it to the repository root or pass `--baseline`.
+- 259 tests, including repo-root config applying to directory/file scans and default-baseline read/write at the root.
+- The performance guard now ignores corpora under 500 ms, so 5% comparisons target the CPython/ESLint-scale scans rather than startup noise.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.10] - 2026-11-22
 
 ### Fixed

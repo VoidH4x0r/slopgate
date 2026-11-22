@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.1.10  ·  4 files  ·  39ms
+slopgate 0.1.11  ·  4 files  ·  39ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -116,7 +116,7 @@ slopgate [path] [options]
   --confidence high|medium|low    minimum confidence to report       (default: high)
   --fail-on high|medium|low|none  minimum confidence that fails CI   (default: high)
                                    (a lower value also lowers what is displayed)
-  --baseline [path]               ignore findings recorded in a file (default: .slopgate-baseline.json)
+  --baseline [path]               ignore findings recorded in a file (default: .slopgate-baseline.json at the repo root)
   --write-baseline [path]         record current findings, then exit 0
   --diff [ref]                    only report findings on changed lines (default: HEAD)
   --include/--exclude <glob>      adjust the file set
@@ -128,7 +128,7 @@ slopgate [path] [options]
 
 ### Configuration
 
-`slopgate` reads `.slopgate.json` (or `slopgate.config.json`) from the project root. Every key is optional:
+`slopgate` reads `.slopgate.json` (or `slopgate.config.json`) from the **nearest git repository root** (falling back to the scan target’s directory outside git). Every key is optional:
 
 ```json
 {
@@ -150,6 +150,8 @@ slopgate [path] [options]
 - `confidence` / `failOn` — same meaning as the CLI flags; CLI flags win.
 
 For example, `{"include": ["src/**"]}` scans only files under `src/`; it does **not** keep the default Python/TS/JS coverage. Add the patterns you need, or use the CLI flag to append one pattern to the defaults.
+
+The default `.slopgate-baseline.json` also lives at the repository root. `--baseline` and `--write-baseline` paths resolve there, so scanning `src` and then the repository root share one baseline.
 
 Reported paths (including SARIF and GitHub annotations) are relative to the nearest git repository root. If the target is outside a git repository, paths stay relative to the scan target.
 
@@ -208,7 +210,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.1.10 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.11 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -216,7 +218,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.1.10 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.11 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -301,7 +303,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 257 tests; the tests themselves make no network or child-process calls
+npm test            # 259 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```
