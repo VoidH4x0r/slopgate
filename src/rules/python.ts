@@ -478,7 +478,7 @@ const INTENT_WORDS = /ignor\w*|abort|skip|safe|accept|fallback|best effort|toler
 const STRONG_EXPLANATION =
   /harmless|benign|intentional|by design|safe to ignore|expected (?:error|failure|exception|behaviou?r)/i;
 /** Comments that describe future work, not why an error is safe to ignore. */
-const NOISE_COMMENT = /(?:^|\s)(TODO|FIXME|XXX|HACK)\b|refactor|cleanup|next sprint/i;
+const NOISE_COMMENT = /\b(TODO|FIXME|XXX|HACK)\b/i;
 
 function isExplanationText(text: string): boolean {
   return STRONG_EXPLANATION.test(text) || (FAILURE_WORDS.test(text) && INTENT_WORDS.test(text));
@@ -580,7 +580,7 @@ const swallowedException: Rule = {
         if (!silent) continue;
 
         const typeText = clause.namedChildren
-          .filter((child) => child.type !== 'block')
+          .filter((child) => child.type !== 'block' && !isComment(child))
           .map((child) => collapseWhitespace(child.text))
           .join(' ')
           .trim();
@@ -589,7 +589,7 @@ const swallowedException: Rule = {
 
         const commented =
           above ||
-          supportingCommentBetween(ctx, betweenStart, handlerEndRow + 1, body.startPosition.row + 1);
+          supportingCommentBetween(ctx, betweenStart, handlerEndRow + 1, clause.startPosition.row + 1);
         const bare = typeText.length === 0;
         const broad = bare || /^(\(?\s*)?(Exception|BaseException)(\s*\))?$/.test(typeText);
         const cleanup = insideCleanupFunction(clause);

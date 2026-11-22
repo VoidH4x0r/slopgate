@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-22T08:01:51.403Z by `scripts/benchmark.mjs` (slopgate 0.1.4, Node v24.19.0).
+Generated 2026-11-22T08:19:40.047Z by `scripts/benchmark.mjs` (slopgate 0.1.5, Node v24.19.0).
 
 ## Summary
 
@@ -23,7 +23,7 @@ Detected **14/14** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 11392 ms.
+Scanned **1845** files (**991705** lines) in 10992 ms.
 
 Corpus digest: `027f952580cd6622`.
 
@@ -38,7 +38,7 @@ Corpus digest: `027f952580cd6622`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 37 ms.
+Scanned **7** files (**2783** lines) in 35 ms.
 
 Package: `express@5.3.0`.
 
@@ -72,7 +72,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 58 ms.
+Scanned **49** files (**3166** lines) in 51 ms.
 
 Package: `semver@7.8.6`.
 
@@ -83,7 +83,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 39 ms.
+Scanned **7** files (**4225** lines) in 40 ms.
 
 Package: `commander@15.1.0`.
 
@@ -106,7 +106,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 861 ms.
+Scanned **409** files (**100880** lines) in 855 ms.
 
 Package: `eslint@10.15.0`.
 
@@ -119,7 +119,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 34 ms.
+Scanned **7** files (**2217** lines) in 35 ms.
 
 Package: `glob@14.0.6`.
 
@@ -130,7 +130,7 @@ Corpus digest: `dc4dc56c06b64fb8`.
 
 ## yargs
 
-Scanned **5** files (**198** lines) in 8 ms.
+Scanned **5** files (**198** lines) in 6 ms.
 
 Package: `yargs@18.2.0`.
 

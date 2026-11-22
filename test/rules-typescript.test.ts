@@ -224,6 +224,62 @@ test('ts/noop-test does not treat arbitrary .equal as an assertion', async () =>
   assert.equal(drafts.length, 1);
 });
 
+test('ts/noop-test reports delegated assertions at medium', async () => {
+  const block = "test('x', (t) => { runSuite(t); t.end(); });\n";
+  const expression = "test('x', (t) => runSuite(t));\n";
+  for (const source of [block, expression]) {
+    const drafts = await runRule('ts/noop-test', source, 'typescript');
+    assert.equal(drafts.length, 1);
+    assert.equal(drafts[0]?.confidence, 'medium');
+  }
+});
+
+test('ts/noop-test does not treat a context receiver as delegation', async () => {
+  const drafts = await runRule('ts/noop-test', "test('x', (t) => { t.end(); });\n", 'typescript');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('ts/noop-test does not delegate without a callback parameter', async () => {
+  const drafts = await runRule('ts/noop-test', "test('x', () => { runSuite(); });\n", 'typescript');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('ts/unreachable ignores erased type declarations after return', async () => {
+  const source = [
+    'function f() {',
+    '  return 1;',
+    '  type T = { value: string };',
+    '  interface I { strict: boolean }',
+    '  declare const flag: boolean;',
+    '}',
+  ].join('\n');
+  assert.deepEqual(await runRule('ts/unreachable', source, 'typescript'), []);
+});
+
+test('ts/unreachable still reports enums, classes and lexical declarations', async () => {
+  const enumSource = ['function f() {', '  return 1;', '  enum E { A }', '}'].join('\n');
+  const classSource = ['function f() {', '  return 1;', '  class C {}', '}'].join('\n');
+  const letSource = ['function f() {', '  return 1;', '  let x;', '}'].join('\n');
+  assert.equal((await runRule('ts/unreachable', enumSource, 'typescript')).length, 1);
+  assert.equal((await runRule('ts/unreachable', classSource, 'typescript')).length, 1);
+  assert.equal((await runRule('ts/unreachable', letSource, 'typescript')).length, 1);
+});
+
+test('ts/stub-function reports object-literal arrow stubs at medium', async () => {
+  const source = [
+    'const api = {',
+    "  toggle: (e) => { throw new Error('Not implemented'); },",
+    '};',
+    "const run = () => { throw new Error('Not implemented'); };",
+  ].join('\n');
+  const drafts = await runRule('ts/stub-function', source, 'typescript');
+  assert.equal(drafts.length, 2);
+  assert.equal(drafts.find((draft) => draft.start.line === 2)?.confidence, 'medium');
+  assert.equal(drafts.find((draft) => draft.start.line === 4)?.confidence, 'high');
+});
+
 test('ts/tautological-assert finds self-comparisons', async () => {
   assert.equal((await runRule('ts/tautological-assert', 'expect(true).toBe(true);\n', 'typescript')).length, 1);
   assert.equal((await runRule('ts/tautological-assert', 'expect(x).toEqual(x);\n', 'typescript')).length, 1);

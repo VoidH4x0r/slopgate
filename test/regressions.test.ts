@@ -181,3 +181,39 @@ test('regression: prefixed dummy directories with a shim docstring are skipped',
   const result = await scanFixture('regressions/dummy-dir-shim');
   assert.deepEqual(ruleFindings(result, 'py/stub-body'), []);
 });
+
+test('regression: delegated assertions are medium, not high', async () => {
+  const result = await scanFixture('regressions/delegated-assert');
+  const findings = ruleFindings(result, 'ts/noop-test');
+  assert.equal(findings.length, 2);
+  assert.ok(findings.every((finding) => finding.confidence === 'medium'));
+});
+
+test('regression: type-only declarations after return are not unreachable', async () => {
+  const result = await scanFixture('regressions/ts-type-after-return');
+  const findings = ruleFindings(result, 'ts/unreachable');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.start.line, 15);
+});
+
+test('regression: cleanup wording is a valid explanation', async () => {
+  const result = await scanFixture('regressions/cleanup-word');
+  const swallowed = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(swallowed.length, 2);
+  assert.ok(swallowed.every((finding) => finding.confidence === 'medium'));
+});
+
+test('regression: comments on the except line and in the handler count', async () => {
+  const result = await scanFixture('regressions/comment-placement');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 4);
+  assert.ok(findings.every((finding) => finding.confidence === 'medium'));
+});
+
+test('regression: above-try wording stays conservative without an intent word', async () => {
+  const result = await scanFixture('regressions/wording');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 3);
+  assert.equal(findings.filter((finding) => finding.confidence === 'high').length, 1);
+  assert.equal(findings.find((finding) => finding.confidence === 'high')?.start.line, 16);
+});

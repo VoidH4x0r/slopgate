@@ -210,6 +210,47 @@ function hasAssertion(body: AstNode, aliases: ReadonlySet<string>): boolean {
   return found;
 }
 
+function parameterName(node: AstNode | undefined): string | undefined {
+  if (!node) return undefined;
+  if (node.type === 'identifier') return node.text;
+  const pattern = node.childForFieldName('pattern');
+  if (pattern) return parameterName(pattern);
+  const first = node.namedChildren.find((child) => child.type === 'identifier');
+  return first?.text;
+}
+
+function firstParameterName(callback: AstNode): string | undefined {
+  const params = callback.childForFieldName('parameters');
+  if (!params) return undefined;
+  if (params.type === 'identifier') return params.text;
+  // A callback with several parameters is usually a table-driven test
+  // (`(a, b) => add(a, b)`), not a framework context being delegated.
+  if (params.namedChildren.length !== 1) return undefined;
+  return parameterName(params.namedChildren[0]);
+}
+
+/**
+ * Tape/TAP often delegates assertions to a local helper that receives `t`:
+ * `test('x', (t) => { runSuite(t); t.end(); })`. The helper may assert, so
+ * this is a medium-confidence "cannot verify" rather than a guaranteed no-op.
+ */
+function delegatedHelper(body: AstNode, callback: AstNode): string | undefined {
+  const param = firstParameterName(callback);
+  if (!param) return undefined;
+  let helper: string | undefined;
+  walk(body, (node) => {
+    if (helper) return false;
+    if (node.type !== 'call_expression') return true;
+    const args = node.childForFieldName('arguments');
+    if (!args?.namedChildren.some((arg) => arg.type === 'identifier' && arg.text === param)) {
+      return true;
+    }
+    helper = collapseWhitespace(node.childForFieldName('function')?.text ?? '') || 'a helper';
+    return false;
+  });
+  return helper;
+}
+
 const phantomImport: Rule = {
   meta: {
     id: 'ts/phantom-import',
@@ -326,15 +367,22 @@ const noopTest: Rule = {
       if (!body) continue;
 
       const label = args.namedChildren[0]?.type === 'string' ? truncate(args.namedChildren[0].text, 60) : undefined;
+      const delegated = delegatedHelper(body, callback);
 
       if (body.type !== 'statement_block') {
         if (!hasAssertion(body, aliases)) {
           drafts.push({
-            message: 'test makes no assertions',
+            message: delegated ? 'test delegates its assertions to a helper' : 'test makes no assertions',
             start: startOf(call),
             end: endOf(body),
             snippet: snippetOf(ctx, call),
-            evidence: [`test: ${label ?? '(anonymous)'}`, 'the test body only calls code without checking a result'],
+            confidence: delegated ? 'medium' : 'high',
+            evidence: [
+              `test: ${label ?? '(anonymous)'}`,
+              ...(delegated
+                ? [`first parameter is passed to \`${delegated}\`; the helper may assert`]
+                : ['the test body only calls code without checking a result']),
+            ],
             help: 'Every test should be able to fail. Add an assertion that depends on the behaviour under test.',
           });
         }
@@ -356,11 +404,18 @@ const noopTest: Rule = {
       }
       if (!hasAssertion(body, aliases)) {
         drafts.push({
-          message: 'test makes no assertions',
+          message: delegated ? 'test delegates its assertions to a helper' : 'test makes no assertions',
           start: startOf(call),
           end: endOf(body),
           snippet: snippetOf(ctx, call),
-          evidence: [`test: ${label ?? '(anonymous)'}`, `statements: ${statements.length}`, 'no expect() / assert() found'],
+          confidence: delegated ? 'medium' : 'high',
+          evidence: [
+            `test: ${label ?? '(anonymous)'}`,
+            `statements: ${statements.length}`,
+            ...(delegated
+              ? [`first parameter is passed to \`${delegated}\`; the helper may assert`]
+              : ['no expect() / assert() found']),
+          ],
           help: 'Every test should be able to fail. Add an assertion that depends on the behaviour under test.',
         });
       }
@@ -499,7 +554,11 @@ const stubFunction: Rule = {
         start: startOf(node),
         end: endOf(body),
         snippet: snippetOf(ctx, node),
-        evidence: ['body: throws "not implemented"'],
+        confidence: node.parent?.type === 'pair' ? 'medium' : 'high',
+        evidence: [
+          'body: throws "not implemented"',
+          ...(node.parent?.type === 'pair' ? ['object-literal property: interface stubs often throw here'] : []),
+        ],
         help: 'Implement it, or throw an error with a message so callers fail loudly.',
       });
     }
@@ -602,11 +661,19 @@ const deadBranch: Rule = {
 
 /**
  * Function declarations and bare `var` statements are hoisted: they are usable
- * before a `return` even when written after it. `let`/`const` and initialised
- * `var` statements execute at their position, so they remain genuinely dead.
+ * before a `return` even when written after it. Type aliases, interfaces and
+ * `declare` statements are erased at compile time, so they have no runtime
+ * position either. `let`/`const`, enums, classes and initialised `var`
+ * statements execute at their position and remain genuinely dead.
  */
-function isHoistedDeclaration(statement: AstNode): boolean {
-  if (statement.type === 'function_declaration' || statement.type === 'generator_function_declaration') {
+function isErasedOrHoisted(statement: AstNode): boolean {
+  if (
+    statement.type === 'function_declaration' ||
+    statement.type === 'generator_function_declaration' ||
+    statement.type === 'type_alias_declaration' ||
+    statement.type === 'interface_declaration' ||
+    statement.type === 'ambient_declaration'
+  ) {
     return true;
   }
   if (statement.type !== 'variable_declaration') return false;
@@ -635,7 +702,7 @@ const unreachable: Rule = {
       if (index === -1) continue;
       const terminator = statements[index];
       if (!terminator) continue;
-      const firstUnreachable = statements.slice(index + 1).find((statement) => !isHoistedDeclaration(statement));
+      const firstUnreachable = statements.slice(index + 1).find((statement) => !isErasedOrHoisted(statement));
       if (!firstUnreachable) continue;
       const count = statements.length - index - 1;
       const keyword = terminator.type.replace('_statement', '');

@@ -112,8 +112,9 @@ except Exception:
 **Confidence.**
 
 - `high` only for a bare `except:` or `except Exception` / `BaseException`, with no explanatory comment, outside a cleanup function.
-- `medium` when the caught type is specific (`except KeyError`), when a standalone comment explains it — immediately above `try` with explanation wording, between the try body and this handler (or between handlers), or inside the handler — or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
-- Trailing comments on preceding code lines never count, and TODO/FIXME/refactor comments do not count as explanations.
+- `medium` when the caught type is specific (`except KeyError`), when a standalone comment explains it — immediately above `try` with explanation wording, between the try body and this handler (or between handlers), on the `except` line, or inside the handler — or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
+- Only TODO/FIXME/XXX/HACK tags are treated as noise. `cleanup` and `refactor` are valid explanation vocabulary when they explain why the failure is safe to ignore.
+- Trailing comments on preceding code lines never count. Above-`try` comments need a failure word plus an intent word (“any errors, just abort”), or a strong phrase such as “harmless” / “safe to ignore”; a bare “known bug” without intent wording stays `high` by design.
 
 **Not reported.** `except ImportError` / `ModuleNotFoundError` (the optional-dependency idiom), `try` blocks with an `else` clause (the `try/except: pass/else: fail` assertion idiom), test files, and handlers that log or re-raise.
 
@@ -167,6 +168,8 @@ If the package **is** installed under `node_modules` the finding is `medium` ("u
 
 **What it catches.** A test whose callback has an empty body or no assertion. Recognises `assert` / `node:assert` methods, renamed `node:assert` imports (namespace, default, named aliases and `require` bindings), Tape/TAP (`t.equal`, `t.deepEqual`, `t.strictEqual`, `t.doesNotThrow`, …), `expect(...)` chains, `expectTypeOf`, `should`, `chai`, and `node:test` context assertions (`t.ok`, `t.assert.*`).
 
+**Delegation.** If the callback’s first parameter is passed as an argument to a helper (`(t) => runSuite(t)`), the finding is `medium`: the helper may contain the assertions. Passing it as a receiver (`t.equal(...)`) is still a normal assertion; callbacks with several parameters are treated as table-driven data, not delegated context.
+
 ```ts
 test('creates user', () => {
   createUser('a@b.c');       // no expect() → finding
@@ -189,7 +192,7 @@ test('creates user', () => {
 
 **Not reported.** Constructors, abstract members, overload signatures, ambient declarations, object-literal methods (`{ native() {} }` is a dispatch table), no-op conventions (`noop`, `noOp`, `nop`, `ignore`, `identity`), members documented with `@abstract` / `@noop`, and test files.
 
-**Arrows.** Only reported when they throw the "not implemented" placeholder.
+**Arrows.** Only reported when they throw the "not implemented" placeholder. Object-literal arrow properties (`{ toggle: () => { throw ... } }`) are `medium`, like class-method interface stubs; standalone arrows stay `high`.
 
 ---
 
@@ -219,4 +222,4 @@ try {
 
 **What it catches.** Statements after `return`, `throw`, `break` or `continue` in the same block. Test files are skipped.
 
-**Not reported.** Hoisted declarations after the exit: `function` declarations (including generators) and bare `var a, b;` statements are usable before the `return`, so they are not dead code. `let`/`const` and initialised `var` statements still execute at their position and are reported.
+**Not reported.** Hoisted declarations after the exit (`function` declarations and generators, bare `var a, b;`) and type-only declarations erased at compile time (`type`, `interface`, `declare`). `enum` declarations, classes, `let`/`const` and initialised `var` statements execute at their position and are reported.

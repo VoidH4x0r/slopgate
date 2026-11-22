@@ -9,6 +9,19 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.5] - 2026-11-22
+
+### Fixed
+- `ts/noop-test` reports a single test-callback parameter passed to a helper (`(t) => runSuite(t)`) as medium (“assertions may be delegated”) instead of high. Multi-parameter table-driven callbacks are not treated as delegation.
+- `ts/unreachable` skips erased `type`, `interface` and `declare` declarations after a terminator; `enum`, classes, `let`/`const` and initialised `var` still report.
+- `py/swallowed-exception` no longer treats `cleanup`/`refactor`/`next sprint` as blanket noise; only TODO/FIXME/XXX/HACK tags are noise. Comments on the `except` line now count, and inline comments no longer pollute the exception type, so broad handlers keep the “comment explains why” message.
+- `ts/stub-function` reports object-literal arrow properties that throw “Not implemented” at medium confidence, matching class methods.
+
+### Changed
+- 241 tests, including fifth-round regression fixtures for `delegated-assert`, `ts-type-after-return`, `cleanup-word`, `comment-placement` and the conservative `wording` cases.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+- Docs record the accepted above-`try` wording conservatism (a bare “known bug” stays high by design).
+
 ## [0.1.4] - 2026-11-22
 
 ### Fixed

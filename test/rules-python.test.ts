@@ -198,6 +198,34 @@ test('py/swallowed-exception accepts an inline comment on the handler line', asy
   assert.equal(drafts[0]?.confidence, 'medium');
 });
 
+test('py/swallowed-exception accepts an inline comment on the except line', async () => {
+  const source = [
+    'def f(ctx):',
+    '    try:',
+    '        ctx.flush()',
+    '    except:  # already logged by the transport layer',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+  assert.match(drafts[0]?.message ?? '', /a comment explains why/);
+});
+
+test('py/swallowed-exception treats a broad except with an inline comment as commented', async () => {
+  const source = [
+    'def f(ctx):',
+    '    try:',
+    '        ctx.flush()',
+    '    except Exception:  # cleanup is the caller job; the failure is harmless',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+  assert.doesNotMatch(drafts[0]?.message ?? '', /specific error type/);
+});
+
 test('py/stub-body skips a prefixed shim directory with a no-op docstring', async () => {
   const source = [
     '"""Dummy implementations of the multiprocessing API, for single-threaded builds.',
