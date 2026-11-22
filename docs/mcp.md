@@ -16,7 +16,7 @@ Claude Code (`~/.claude.json` or project `.mcp.json`):
 
 Codex and other MCP clients use the same `command` + `args` pair. The optional argument after `mcp` is the repository root; it defaults to the current working directory.
 
-The server prints a single line to stderr on startup (`slopgate mcp 0.2.5 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
+The server prints a single line to stderr on startup (`slopgate mcp 0.2.6 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
 
 ## Tools
 
@@ -48,7 +48,7 @@ Returns the rule table (id, severity, default confidence, languages, title) so t
 
 ```text
 Diff since origin/main: 2 finding(s) on changed lines.
-slopgate 0.2.5 · 2 finding(s) (1 error) · 38 files scanned in 214ms
+slopgate 0.2.6 · 2 finding(s) (1 error) · 38 files scanned in 214ms
 src/users.py:12:5  error  high  py/phantom-import  `requests_v2` is imported but not declared…
     import requests_v2
     - no Python dependency manifest found

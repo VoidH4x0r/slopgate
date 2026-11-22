@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-22T16:47:35.473Z by `scripts/benchmark.mjs` (slopgate 0.2.5, Node v24.19.0).
+Generated 2026-11-22T16:51:28.277Z by `scripts/benchmark.mjs` (slopgate 0.2.6, Node v24.19.0).
 
 ## Summary
 
@@ -24,7 +24,7 @@ Detected **30/30** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 12727 ms.
+Scanned **1845** files (**991705** lines) in 13159 ms.
 
 Corpus digest: `027f952580cd6622`.
 
@@ -40,7 +40,7 @@ Corpus digest: `027f952580cd6622`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 45 ms.
+Scanned **7** files (**2783** lines) in 60 ms.
 
 Package: `express@5.3.0`.
 
@@ -51,7 +51,7 @@ Corpus digest: `d2b720bf4294881f`.
 
 ## chalk
 
-Scanned **2** files (**799** lines) in 8 ms.
+Scanned **2** files (**799** lines) in 9 ms.
 
 Package: `chalk@6.0.1`.
 
@@ -62,7 +62,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 194 ms.
+Scanned **111** files (**8363** lines) in 178 ms.
 
 Package: `execa@10.2.1`.
 
@@ -74,7 +74,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 64 ms.
+Scanned **49** files (**3166** lines) in 67 ms.
 
 Package: `semver@7.8.6`.
 
@@ -85,7 +85,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 43 ms.
+Scanned **7** files (**4225** lines) in 46 ms.
 
 Package: `commander@15.1.0`.
 
@@ -96,7 +96,7 @@ Corpus digest: `a1904525101c27be`.
 
 ## debug
 
-Scanned **4** files (**841** lines) in 17 ms.
+Scanned **4** files (**841** lines) in 13 ms.
 
 Package: `debug@4.4.3`.
 
@@ -108,7 +108,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 910 ms.
+Scanned **409** files (**100880** lines) in 906 ms.
 
 Package: `eslint@10.15.0`.
 
@@ -121,7 +121,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 51 ms.
+Scanned **7** files (**2217** lines) in 50 ms.
 
 Package: `glob@14.0.6`.
 
@@ -143,7 +143,7 @@ Corpus digest: `53ba47a2d90b26ae`.
 
 ## ai-generated
 
-Scanned **20** files (**93** lines) in 15 ms.
+Scanned **20** files (**93** lines) in 25 ms.
 
 Package: `ai-generated-corpus@0.0.0`.
 

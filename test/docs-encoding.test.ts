@@ -17,10 +17,12 @@ const MOJIBAKE_AROUND_ASCII =
 
 function isCjkDocument(text: string): boolean {
   const chars = [...text].filter((char) => !/\s/.test(char));
-  if (chars.length === 0) return false;
   const cjk = chars.filter((char) => /[\u4e00-\u9fff]/u.test(char)).length;
-  // Require a real Chinese run, not five isolated mojibake characters.
-  return /[\u4e00-\u9fff]{4,}/u.test(text) && cjk / chars.length > 0.02;
+  if (cjk < 5) return false;
+  const run = text.match(/[\u4e00-\u9fff]{4,}/u)?.[0];
+  if (!run) return false;
+  // A run made of mojibake markers is not evidence of a Chinese document.
+  return ![...run].some((char) => CJK_MOJIBAKE.test(char));
 }
 
 /** Returns a reason when a markdown document contains known corruption. */
@@ -65,6 +67,7 @@ test('docs: markdown files contain no mojibake or replacement characters', async
   assert.equal(markdownProblem('中文文档 路 说明'), undefined);
   assert.equal(markdownProblem('中文文档 包含 鈥 字符'), undefined);
   assert.equal(markdownProblem('English 鈥 鈥 鈥 鈥 鈥'), 'GBK/CP936 mojibake');
+  assert.equal(markdownProblem('English 鈥鈥鈥鈥'), 'GBK/CP936 mojibake');
   assert.equal(markdownProblem('slopgate 0.2.3 路 4 files'), 'whitespace-delimited 路 (mojibake for ·)');
   assert.equal(markdownProblem('English text 鈥淎uditing'), 'GBK/CP936 mojibake');
   assert.equal(markdownProblem('English â€”'), 'Latin-1/CP1252 mojibake');

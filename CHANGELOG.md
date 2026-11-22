@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-11-23
+
+### Fixed
+- `isCjkDocument` no longer treats a four-character run of known mojibake markers as evidence of a Chinese document, and no longer requires a 2% CJK ratio (which code-heavy Chinese documents could miss).
+- Guard regression: four consecutive U+9225 marker characters are reported as GBK/CP936 mojibake.
+
+### Changed
+- 343 tests.
+- Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**.
+
 ## [0.2.5] - 2026-11-23
 
 ### Fixed
