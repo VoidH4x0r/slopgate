@@ -18,8 +18,15 @@ const MOJIBAKE_AROUND_ASCII =
 function hasAsciiRoadRun(text: string): boolean {
   for (const match of text.matchAll(/路{2,}(?:\s+路+)*|路(?:\s+路)+/gu)) {
     const start = match.index ?? 0;
-    const before = text.slice(0, start).trimEnd().at(-1) ?? '';
-    const after = text.slice(start + match[0].length).trimStart()[0] ?? '';
+    const end = start + match[0].length;
+    const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+    const nextLine = text.indexOf('\n', end);
+    const lineEnd = nextLine === -1 ? text.length : nextLine;
+    const line = text.slice(lineStart, lineEnd);
+    // A line with other CJK text is Chinese prose, not a mojibake context.
+    if (/[\u4e00-\u9fff]/u.test(line.replaceAll('路', ''))) continue;
+    const before = line.slice(0, start - lineStart).trimEnd().at(-1) ?? '';
+    const after = line.slice(end - lineStart).trimStart()[0] ?? '';
     if (/[A-Za-z0-9|)\]}([{]/.test(before) || /[A-Za-z0-9|([{]/.test(after)) return true;
   }
   return false;
@@ -92,6 +99,9 @@ test('docs: markdown files contain no mojibake or replacement characters', async
   assert.equal(markdownProblem('English 路 路 路 路'), 'repeated 路 (mojibake for ·)');
   assert.equal(markdownProblem('English 路路路路路'), 'repeated 路 (mojibake for ·)');
   assert.equal(markdownProblem('中文 路路'), undefined);
+  assert.equal(markdownProblem('中文 路路 4'), undefined);
+  assert.equal(markdownProblem('English line\n路路'), undefined);
+  assert.equal(markdownProblem('路路\nEnglish line'), undefined);
   const mixed = [
     'English line one',
     'English line two',

@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-11-23
+
+### Fixed
+- `hasAsciiRoadRun` now inspects only the current line, so an English line ending followed by a Chinese `路路` line is not treated as ASCII context.
+- Lines containing other CJK characters are treated as Chinese prose, so `中文 路路 4` no longer false-positives.
+
+### Changed
+- 343 tests.
+- Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**.
+
 ## [0.2.8] - 2026-11-23
 
 ### Fixed
