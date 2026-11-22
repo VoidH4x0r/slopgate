@@ -577,6 +577,9 @@ export async function main(argv: readonly string[], io: CliIo = defaultIo()): Pr
     io.err(`slopgate: ${error}\n\n${HELP}`);
     return 2;
   }
+  if (options.strict && options.command !== 'init' && options.command !== 'help' && options.command !== 'version') {
+    warn(io, options, '--strict only affects `init`; use `--confidence medium` for scans');
+  }
 
   try {
     switch (options.command) {

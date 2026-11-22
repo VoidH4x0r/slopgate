@@ -204,6 +204,12 @@ test('cli: --fail-on medium lowers the display threshold and fails the run', asy
   assert.equal(payload.findings[0]?.confidence, 'medium');
 });
 
+test('cli: --strict on a scan warns that it only affects init', async () => {
+  const result = await run(['fixtures/clean', '--strict', '--no-color']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stderr, /--strict only affects `init`/);
+});
+
 test('cli: init --strict writes medium confidence and fail-on into config and workflow', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-init-strict-'));
   try {

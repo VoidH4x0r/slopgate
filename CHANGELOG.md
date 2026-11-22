@@ -9,6 +9,16 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.18] - 2026-11-22
+
+### Changed
+- README “Auditing AI-written code” now states the scope of the medium threshold: `pass` / `...` / `throw not implemented` stubs are covered; a bare `return None` is `low`, while `return []` / `{}` / `""` / `False` and empty classes are not reported because they are indistinguishable from legitimate default returns.
+- `--strict` on a scan/rules/MCP command prints a stderr hint that it only affects `init` and points to `--confidence medium`; behavior is otherwise unchanged.
+
+### Tests
+- 272 tests, including the `--strict` misuse warning.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.17] - 2026-11-22
 
 ### Added
