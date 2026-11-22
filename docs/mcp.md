@@ -9,7 +9,7 @@ Claude Code (`~/.claude.json` or project `.mcp.json`):
 ```json
 {
   "mcpServers": {
-    "slopgate": { "command": "npx", "args": ["-y", "slopgate", "mcp"] }
+    "slopgate": { "command": "npx", "args": ["-y", "@voidh4x0r/slopgate", "mcp"] }
   }
 }
 ```
@@ -69,7 +69,7 @@ printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
   '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"scan_path","arguments":{}}}' \
-  | npx slopgate mcp .
+  | npx @voidh4x0r/slopgate mcp .
 ```
 
 ## Limitations

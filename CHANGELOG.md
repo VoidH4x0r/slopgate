@@ -9,6 +9,9 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+### Changed
+- The npm package is published as `@voidh4x0r/slopgate`: npm rejects the unscoped name as too similar to the existing `slop-gate` package. The CLI command remains `slopgate`.
+
 ## [0.1.0] - 2026-11-22
 
 ### Added

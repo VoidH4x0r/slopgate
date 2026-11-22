@@ -44,8 +44,8 @@ The workflow verifies that the tag matches `package.json`, runs the suite, publi
 
 ## 3. Post-flight
 
-- [ ] `npm view slopgate version` shows the new version
-- [ ] `npx slopgate@0.1.0 --version` works on a clean machine
+- [ ] `npm view @voidh4x0r/slopgate version` shows the new version
+- [ ] `npx @voidh4x0r/slopgate@0.1.0 --version` works on a clean machine
 - [ ] GitHub release notes read correctly
 - [ ] The provenance badge shows on the npm page
 

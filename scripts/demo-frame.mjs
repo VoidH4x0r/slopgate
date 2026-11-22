@@ -24,7 +24,7 @@ export const WIDTH = 960;
 
 /** @type {Array<{segments: Array<{text: string, color?: string}>, delay: number}>} */
 export const LINES = [
-  { delay: 0.2, segments: [{ text: '$ ', color: COLORS.prompt }, { text: 'npx slopgate fixtures/demo' }] },
+  { delay: 0.2, segments: [{ text: '$ ', color: COLORS.prompt }, { text: 'npx @voidh4x0r/slopgate fixtures/demo' }] },
   { delay: 0.9, segments: [] },
   {
     delay: 1.0,
@@ -90,7 +90,7 @@ function escapeXml(value) {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-export const COMMAND_TEXT = 'npx slopgate fixtures/demo';
+export const COMMAND_TEXT = 'npx @voidh4x0r/slopgate fixtures/demo';
 export const HEIGHT = TOP + LINES.length * LINE_HEIGHT + 26;
 
 /**

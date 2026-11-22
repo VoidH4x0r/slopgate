@@ -78,7 +78,7 @@ Suppression:
 
 MCP (for coding agents):
   slopgate mcp
-  {"mcpServers":{"slopgate":{"command":"npx","args":["-y","slopgate","mcp"]}}}
+  {"mcpServers":{"slopgate":{"command":"npx","args":["-y","@voidh4x0r/slopgate","mcp"]}}}
 
 Docs: https://github.com/VoidH4x0r/slopgate
 `;
@@ -328,7 +328,7 @@ jobs:
         with:
           node-version: 22
       - name: Scan for AI slop
-        run: npx --yes slopgate@latest . --fail-on high --format pretty
+        run: npx --yes @voidh4x0r/slopgate@latest . --fail-on high --format pretty
 `;
 
 async function runInit(options: Options, io: CliIo): Promise<number> {
@@ -352,7 +352,7 @@ async function runInit(options: Options, io: CliIo): Promise<number> {
     writeOut(io, `created ${path.relative(process.cwd(), workflowPath)}`);
   }
 
-  writeOut(io, 'next: npx slopgate . --write-baseline, then commit the baseline');
+  writeOut(io, 'next: npx @voidh4x0r/slopgate . --write-baseline, then commit the baseline');
   return 0;
 }
 

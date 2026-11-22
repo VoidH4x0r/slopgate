@@ -42,6 +42,6 @@ body:
     id: version
     attributes:
       label: slopgate version
-      description: Output of `npx slopgate --version`.
+      description: Output of `npx @voidh4x0r/slopgate --version`.
     validations:
       required: false

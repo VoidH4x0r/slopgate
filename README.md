@@ -6,13 +6,13 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 
 ![slopgate scanning a repository](https://raw.githubusercontent.com/VoidH4x0r/slopgate/main/docs/demo.gif)
 
-[![npm](https://img.shields.io/npm/v/slopgate.svg)](https://www.npmjs.com/package/slopgate)
+[![npm](https://img.shields.io/npm/v/@voidh4x0r/slopgate.svg)](https://www.npmjs.com/package/@voidh4x0r/slopgate)
 [![CI](https://github.com/VoidH4x0r/slopgate/actions/workflows/ci.yml/badge.svg)](https://github.com/VoidH4x0r/slopgate/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![node](https://img.shields.io/node/v/slopgate.svg)](package.json)
 
 ```console
-$ npx slopgate fixtures/demo
+$ npx @voidh4x0r/slopgate fixtures/demo
 
 slopgate 0.1.0  ·  4 files  ·  41ms
 
@@ -96,9 +96,9 @@ Models are good at producing code that compiles, imports cleanly in the editor w
 ## Install
 
 ```bash
-npx slopgate .                  # try it without installing
-npm install -D slopgate         # or pin it in your project
-npx slopgate init               # write .slopgate.json + a GitHub Action
+npx @voidh4x0r/slopgate .                  # try it without installing
+npm install -D @voidh4x0r/slopgate         # or pin it in your project
+npx @voidh4x0r/slopgate init               # write .slopgate.json + a GitHub Action
 ```
 
 Requires Node 20+. Python and TypeScript grammars are bundled — no Python or `tsc` needed at scan time.
@@ -127,13 +127,13 @@ This is the part most linters get wrong. A 200k-line repo has 900 findings on da
 
 ```bash
 # 1. Record what is already there. Nothing fails, nothing is "fixed" blindly.
-npx slopgate . --write-baseline
+npx @voidh4x0r/slopgate . --write-baseline
 
 # 2. Commit the baseline. From now on only NEW findings fail CI.
-npx slopgate . --fail-on high
+npx @voidh4x0r/slopgate . --fail-on high
 
 # 3. Or gate only the lines a pull request touches:
-npx slopgate . --diff origin/main --fail-on high
+npx @voidh4x0r/slopgate . --diff origin/main --fail-on high
 ```
 
 ### Use it from a coding agent (MCP)
@@ -143,7 +143,7 @@ npx slopgate . --diff origin/main --fail-on high
 ```json
 {
   "mcpServers": {
-    "slopgate": { "command": "npx", "args": ["-y", "slopgate", "mcp"] }
+    "slopgate": { "command": "npx", "args": ["-y", "@voidh4x0r/slopgate", "mcp"] }
   }
 }
 ```
@@ -174,7 +174,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes slopgate@latest . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@latest . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -182,7 +182,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes slopgate@latest . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@latest . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
