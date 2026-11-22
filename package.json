@@ -38,7 +38,7 @@
     "prepublishOnly": "npm run build && npm run typecheck"
   },
   "dependencies": {
-    "web-tree-sitter": "^0.25.10"
+    "web-tree-sitter": "^0.27.2"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
