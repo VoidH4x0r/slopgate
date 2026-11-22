@@ -317,6 +317,43 @@ test('cli: init from a subdirectory writes at the repository root', async () => 
   }
 });
 
+test('cli: single-file and subdirectory scans use the repository project root', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-project-root-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'pyproject.toml'),
+      '[project]\nname = "root"\nversion = "0.0.0"\ndependencies = ["requests"]\n',
+    );
+    await writeFile(path.join(dir, 'src', 'util.py'), 'def helper():\n    return 1\n');
+    await writeFile(
+      path.join(dir, 'src', 'app.py'),
+      'import requests\nfrom util import helper\n\ndef stubbed():\n    pass\n',
+    );
+    await writeFile(
+      path.join(dir, 'package.json'),
+      '{"name":"root","private":true,"dependencies":{}}\n',
+    );
+    await writeFile(path.join(dir, 'src', 'agent.ts'), "import { x } from 'ghost';\nexport const y = x;\n");
+
+    const single = await run([path.join(dir, 'src', 'app.py'), '--no-color']);
+    assert.equal(single.status, 1, single.stderr);
+    assert.match(single.stdout, /^src\/app\.py$/m);
+    assert.doesNotMatch(single.stdout, /not declared/);
+    assert.match(single.stdout, /py\/stub-body/);
+
+    const directory = await run([path.join(dir, 'src'), '--no-color']);
+    assert.equal(directory.status, 1, directory.stderr);
+    assert.match(directory.stdout, /^src\/app\.py$/m);
+    assert.doesNotMatch(directory.stdout, /not declared/);
+    assert.match(directory.stdout, /ts\/phantom-import/);
+    assert.match(directory.stdout, /^src\/agent\.ts$/m);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: a diff ref that looks like a git option is rejected before git runs', async () => {
   const result = await run(['fixtures/demo', '--diff=--output=pwned.txt']);
   assert.equal(result.status, 2);

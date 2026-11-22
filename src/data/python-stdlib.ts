@@ -85,6 +85,30 @@ export const IMPORT_TO_DISTRIBUTION: Readonly<Record<string, string>> = {
   zmq: 'pyzmq',
 };
 
+/** Extra distribution spellings for one import name (the map is one-to-one). */
+export const DISTRIBUTION_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  cv2: [
+    'opencv-python',
+    'opencv-python-headless',
+    'opencv-contrib-python',
+    'opencv-contrib-python-headless',
+  ],
+};
+
+/**
+ * Namespace packages whose distribution name is conventionally
+ * `<import>-<vendor/suffix>` (`google-cloud-storage`, `opentelemetry-api`,
+ * `azure-storage-blob`, `ruamel-yaml`, `backports-zoneinfo`).
+ */
+export const NAMESPACE_PREFIXES: ReadonlySet<string> = new Set([
+  'azure',
+  'backports',
+  'google',
+  'opentelemetry',
+  'ruamel',
+  'zope',
+]);
+
 /**
  * Modules that are importable without being declared because the toolchain
  * provides them. `setuptools` ships `pkg_resources` and `_distutils_hack`.

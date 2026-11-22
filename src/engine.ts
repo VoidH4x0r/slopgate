@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import { asAst, type AstNode } from './ast.ts';
 import { loadProjectDeps } from './deps.ts';
@@ -20,6 +20,8 @@ import type {
 export interface ScanOptions {
   root: string;
   config: Config;
+  /** Directory that owns manifests and local modules; defaults to the scan root. */
+  projectRoot?: string;
   /** When set, only these rule ids run (CLI `--rule`). */
   onlyRules?: ReadonlySet<string>;
 }
@@ -31,11 +33,17 @@ export interface ScanResult {
   warnings: string[];
 }
 
-function collectLocalPythonModules(files: readonly SourceFile[], deps: ProjectDeps): void {
+function collectLocalPythonModules(
+  files: readonly SourceFile[],
+  deps: ProjectDeps,
+  projectRoot: string,
+): void {
   const valid = /^[A-Za-z_][A-Za-z0-9_]*$/;
   for (const file of files) {
     if (file.language !== 'python') continue;
-    const parts = file.rel.split('/');
+    const relative = path.relative(projectRoot, file.abs).replace(/\\/g, '/');
+    if (relative.startsWith('..') || path.isAbsolute(relative)) continue;
+    const parts = relative.split('/');
     const fileName = parts.pop() ?? '';
     for (const dir of parts) {
       if (valid.test(dir)) deps.python.localModules.add(dir);
@@ -44,6 +52,25 @@ function collectLocalPythonModules(files: readonly SourceFile[], deps: ProjectDe
     // siblings flat (`from util import x` inside `idlelib/`).
     const stem = fileName.replace(/\.pyi?$/, '');
     if (valid.test(stem)) deps.python.localModules.add(stem);
+  }
+}
+
+/** A single-file scan still needs its same-directory siblings for imports. */
+async function collectPythonSiblings(dir: string, deps: ProjectDeps): Promise<void> {
+  const valid = /^[A-Za-z_][A-Za-z0-9_]*$/;
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    if (entry.isDirectory() && valid.test(entry.name)) {
+      deps.python.localModules.add(entry.name);
+    } else if (entry.isFile() && /\.pyi?$/.test(entry.name)) {
+      const stem = entry.name.replace(/\.pyi?$/, '');
+      if (valid.test(stem)) deps.python.localModules.add(stem);
+    }
   }
 }
 
@@ -67,8 +94,9 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   const target = path.resolve(options.root);
   const targetInfo = await stat(target).catch(() => undefined);
   // Scanning a single file still resolves manifests and local modules from the
-  // directory that contains it.
+  // project root, not just the file's directory.
   const root = targetInfo?.isFile() ? path.dirname(target) : target;
+  const projectRoot = options.projectRoot ? path.resolve(options.projectRoot) : root;
   const warnings: string[] = [];
   const { config } = options;
 
@@ -80,7 +108,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     }
   }
 
-  const deps = await loadProjectDeps(root);
+  const deps = await loadProjectDeps(projectRoot);
   deps.ignoredModules = new Set(config.ignoreModules);
 
   const { files, skipped: skippedByDiscovery } = await discoverFiles({
@@ -88,7 +116,8 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     include: config.include,
     exclude: config.exclude,
   });
-  collectLocalPythonModules(files, deps);
+  collectLocalPythonModules(files, deps, projectRoot);
+  if (targetInfo?.isFile()) await collectPythonSiblings(path.dirname(target), deps);
 
   const enabled = ALL_RULES.filter((rule) => {
     const setting = config.rules[rule.meta.id];

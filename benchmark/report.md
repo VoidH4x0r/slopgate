@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-22T11:08:04.533Z by `scripts/benchmark.mjs` (slopgate 0.1.18, Node v24.19.0).
+Generated 2026-11-22T12:37:36.909Z by `scripts/benchmark.mjs` (slopgate 0.1.18, Node v24.19.0).
 
 ## Summary
 
@@ -23,7 +23,7 @@ Detected **14/14** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 11123 ms.
+Scanned **1845** files (**991705** lines) in 11484 ms.
 
 Corpus digest: `027f952580cd6622`.
 
@@ -38,7 +38,7 @@ Corpus digest: `027f952580cd6622`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 41 ms.
+Scanned **7** files (**2783** lines) in 38 ms.
 
 Package: `express@5.3.0`.
 
@@ -49,7 +49,7 @@ Corpus digest: `d2b720bf4294881f`.
 
 ## chalk
 
-Scanned **2** files (**799** lines) in 6 ms.
+Scanned **2** files (**799** lines) in 7 ms.
 
 Package: `chalk@6.0.1`.
 
@@ -60,7 +60,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 130 ms.
+Scanned **111** files (**8363** lines) in 143 ms.
 
 Package: `execa@10.2.1`.
 
@@ -72,7 +72,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 54 ms.
+Scanned **49** files (**3166** lines) in 52 ms.
 
 Package: `semver@7.8.6`.
 
@@ -83,7 +83,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 44 ms.
+Scanned **7** files (**4225** lines) in 39 ms.
 
 Package: `commander@15.1.0`.
 
@@ -94,7 +94,7 @@ Corpus digest: `a1904525101c27be`.
 
 ## debug
 
-Scanned **4** files (**841** lines) in 9 ms.
+Scanned **4** files (**841** lines) in 10 ms.
 
 Package: `debug@4.4.3`.
 
@@ -106,7 +106,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 853 ms.
+Scanned **409** files (**100880** lines) in 841 ms.
 
 Package: `eslint@10.15.0`.
 
@@ -119,7 +119,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 38 ms.
+Scanned **7** files (**2217** lines) in 42 ms.
 
 Package: `glob@14.0.6`.
 

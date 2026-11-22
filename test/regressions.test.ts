@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import * as path from 'node:path';
 import test from 'node:test';
-import { scanFixture } from './helpers.ts';
+import { DEFAULT_CONFIG } from '../src/config.ts';
+import { scanProject } from '../src/engine.ts';
+import { ROOT, scanFixture } from './helpers.ts';
 
 function ruleFindings(
   result: Awaited<ReturnType<typeof scanFixture>>,
@@ -279,4 +283,37 @@ test('regression: except* and tuple bindings classify by the caught type', async
   const specific = findings.filter((finding) => finding.confidence === 'medium');
   assert.equal(specific.length, 1);
   assert.match(specific[0]?.message ?? '', /specific error type/);
+});
+
+test('regression: namespace distributions satisfy their import roots', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-namespace-'));
+  try {
+    await writeFile(
+      path.join(dir, 'pyproject.toml'),
+      [
+        '[project]',
+        'dependencies = [',
+        '  "google-cloud-storage",',
+        '  "opentelemetry-api",',
+        '  "azure-storage-blob",',
+        '  "ruamel.yaml",',
+        '  "opencv-python-headless",',
+        ']',
+      ].join('\n'),
+    );
+    await writeFile(
+      path.join(dir, 'app.py'),
+      [
+        'from google.cloud import storage',
+        'from opentelemetry import trace',
+        'from azure.storage.blob import BlobServiceClient',
+        'from ruamel.yaml import YAML',
+        'import cv2',
+      ].join('\n'),
+    );
+    const result = await scanProject({ root: dir, config: DEFAULT_CONFIG });
+    assert.deepEqual(ruleFindings(result, 'py/phantom-import'), []);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

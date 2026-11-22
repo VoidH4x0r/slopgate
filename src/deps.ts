@@ -136,11 +136,27 @@ export function parsePythonManifestText(fileName: string, text: string): string[
   const names: string[] = [];
   const base = path.basename(fileName).toLowerCase();
 
-  if (base.startsWith('requirements') && base.endsWith('.txt')) {
+  if (base.startsWith('requirements') && (base.endsWith('.txt') || base.endsWith('.in'))) {
     for (const rawLine of text.split(/\r?\n/)) {
       const line = rawLine.replace(/\s+#.*$/, '');
       const name = requirementName(line);
       if (name) names.push(name);
+    }
+    return names;
+  }
+
+  if (base === 'environment.yml' || base === 'environment.yaml') {
+    let inDependencies = false;
+    for (const rawLine of text.split(/\r?\n/)) {
+      if (/^\s*dependencies\s*:/.test(rawLine)) {
+        inDependencies = true;
+        continue;
+      }
+      if (inDependencies && /^\S/.test(rawLine)) inDependencies = false;
+      if (!inDependencies) continue;
+      const item = /^\s*-\s+([A-Za-z0-9][A-Za-z0-9._-]*)/.exec(rawLine);
+      if (!item?.[1] || item[1] === 'pip' || item[1] === 'python') continue;
+      names.push(normalizePythonName(item[1]));
     }
     return names;
   }
@@ -278,6 +294,58 @@ async function readIfExists(p: string): Promise<string | undefined> {
   }
 }
 
+const PROJECT_MARKERS = [
+  'pyproject.toml',
+  'setup.py',
+  'setup.cfg',
+  'Pipfile',
+  'requirements.txt',
+  'requirements.in',
+  'requirements/all.txt',
+  'requirements/base.txt',
+  'requirements/dev.txt',
+  'requirements/prod.txt',
+  'package.json',
+];
+
+async function hasProjectMarker(dir: string): Promise<boolean> {
+  for (const marker of PROJECT_MARKERS) {
+    if (await exists(path.join(dir, marker))) return true;
+  }
+  return false;
+}
+
+/**
+ * Nearest directory that owns a Python or Node project. A file target starts
+ * at its containing directory; a nested `src/` starts there and walks upwards
+ * to the package manifest, stopping at the git root.
+ */
+export async function resolveProjectRoot(
+  start: string,
+  repoRoot?: string,
+): Promise<string> {
+  let dir = path.resolve(start);
+  try {
+    if ((await stat(dir)).isFile()) dir = path.dirname(dir);
+  } catch {
+    // Let the caller's normal path validation report a missing target.
+  }
+
+  const stop = repoRoot ? path.resolve(repoRoot) : dir;
+  if (repoRoot) {
+    const relative = path.relative(stop, dir);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) return dir;
+  }
+
+  for (;;) {
+    if (await hasProjectMarker(dir)) return dir;
+    if (dir === stop) return stop;
+    const parent = path.dirname(dir);
+    if (parent === dir) return stop;
+    dir = parent;
+  }
+}
+
 /** Parse JSON without turning a broken manifest into a crash. */
 function tryParseJson(text: string): unknown {
   try {
@@ -297,9 +365,10 @@ async function readDirSafe(dir: string): Promise<Dirent[] | undefined> {
 
 const PYTHON_MANIFESTS = [
   'pyproject.toml', 'setup.py', 'setup.cfg', 'Pipfile', 'requirements.txt',
-  'requirements-dev.txt', 'requirements_dev.txt', 'dev-requirements.txt',
+  'requirements.in', 'requirements-dev.txt', 'requirements_dev.txt', 'dev-requirements.txt',
   'requirements/base.txt', 'requirements/dev.txt', 'requirements/prod.txt',
   'requirements/main.txt', 'requirements/test.txt', 'requirements/tests.txt',
+  'environment.yml', 'environment.yaml',
 ];
 
 async function loadPythonDeps(root: string): Promise<PythonDeps> {
@@ -383,6 +452,22 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
         if (cleaned) aliases.push(cleaned);
       }
     }
+    // With only `baseUrl`, TypeScript resolves bare imports under that
+    // directory (`components/button` -> `src/components/button`). The first
+    // path segment is the alias prefix this checker can match.
+    const baseUrl = parsed.compilerOptions?.baseUrl;
+    if (typeof baseUrl === 'string') {
+      const base = path.resolve(root, baseUrl);
+      const entries = await readDirSafe(base);
+      for (const entry of entries ?? []) {
+        if (entry.name.startsWith('.')) continue;
+        if (entry.isDirectory()) aliases.push(entry.name);
+        else if (entry.isFile()) {
+          const stem = entry.name.replace(/\.(?:[cm]?[jt]sx?)$/, '');
+          if (stem !== entry.name) aliases.push(stem);
+        }
+      }
+    }
   }
   return aliases;
 }
@@ -395,15 +480,16 @@ async function loadInstalledPackages(root: string): Promise<Set<string>> {
   for (const entry of entries) {
     if (entry.name.startsWith('.')) continue;
     if (entry.name.startsWith('@')) {
-      if (!entry.isDirectory()) continue;
+      if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
       const scoped = await readDirSafe(path.join(modulesDir, entry.name));
       if (!scoped) continue;
       for (const child of scoped) {
-        if (child.isDirectory()) installed.add(`${entry.name}/${child.name}`);
+        if (child.isDirectory() || child.isSymbolicLink()) installed.add(`${entry.name}/${child.name}`);
       }
       continue;
     }
-    if (entry.isDirectory()) installed.add(entry.name);
+    // pnpm and npm link expose packages as symlinks; they are still installed.
+    if (entry.isDirectory() || entry.isSymbolicLink()) installed.add(entry.name);
   }
   return installed;
 }

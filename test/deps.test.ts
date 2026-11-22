@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import test from 'node:test';
 import {
@@ -31,6 +33,27 @@ test('parsePythonManifestText reads requirements.txt', () => {
     ['# deps', 'requests>=2', 'flask[async]  # web', '-r other.txt', 'uvicorn'].join('\n'),
   );
   assert.deepEqual(names.sort(), ['flask', 'requests', 'uvicorn']);
+});
+
+test('parsePythonManifestText reads requirements.in and environment.yml', () => {
+  assert.deepEqual(
+    parsePythonManifestText('requirements.in', 'django>=5\ncelery\n').sort(),
+    ['celery', 'django'],
+  );
+  const environment = [
+    'name: app',
+    'dependencies:',
+    '  - python=3.12',
+    '  - numpy>=2',
+    '  - pip:',
+    '      - requests==2.32',
+    '      - uvicorn[standard]',
+    '  - pip',
+  ].join('\n');
+  assert.deepEqual(
+    parsePythonManifestText('environment.yml', environment).sort(),
+    ['numpy', 'requests', 'uvicorn'],
+  );
 });
 
 test('parsePythonManifestText reads pyproject project.dependencies and poetry', () => {
@@ -127,4 +150,23 @@ test('loadProjectDeps reads the demo fixture', async () => {
   assert.deepEqual(deps.python.manifests, ['pyproject.toml']);
   assert.ok(deps.node.declared.has('left-pad'));
   assert.equal(deps.node.hasPackageJson, true);
+});
+
+test('loadProjectDeps expands a tsconfig baseUrl into import aliases', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-baseurl-'));
+  try {
+    await mkdir(path.join(dir, 'src', 'components'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'tsconfig.json'),
+      '{"compilerOptions":{"baseUrl":"./src"}}\n',
+    );
+    await writeFile(
+      path.join(dir, 'src', 'components', 'button.ts'),
+      'export const button = 1;\n',
+    );
+    const deps = await loadProjectDeps(dir);
+    assert.ok(deps.node.aliases.includes('components'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

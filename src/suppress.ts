@@ -17,7 +17,8 @@ function ruleList(raw: string): Set<string> | 'all' {
     .split(/[,\s]+/)
     .map((part) => part.trim())
     .filter((part) => /^[a-z]{2}\/[a-z0-9-]+$/.test(part));
-  return ids.length > 0 ? new Set(ids) : 'all';
+  // A typo such as `py/stub-boddy` must not silently suppress the whole line.
+  return new Set(ids);
 }
 
 /**

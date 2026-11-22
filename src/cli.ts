@@ -14,6 +14,7 @@ import {
   type FailOn,
 } from './config.ts';
 import { assertSafeRef, diffSince, findRepoRoot, isInDiffWithPrefix } from './diff.ts';
+import { resolveProjectRoot } from './deps.ts';
 import { scanProject } from './engine.ts';
 import { serveMcp } from './mcp.ts';
 import { renderGithub } from './reporters/github.ts';
@@ -49,7 +50,7 @@ interface Options {
   strict: boolean;
 }
 
-const HELP = `slopgate ${FALLBACK_VERSION} — the slop gate for AI-written code
+const helpText = (version: string = FALLBACK_VERSION): string => `slopgate ${version} — the slop gate for AI-written code
 
 Usage:
   slopgate [path] [options]                scan a directory or file (default: .)
@@ -416,9 +417,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   if (!targetInfo) {
     throw new Error(`path not found: ${target}`);
   }
-  const projectRoot = targetInfo.isFile() ? path.dirname(target) : target;
-  const repoRoot = await findGitRoot(projectRoot);
-  const configRoot = await findConfigRoot(projectRoot, repoRoot);
+  const scanBase = targetInfo.isFile() ? path.dirname(target) : target;
+  const repoRoot = await findGitRoot(scanBase);
+  const configRoot = await findConfigRoot(scanBase, repoRoot);
+  const projectRoot = await resolveProjectRoot(scanBase, repoRoot);
   const { config, file: configFile } = await loadConfig(configRoot);
 
   if (options.rules.length > 0) {
@@ -445,6 +447,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
 
   const result = await scanProject({
     root: target,
+    projectRoot,
     config: merged,
     ...(options.rules.length > 0 ? { onlyRules: new Set(options.rules) } : {}),
   });
@@ -457,10 +460,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     );
   }
 
-  const scanBase = projectRoot;
+  const scanBaseForOutput = scanBase;
   let outputPrefix = '';
   if (repoRoot) {
-    const relative = path.relative(repoRoot, scanBase);
+    const relative = path.relative(repoRoot, scanBaseForOutput);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
       outputPrefix = relative.replace(/\\/g, '/');
     }
@@ -470,7 +473,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
       ? items.map((finding) => ({ ...finding, file: `${outputPrefix}/${finding.file}` }))
       : [...items];
 
-  const baselineRoot = repoRoot ?? projectRoot;
+  const baselineRoot = repoRoot ?? scanBase;
   const baselinePath = path.resolve(baselineRoot, options.baseline ?? DEFAULT_BASELINE);
   const explicitWrite = options.writeBaseline;
   if (explicitWrite) {
@@ -487,9 +490,9 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   let onlyDiff = 0;
   if (options.diff !== undefined) {
     // git paths are relative to the repository root, not to the scan target.
-    const repoRoot = await findRepoRoot(projectRoot);
+    const repoRoot = await findRepoRoot(scanBase);
     const set = await diffSince(repoRoot, options.diff);
-    const prefix = path.relative(repoRoot, target);
+    const prefix = path.relative(repoRoot, scanBase);
     const before = findings.length;
     findings = findings.filter((finding) => isInDiffWithPrefix(finding, set, prefix));
     onlyDiff = before - findings.length;
@@ -574,7 +577,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
 export async function main(argv: readonly string[], io: CliIo = defaultIo()): Promise<number> {
   const { options, error } = parseArgs(argv);
   if (error) {
-    io.err(`slopgate: ${error}\n\n${HELP}`);
+    io.err(`slopgate: ${error}\n\n${helpText()}`);
     return 2;
   }
   if (options.strict && options.command !== 'init' && options.command !== 'help' && options.command !== 'version') {
@@ -584,7 +587,7 @@ export async function main(argv: readonly string[], io: CliIo = defaultIo()): Pr
   try {
     switch (options.command) {
       case 'help':
-        writeOut(io, HELP);
+        writeOut(io, helpText(await readVersion()));
         return 0;
       case 'version':
         writeOut(io, await readVersion());
@@ -598,7 +601,7 @@ export async function main(argv: readonly string[], io: CliIo = defaultIo()): Pr
       case 'scan':
         return await runScan(options, io);
       default:
-        io.err(`slopgate: unknown command\n\n${HELP}`);
+        io.err(`slopgate: unknown command\n\n${helpText()}`);
         return 2;
     }
   } catch (caught) {

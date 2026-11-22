@@ -47,3 +47,10 @@ test('isSuppressed respects rule-specific directives', () => {
 test('isSuppressed returns false without directives', () => {
   assert.equal(isSuppressed(finding(1, 'py/noop-test'), readSuppressions('x = 1\n')), false);
 });
+
+test('a typo in a rule-specific directive does not suppress everything', () => {
+  const suppressions = readSuppressions(
+    '# slopgate-ignore-next-line py/stub-boddy\ndef f(): pass\n',
+  );
+  assert.equal(isSuppressed(finding(2, 'py/stub-body'), suppressions), false);
+});

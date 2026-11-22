@@ -311,6 +311,39 @@ test('mcp: scan_path uses the nearest package config, like the CLI', async () =>
   }
 });
 
+test('mcp: a single-file scan_path resolves the repository project root', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-file-root-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'pyproject.toml'),
+      '[project]\nname = "root"\nversion = "0.0.0"\ndependencies = ["requests"]\n',
+    );
+    await writeFile(path.join(dir, 'src', 'util.py'), 'def helper():\n    return 1\n');
+    await writeFile(
+      path.join(dir, 'src', 'app.py'),
+      'import requests\nfrom util import helper\n\ndef stubbed():\n    pass\n',
+    );
+
+    const deps = defaultMcpDeps(dir, '0.1.0');
+    const server = createMcpServer({ ...deps, config: DEFAULT_CONFIG });
+    const response = await call(server, {
+      jsonrpc: '2.0',
+      id: 16,
+      method: 'tools/call',
+      params: { name: 'scan_path', arguments: { path: 'src/app.py' } },
+    });
+    const text =
+      (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+    assert.match(text, /src\/app\.py:4:1/);
+    assert.doesNotMatch(text, /not declared/);
+    assert.match(text, /py\/stub-body/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('mcp: scan_path reports paths relative to the MCP root', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-paths-'));
   try {

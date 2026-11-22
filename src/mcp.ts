@@ -11,6 +11,7 @@ import {
   type Config,
 } from './config.ts';
 import { diffSince, isInDiff, type DiffSet } from './diff.ts';
+import { resolveProjectRoot } from './deps.ts';
 import { scanProject, type ScanResult } from './engine.ts';
 import { ALL_RULES } from './rules/index.ts';
 import type { Confidence, Finding } from './types.ts';
@@ -296,7 +297,6 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
     configFor,
     async scan(scanRoot: string) {
       const config = await configFor(scanRoot);
-      const result = await scanProject({ root: scanRoot, config });
 
       // Findings and baseline fingerprints are MCP-root-relative. Normalize
       // here, before partitioning, so a root baseline matches subdirectory and
@@ -304,6 +304,10 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
       const target = path.resolve(scanRoot);
       const info = await stat(target).catch(() => undefined);
       const base = info?.isFile() ? path.dirname(target) : target;
+      const repoRoot = (await findGitRoot(base)) ?? root;
+      const projectRoot = await resolveProjectRoot(base, repoRoot);
+      const result = await scanProject({ root: target, projectRoot, config });
+
       const prefix = prefixForRoot(root, base);
       const normalized = prefix
         ? result.findings.map((finding) => ({ ...finding, file: `${prefix}/${finding.file}` }))

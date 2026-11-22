@@ -416,6 +416,14 @@ test('py/tautological-assert accepts real assertions', async () => {
   assert.deepEqual(await runRule('py/tautological-assert', 'def f(x):\n    assert x > 0\n', 'python'), []);
   assert.deepEqual(await runRule('py/tautological-assert', 'def f(x):\n    assert x != x\n', 'python'), []);
   assert.deepEqual(await runRule('py/tautological-assert', 'assert False\n', 'python'), []);
+  assert.deepEqual(
+    await runRule('py/tautological-assert', 'def f():\n    assert parse("x") == parse("x")\n', 'python'),
+    [],
+  );
+  assert.deepEqual(
+    await runRule('py/tautological-assert', 'def f(x):\n    assert x > x\n', 'python'),
+    [],
+  );
 });
 
 test('py/stub-body flags placeholder bodies', async () => {

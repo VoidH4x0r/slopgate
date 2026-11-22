@@ -1,6 +1,12 @@
 import type { AstNode } from '../ast.ts';
 import { normalizePythonName } from '../deps.ts';
-import { IMPLICIT_MODULES, IMPORT_TO_DISTRIBUTION, PYTHON_STDLIB } from '../data/python-stdlib.ts';
+import {
+  DISTRIBUTION_ALIASES,
+  IMPLICIT_MODULES,
+  IMPORT_TO_DISTRIBUTION,
+  NAMESPACE_PREFIXES,
+  PYTHON_STDLIB,
+} from '../data/python-stdlib.ts';
 import type { CommentRange, Confidence, Rule, RuleContext, RuleDraft } from '../types.ts';
 import {
   ancestorOfType,
@@ -87,6 +93,16 @@ function isDeclaredPython(module: string, ctx: RuleContext): boolean {
   }
   const distribution = distributionFor(module);
   if (distribution && deps.declared.has(normalizePythonName(distribution))) return true;
+  const root = parts[0] ?? module;
+  for (const alias of DISTRIBUTION_ALIASES[root] ?? []) {
+    if (deps.declared.has(normalizePythonName(alias))) return true;
+  }
+  if (NAMESPACE_PREFIXES.has(root)) {
+    const prefix = `${normalizePythonName(root)}-`;
+    for (const declared of deps.declared) {
+      if (declared.startsWith(prefix)) return true;
+    }
+  }
   return false;
 }
 
@@ -453,11 +469,43 @@ const tautologicalAssert: Rule = {
       const text = collapseWhitespace(expression.text);
       const literalNoop = text === 'True' || text === '1';
       const negativeComparison = /(?:!=| is not | not in )/.test(` ${text} `);
+      const stableOperand = (operand: AstNode | undefined): boolean => {
+        if (!operand) return false;
+        if (
+          ['identifier', 'integer', 'float', 'string', 'true', 'false', 'none'].includes(
+            operand.type,
+          )
+        ) {
+          return true;
+        }
+        if (operand.type === 'parenthesized_expression') {
+          return stableOperand(operand.namedChildren[0]);
+        }
+        if (operand.type === 'attribute') {
+          return stableOperand(operand.childForFieldName('object') ?? operand.namedChildren[0]);
+        }
+        if (operand.type === 'subscript') {
+          return (
+            stableOperand(operand.childForFieldName('value') ?? operand.namedChildren[0]) &&
+            stableOperand(operand.childForFieldName('subscript') ?? operand.namedChildren[1])
+          );
+        }
+        if (operand.type === 'binary_operator' || operand.type === 'boolean_operator') {
+          return operand.namedChildren.every((child) => stableOperand(child));
+        }
+        if (operand.type === 'unary_operator') {
+          return stableOperand(operand.namedChildren[0]);
+        }
+        return false;
+      };
       const selfComparison =
         !negativeComparison &&
         expression.type === 'comparison_operator' &&
         expression.namedChildren.length === 2 &&
-        expression.namedChildren[0]?.text === expression.namedChildren[1]?.text;
+        expression.namedChildren[0]?.text === expression.namedChildren[1]?.text &&
+        stableOperand(expression.namedChildren[0]) &&
+        stableOperand(expression.namedChildren[1]) &&
+        expression.text.includes('==');
       if (!literalNoop && !selfComparison) continue;
 
       drafts.push({

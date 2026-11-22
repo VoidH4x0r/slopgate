@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+- Single-file and subdirectory scans now resolve the nearest project root for manifests, aliases and same-package local modules; output and `--diff` paths use the target directory prefix.
+- Namespace distributions such as `google-cloud-storage`, `opentelemetry-api`, `azure-storage-blob`, `ruamel.yaml`, `backports.zoneinfo` and headless OpenCV satisfy their import names.
+- `py/tautological-assert` no longer treats two independent calls (`parse("x") == parse("x")`) as identical, while deterministic attribute/subscript expressions still count.
+- A mistyped rule id in a suppression directive no longer falls back to suppressing the whole line.
+- pnpm/npm-link symlinks under `node_modules` count as installed packages.
+- `requirements.in` and `environment.yml` dependency declarations are parsed.
+- A `tsconfig.json` `baseUrl` contributes import aliases.
+- `slopgate --help` reports the actual package version instead of the fallback.
+
 ### Planned
 - Duplicate-block detection across files.
 - Go and Rust grammars.
