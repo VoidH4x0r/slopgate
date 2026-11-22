@@ -22,6 +22,7 @@ interface Candidate {
   lines: number;
   tokens: number;
   kind: 'function' | 'method';
+  ancestor?: Candidate;
 }
 
 function bodyOf(node: AstNode): AstNode | undefined {
@@ -54,14 +55,23 @@ const FUNCTION_NODE_TYPES = new Set([
   'arrow_function',
 ]);
 
-/** Nested helpers are covered when their enclosing function is duplicated. */
-function hasFunctionAncestor(node: AstNode): boolean {
+function nodeKey(node: AstNode): string {
+  return `${node.startIndex}:${node.endIndex}`;
+}
+
+function nearestCandidateAncestor(
+  node: AstNode,
+  byNode: ReadonlyMap<string, Candidate>,
+): Candidate | undefined {
   let current = node.parent;
   while (current) {
-    if (FUNCTION_NODE_TYPES.has(current.type)) return true;
+    if (FUNCTION_NODE_TYPES.has(current.type)) {
+      const candidate = byNode.get(nodeKey(current));
+      if (candidate) return candidate;
+    }
     current = current.parent;
   }
-  return false;
+  return undefined;
 }
 
 /**
@@ -115,15 +125,16 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
     },
     collect(ctx) {
       if (ctx.language !== language || isTestPath(ctx.file)) return;
+      const byNode = new Map<string, Candidate>();
       for (const node of collectCandidates(ctx.root, language)) {
-        if (!isCandidate(node, language) || hasFunctionAncestor(node)) continue;
+        if (!isCandidate(node, language)) continue;
         const body = bodyOf(node);
         if (!body || body.type === 'expression') continue;
         const lines = body.endPosition.row - body.startPosition.row + 1;
         if (lines < MIN_DUPLICATE_LINES) continue;
         const normalized = signatureOf(body);
         if (normalized.tokens < MIN_DUPLICATE_TOKENS) continue;
-        candidates.push({
+        const candidate: Candidate = {
           language,
           file: ctx.file,
           line: node.startPosition.row + 1,
@@ -134,7 +145,11 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
           lines,
           tokens: normalized.tokens,
           kind: node.type === 'method_definition' ? 'method' : kind,
-        });
+        };
+        const ancestor = nearestCandidateAncestor(node, byNode);
+        if (ancestor) candidate.ancestor = ancestor;
+        byNode.set(nodeKey(node), candidate);
+        candidates.push(candidate);
       }
     },
     finish() {
@@ -146,10 +161,25 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
         else groups.set(key, [candidate]);
       }
 
+      const duplicated = new Set<Candidate>();
+      for (const group of groups.values()) {
+        if (new Set(group.map((candidate) => candidate.file)).size >= 2) {
+          for (const candidate of group) duplicated.add(candidate);
+        }
+      }
+
       const drafts: ProjectFindingDraft[] = [];
       for (const group of groups.values()) {
+        const eligible = group.filter((candidate) => {
+          let ancestor = candidate.ancestor;
+          while (ancestor) {
+            if (duplicated.has(ancestor)) return false;
+            ancestor = ancestor.ancestor;
+          }
+          return true;
+        });
         const byFile = new Map<string, Candidate>();
-        for (const candidate of group) {
+        for (const candidate of eligible) {
           if (!byFile.has(candidate.file)) byFile.set(candidate.file, candidate);
         }
         if (byFile.size < 2) continue;

@@ -149,6 +149,44 @@ test('duplicate-block reports one representative per file', async () => {
   assert.ok(duplicates.every((finding) => finding.evidence.some((item) => item.startsWith('also at:'))));
 });
 
+test('duplicate-block reports nested helpers when their outer functions differ', async () => {
+  const nested = (returnValue: string) => [
+    'def outer():',
+    '    def helper(values):',
+    '        total = 0',
+    '        for value in values:',
+    '            total += value',
+    '        total = total * 2',
+    '        total = total + 1',
+    '        return total',
+    `    return helper([${returnValue}])`,
+    '',
+  ].join('\n');
+  const result = await scanTwoFiles(nested('1'), nested('2'));
+  const duplicates = result.findings.filter((f) => f.ruleId === 'py/duplicate-block');
+  assert.equal(duplicates.length, 2);
+  assert.ok(duplicates.every((finding) => finding.snippet.includes('helper')));
+});
+
+test('duplicate-block suppresses nested helpers when the enclosing function is duplicated', async () => {
+  const nested = [
+    'def outer():',
+    '    def helper(values):',
+    '        total = 0',
+    '        for value in values:',
+    '            total += value',
+    '        total = total * 2',
+    '        total = total + 1',
+    '        return total',
+    '    return helper([1])',
+    '',
+  ].join('\n');
+  const result = await scanTwoFiles(nested, nested);
+  const duplicates = result.findings.filter((f) => f.ruleId === 'py/duplicate-block');
+  assert.equal(duplicates.length, 2);
+  assert.ok(duplicates.every((finding) => finding.snippet.startsWith('def outer')));
+});
+
 test('duplicate-block skips files that do not parse', async () => {
   const result = await scanTwoFiles(BODY, `${BODY}\nthis is not python !!!\n`);
   assert.equal(result.findings.filter((f) => f.ruleId === 'py/duplicate-block').length, 0);

@@ -142,7 +142,7 @@ if False:
 
 **Not reported.** Copies only inside a single file (a file contributes at most one representative to a cross-file duplicate group), test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers. This is deliberately exact normalization, not a clone detector.
 
-**Confidence.** `medium`: duplication can be intentional boilerplate. Each occurrence is reported with the other locations.
+**Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations. Nested helpers are suppressed when an enclosing function is itself in a duplicate group; otherwise they are reported independently.
 
 ---
 
@@ -242,7 +242,7 @@ try {
 
 **Not reported.** Callbacks passed to other calls, copies only inside a single file (a file contributes at most one representative to a cross-file duplicate group), test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
 
-**Confidence.** `medium`: duplication can be intentional boilerplate. Each occurrence is reported with the other locations.
+**Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations. Nested helpers are suppressed when an enclosing function is itself in a duplicate group; otherwise they are reported independently.
 
 ---
 

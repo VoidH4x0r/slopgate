@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-23
+
+### Fixed
+- `duplicate-block` signatures include anonymous AST tokens (operators and punctuation); `+=` vs `-=`, `*` vs `/` and `<` vs `>` no longer match.
+- A duplicate group reports at most one representative per file; nested helpers are suppressed only when an enclosing function is itself in a duplicate group.
+- SARIF now uses `ALL_RULE_BY_ID`, so duplicate rules carry title, summary and tags.
+- `--fix` records a BOM-stripped source hash and refuses to apply stale offsets if the file changed between scan and write.
+
+### Changed
+- 336 tests.
+- README performance section updated to the measured ~13 s CPython benchmark and documents the duplicate-block opt-out for large repositories.
+- Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**; the duplicate medium count changed.
+
 ## [0.2.1] - 2026-11-22
 
 ### Added
@@ -12,7 +25,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - `fixtures/ai-generated`: 20-file AI-generated regression corpus with provenance, 32 labeled high-confidence fingerprints and 30/30 seeded recall.
 
 ### Changed
-- 332 tests.
+- 327 tests.
 - Benchmark: **43 high-confidence findings** across 1,115,270 lines, **97.7% labeled precision (42/43)**, **30/30 seeded defects**, 0 high findings on 601 JavaScript files.
 - `slopgate rules` now lists 16 rules.
 
@@ -55,7 +68,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [0.1.18] - 2026-11-22
 
 ### Changed
-- README “Auditing AI-written code” now states the scope of the medium threshold: `pass` / `...` / `throw not implemented` stubs are covered; a bare `return None` is `low`, while `return []` / `{}` / `""` / `False` and empty classes are not reported because they are indistinguishable from legitimate default returns.
+- README 鈥淎uditing AI-written code鈥?now states the scope of the medium threshold: `pass` / `...` / `throw not implemented` stubs are covered; a bare `return None` is `low`, while `return []` / `{}` / `""` / `False` and empty classes are not reported because they are indistinguishable from legitimate default returns.
 - `--strict` on a scan/rules/MCP command prints a stderr hint that it only affects `init` and points to `--confidence medium`; behavior is otherwise unchanged.
 
 ### Tests
@@ -66,7 +79,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 - `slopgate init --strict` writes `confidence: "medium"` and `failOn: "medium"` into `.slopgate.json` and generates a workflow with `--confidence medium --fail-on medium`, matching the AI-code audit recipe. Default `init` remains high/high for human-maintained repositories.
-- README “Auditing AI-written code” section with the baseline-first medium recipe, explaining that implementation stubs are medium by design while test theatre is high.
+- README 鈥淎uditing AI-written code鈥?section with the baseline-first medium recipe, explaining that implementation stubs are medium by design while test theatre is high.
 - `py/stub-body` and `ts/stub-function` docs now state that most real AI-stub findings are at medium confidence.
 
 ### Changed
@@ -76,12 +89,12 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [0.1.16] - 2026-11-22
 
 ### Fixed
-- `py/swallowed-exception` classifies the caught type independently of an `as name` binding: `except Exception as error:`, `except BaseException as e:`, `except (Exception,) as e:` and `except* Exception as e:` are high confidence again, with the broad “swallows the error” message instead of “specific error type”.
+- `py/swallowed-exception` classifies the caught type independently of an `as name` binding: `except Exception as error:`, `except BaseException as e:`, `except (Exception,) as e:` and `except* Exception as e:` are high confidence again, with the broad 鈥渟wallows the error鈥?message instead of 鈥渟pecific error type鈥?
 - Tuples containing `Exception`/`BaseException` are treated as broad; `(ValueError, RuntimeError)` remains specific/medium.
 
 ### Changed
 - 270 tests, including `as-binding` and `as-binding-more` fixtures covering bindings, `except*`, single-element and mixed tuples.
-- Docs note that human-written benchmark corpora rarely exercise AI-specific `except … as e: pass` shapes; regression fixtures cover them until the AI corpus.
+- Docs note that human-written benchmark corpora rarely exercise AI-specific `except 鈥?as e: pass` shapes; regression fixtures cover them until the AI corpus.
 - Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
 
 ## [0.1.15] - 2026-11-22
@@ -100,7 +113,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Fixed
 - MCP `scan_path` resolves config for the requested target with the same nearest-config search as the CLI (package config wins, root config falls back). Configs are cached per resolved config root.
 - MCP findings are reported relative to the MCP server root (`packages/app/app.py`), not relative to the scan target (`app.py`).
-- MCP uses the target config’s `confidence` as the default when a call omits `confidence`.
+- MCP uses the target config鈥檚 `confidence` as the default when a call omits `confidence`.
 - `findGitRoot` / `hasConfig` / `findConfigRoot` moved from `cli.ts` to `config.ts`, shared by CLI and MCP.
 
 ### Changed
@@ -169,7 +182,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [0.1.8] - 2026-11-22
 
 ### Fixed
-- `py/noop-test` now looks up only the local helper called by the test’s last statement. The name→node map is a light single walk; `hasAssertion` runs once per called helper and is cached. Test-heavy files no longer scan every function body, and the full CPython benchmark returns to ≈10.98 s (from 11.72 s).
+- `py/noop-test` now looks up only the local helper called by the test鈥檚 last statement. The name鈫抧ode map is a light single walk; `hasAssertion` runs once per called helper and is cached. Test-heavy files no longer scan every function body, and the full CPython benchmark returns to 鈮?0.98 s (from 11.72 s).
 - Unknown rule ids in `.slopgate.json` are now configuration errors (exit 2, MCP tool error), matching `--rule py/nope` and the README exit-code table. `--quiet` no longer hides the message.
 
 ### Changed
@@ -180,8 +193,8 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [0.1.7] - 2026-11-22
 
 ### Fixed
-- `py/noop-test` builds its local-helper index lazily, only when a test actually lacks an assertion. This removes the unconditional full-tree walk introduced in 0.1.6 and restores the rule’s scan cost (≈10.4 s → 9.9 s for `--rule py/noop-test` on the full CPython corpus).
-- `py/swallowed-exception` checks whether a comment is a real explanation before applying future-work noise. “The caller retries later, so we ignore this error” demotes, while “refactor this later” stays high.
+- `py/noop-test` builds its local-helper index lazily, only when a test actually lacks an assertion. This removes the unconditional full-tree walk introduced in 0.1.6 and restores the rule鈥檚 scan cost (鈮?0.4 s 鈫?9.9 s for `--rule py/noop-test` on the full CPython corpus).
+- `py/swallowed-exception` checks whether a comment is a real explanation before applying future-work noise. 鈥淭he caller retries later, so we ignore this error鈥?demotes, while 鈥渞efactor this later鈥?stays high.
 
 ### Added
 - Benchmark performance guard: `--max-regression <percent>` compares per-corpus `durationMs` with the previous results file, ignores corpora under 100 ms, and exits 1 on a regression. Intended for same-machine runs.
@@ -203,20 +216,20 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [0.1.5] - 2026-11-22
 
 ### Fixed
-- `ts/noop-test` reports a single test-callback parameter passed to a helper (`(t) => runSuite(t)`) as medium (“assertions may be delegated”) instead of high. Multi-parameter table-driven callbacks are not treated as delegation.
+- `ts/noop-test` reports a single test-callback parameter passed to a helper (`(t) => runSuite(t)`) as medium (鈥渁ssertions may be delegated鈥? instead of high. Multi-parameter table-driven callbacks are not treated as delegation.
 - `ts/unreachable` skips erased `type`, `interface` and `declare` declarations after a terminator; `enum`, classes, `let`/`const` and initialised `var` still report.
-- `py/swallowed-exception` no longer treats `cleanup`/`refactor`/`next sprint` as blanket noise; only TODO/FIXME/XXX/HACK tags are noise. Comments on the `except` line now count, and inline comments no longer pollute the exception type, so broad handlers keep the “comment explains why” message.
-- `ts/stub-function` reports object-literal arrow properties that throw “Not implemented” at medium confidence, matching class methods.
+- `py/swallowed-exception` no longer treats `cleanup`/`refactor`/`next sprint` as blanket noise; only TODO/FIXME/XXX/HACK tags are noise. Comments on the `except` line now count, and inline comments no longer pollute the exception type, so broad handlers keep the 鈥渃omment explains why鈥?message.
+- `ts/stub-function` reports object-literal arrow properties that throw 鈥淣ot implemented鈥?at medium confidence, matching class methods.
 
 ### Changed
 - 241 tests, including fifth-round regression fixtures for `delegated-assert`, `ts-type-after-return`, `cleanup-word`, `comment-placement` and the conservative `wording` cases.
 - Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
-- Docs record the accepted above-`try` wording conservatism (a bare “known bug” stays high by design).
+- Docs record the accepted above-`try` wording conservatism (a bare 鈥渒nown bug鈥?stays high by design).
 
 ## [0.1.4] - 2026-11-22
 
 ### Fixed
-- `ts/noop-test` recognises the Tape/TAP assertion API again (`t.equal`, `t.deepEqual`, `t.strictEqual`, `t.doesNotThrow`, …), fixing a regression introduced in 0.1.1; a framework matrix test now pins the accepted assertion families.
+- `ts/noop-test` recognises the Tape/TAP assertion API again (`t.equal`, `t.deepEqual`, `t.strictEqual`, `t.doesNotThrow`, 鈥?, fixing a regression introduced in 0.1.1; a framework matrix test now pins the accepted assertion families.
 - `ts/unreachable` no longer reports hoisted `function`/generator declarations or bare `var` statements after a `return`; `let`/`const` and initialised `var` are still reported.
 - `ts/stub-function` reports class-method `throw new Error("Not implemented")` at medium confidence; standalone/exported throw-stubs remain high.
 - `py/stub-body` skips `dummy_multiprocessing/`-style prefixed directories when the module docstring identifies a no-op shim, while `dummy_data/` remains reported.
@@ -268,7 +281,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - `.pyi` type stubs and deliberate no-op shim modules (for example `multiprocessing/dummy`) are no longer reported as unfinished stubs.
 - `pyproject.toml` parsing now understands `[project.optional-dependencies]`, `[dependency-groups]` (PEP 735, including `include-group`), `[tool.uv] dev-dependencies`, and every `[tool.poetry.group.<name>.dependencies]` group.
 - Import-name to distribution-name mapping now covers `docx`, `pptx`, `grpc`, `git`, `nacl`, `jose`, `fitz`, `ldap`, `rest_framework` and others, and resolves dotted prefixes (`google.protobuf`) without mapping every `google.*` import to `protobuf`.
-- `ts/noop-test` recognises `node:assert` method assertions (`assert.strictEqual`, `assert.ok`, `assert.deepStrictEqual`, `assert.match`, …), `t.ok`/`t.assert.*`, and no longer mistakes `test.valid.forEach(...)` for a test declaration.
+- `ts/noop-test` recognises `node:assert` method assertions (`assert.strictEqual`, `assert.ok`, `assert.deepStrictEqual`, `assert.match`, 鈥?, `t.ok`/`t.assert.*`, and no longer mistakes `test.valid.forEach(...)` for a test declaration.
 - `py/swallowed-exception` counts explanatory comments between the `try` body and `except`; comment detection now uses real comment nodes instead of scanning for `#`/`//` in strings.
 - `conftest.py`, `noxfile.py` and `docs/conf.py` are treated as test/build infrastructure, so their imports are demoted instead of failing CI.
 - Imports under `sys.platform` / `platform.system()` guards are ignored (platform-specific modules).
@@ -300,7 +313,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - CLI with `pretty`, `json`, `sarif` and `github` output, stable exit codes, and `--fail-on` thresholds.
 - `--format github` emits GitHub Actions workflow-command annotations, so findings appear inline on a pull request without code scanning.
 - Adoption tools: `--write-baseline` + `.slopgate-baseline.json`, and `--diff <ref>` for pull-request-only scanning.
-- Inline suppression: `slopgate-ignore-next-line`, `slopgate-ignore-line`, `slopgate-disable-file` — only honoured inside real comments.
+- Inline suppression: `slopgate-ignore-next-line`, `slopgate-ignore-line`, `slopgate-disable-file` 鈥?only honoured inside real comments.
 - `slopgate init` writes a config file and a GitHub Actions workflow.
 - MCP server (`slopgate mcp`) with `scan_diff`, `scan_path` and `list_rules` tools, so coding agents can lint their own changes before finishing. Respects `.slopgate.json` and the baseline.
 - Bundled tree-sitter WASM grammars for Python, TypeScript and TSX; no Python or TypeScript toolchain needed at scan time.
@@ -317,7 +330,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Findings in files with syntax errors are demoted to `medium`.
 - `ts/swallowed-exception` reports `medium` by design: empty `catch` is idiomatic JavaScript.
 - `ts/stub-function` reports an empty body at `medium`; only an explicit `throw new Error("not implemented")` is `high`. No-op conventions (`noop`, `noOp`, `ignore`) and `@abstract` JSDoc are skipped.
-- `ts/phantom-import` ignores URL specifiers (`https://…`), optional `require` calls inside `try`, and asset imports.
+- `ts/phantom-import` ignores URL specifiers (`https://鈥), optional `require` calls inside `try`, and asset imports.
 - `py/noop-test` is restricted to real test modules and test classes, and lowers confidence for likely helper functions.
 - Config, manifests and baselines tolerate a UTF-8 BOM (common on Windows).
 - `--diff` handles file names containing spaces or non-ASCII characters, and scans started from a subdirectory of the repository.

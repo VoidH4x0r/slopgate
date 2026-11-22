@@ -177,6 +177,35 @@ test('cli: --fix with JSON still writes and emits valid JSON', async () => {
   }
 });
 
+test('cli: --fix honours --rule and leaves other findings alone', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-rule-'));
+  try {
+    const file = path.join(dir, 'app.py');
+    await writeFile(file, 'import missing_sdk\n\ndef f():\n    return 1\n    print("dead")\n');
+    const result = await run([dir, '--fix', '--rule', 'py/unreachable', '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    const text = await readFile(file, 'utf8');
+    assert.match(text, /import missing_sdk/);
+    assert.doesNotMatch(text, /print\("dead"\)/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: --fix supports SARIF output', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-sarif-'));
+  try {
+    await writeFile(path.join(dir, 'app.py'), 'def f():\n    return 1\n    print("dead")\n');
+    const result = await run([dir, '--fix', '--format', 'sarif']);
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout) as { version: string };
+    assert.equal(payload.version, '2.1.0');
+    assert.doesNotMatch(await readFile(path.join(dir, 'app.py'), 'utf8'), /dead/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: --fix rejects --write-baseline', async () => {
   const result = await run(['fixtures/demo', '--fix', '--write-baseline']);
   assert.equal(result.status, 2);
