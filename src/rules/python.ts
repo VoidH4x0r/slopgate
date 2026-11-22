@@ -137,6 +137,35 @@ function bodyCallsSelf(body: AstNode): boolean {
   return found;
 }
 
+/** Module-local helpers whose bodies contain an assertion. */
+function localAssertionHelpers(root: AstNode): Map<string, AstNode> {
+  const helpers = new Map<string, AstNode>();
+  for (const fn of descendantsOfType(root, ['function_definition'])) {
+    if (fn.parent?.type === 'class_definition') continue;
+    const name = fn.childForFieldName('name')?.text;
+    if (!name || testFunctionName(fn)) continue;
+    const body = fn.childForFieldName('body');
+    if (body && hasAssertion(body)) helpers.set(name, fn);
+  }
+  return helpers;
+}
+
+/** The last statement calling a local helper can carry the assertions. */
+function delegatesToLocalHelper(
+  statements: readonly AstNode[],
+  helpers: ReadonlyMap<string, AstNode>,
+): string | undefined {
+  const last = statements[statements.length - 1];
+  if (!last) return undefined;
+  const call =
+    last.type === 'expression_statement' || last.type === 'return_statement'
+      ? last.namedChildren[0]
+      : undefined;
+  if (call?.type !== 'call') return undefined;
+  const name = collapseWhitespace(call.childForFieldName('function')?.text ?? '');
+  return /^[A-Za-z_]\w*$/.test(name) && helpers.has(name) ? name : undefined;
+}
+
 function placeholderForm(block: AstNode): string | undefined {
   const statements = statementsOf(block);
   const afterDocstring =
@@ -293,6 +322,7 @@ const noopTest: Rule = {
     if (ctx.language !== 'python') return [];
     if (isStubFile(ctx.file)) return [];
     const drafts: RuleDraft[] = [];
+    const helpers = localAssertionHelpers(ctx.root);
 
     for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
       const name = testFunctionName(fn);
@@ -327,6 +357,7 @@ const noopTest: Rule = {
       }
       if (!hasAssertion(body)) {
         const delegatesToSelf = bodyCallsSelf(body);
+        const delegatedTo = delegatesToLocalHelper(statements, helpers);
         const parameters = fn.childForFieldName('parameters');
         const parameterCount = parameters
           ? parameters.namedChildren.filter((child) => child.type !== 'comment').length
@@ -347,7 +378,8 @@ const noopTest: Rule = {
         const likelyHelper =
           !inClass && (parameterCount >= 2 || helperDecorator || (camelCase && parameterCount >= 1));
         // unittest-style methods routinely delegate assertions to helpers.
-        const confidence: Confidence = inClass || delegatesToSelf || likelyHelper ? 'medium' : 'high';
+        const confidence: Confidence =
+          inClass || delegatesToSelf || delegatedTo !== undefined || likelyHelper ? 'medium' : 'high';
         drafts.push({
           message: `test \`${name}\` makes no assertions`,
           start: startOf(fn),
@@ -359,6 +391,9 @@ const noopTest: Rule = {
             `statements: ${statements.length}`,
             'no assert / raises / mock assertion found',
             ...(delegatesToSelf ? ['the body calls a self.* helper, which may contain the assertions'] : []),
+            ...(delegatedTo
+              ? [`last statement calls \`${delegatedTo}\`, whose body contains an assertion`]
+              : []),
             ...(inClass && !delegatesToSelf ? ['defined inside a test class, where helpers often hold the assertions'] : []),
             ...(likelyHelper ? ['takes several parameters or uses a helper decorator, so it may be a test helper'] : []),
           ],
@@ -478,7 +513,8 @@ const INTENT_WORDS = /ignor\w*|abort|skip|safe|accept|fallback|best effort|toler
 const STRONG_EXPLANATION =
   /harmless|benign|intentional|by design|safe to ignore|expected (?:error|failure|exception|behaviou?r)/i;
 /** Comments that describe future work, not why an error is safe to ignore. */
-const NOISE_COMMENT = /\b(TODO|FIXME|XXX|HACK)\b/i;
+const NOISE_COMMENT =
+  /\b(TODO|FIXME|XXX|HACK)\b|\b(later|next (sprint|release|iteration)|someday|eventually)\b/i;
 
 function isExplanationText(text: string): boolean {
   return STRONG_EXPLANATION.test(text) || (FAILURE_WORDS.test(text) && INTENT_WORDS.test(text));

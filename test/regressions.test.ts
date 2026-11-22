@@ -217,3 +217,31 @@ test('regression: above-try wording stays conservative without an intent word', 
   assert.equal(findings.filter((finding) => finding.confidence === 'high').length, 1);
   assert.equal(findings.find((finding) => finding.confidence === 'high')?.start.line, 16);
 });
+
+test('regression: future-work comments are noise, cleanup explanations are not', async () => {
+  const result = await scanFixture('regressions/noise');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 3);
+  const high = findings.filter((finding) => finding.confidence === 'high');
+  assert.deepEqual(
+    high.map((finding) => finding.start.line).sort((a, b) => a - b),
+    [7, 22],
+  );
+  assert.equal(findings.find((finding) => finding.start.line === 14)?.confidence, 'medium');
+});
+
+test('regression: a test delegating to a local assert helper is medium', async () => {
+  const result = await scanFixture('regressions/py-named-helper');
+  const findings = ruleFindings(result, 'py/noop-test');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.confidence, 'medium');
+  assert.equal(findings[0]?.start.line, 9);
+});
+
+test('regression: verify-named Python delegation stays clean', async () => {
+  const result = await scanFixture('regressions/py-delegated');
+  const findings = ruleFindings(result, 'py/noop-test');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.start.line, 12);
+  assert.equal(findings[0]?.confidence, 'high');
+});

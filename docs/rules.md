@@ -65,6 +65,7 @@ def test_create_user():
 - The body is a docstring with `>>>` → skipped (doctest).
 - The body returns a `DocTestSuite`/`load_tests` → skipped (suite factory).
 - The test is a class method, or calls `self.*`, or takes two or more parameters, or uses a camelCase `testX` name with a parameter, or uses a `@contextmanager`-style decorator → **medium**: it probably delegates its assertions to a helper.
+- The test’s **last statement** calls a module-local function whose body contains an assertion (`def test_x(): run_suite(...)`) → **medium**. This is one level only: a helper that itself calls another helper is not followed.
 
 **Why it matters.** A test that cannot fail is worse than no test: it inflates coverage, signals safety, and catches nothing.
 
@@ -113,7 +114,7 @@ except Exception:
 
 - `high` only for a bare `except:` or `except Exception` / `BaseException`, with no explanatory comment, outside a cleanup function.
 - `medium` when the caught type is specific (`except KeyError`), when a standalone comment explains it — immediately above `try` with explanation wording, between the try body and this handler (or between handlers), on the `except` line, or inside the handler — or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
-- Only TODO/FIXME/XXX/HACK tags are treated as noise. `cleanup` and `refactor` are valid explanation vocabulary when they explain why the failure is safe to ignore.
+- Only TODO/FIXME/XXX/HACK tags and future-work wording (`later`, `next sprint/release/iteration`, `someday`, `eventually`) are treated as noise. `cleanup` and `refactor` are valid explanation vocabulary when they explain why the failure is safe to ignore.
 - Trailing comments on preceding code lines never count. Above-`try` comments need a failure word plus an intent word (“any errors, just abort”), or a strong phrase such as “harmless” / “safe to ignore”; a bare “known bug” without intent wording stays `high` by design.
 
 **Not reported.** `except ImportError` / `ModuleNotFoundError` (the optional-dependency idiom), `try` blocks with an `else` clause (the `try/except: pass/else: fail` assertion idiom), test files, and handlers that log or re-raise.

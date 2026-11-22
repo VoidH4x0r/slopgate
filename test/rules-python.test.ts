@@ -257,6 +257,31 @@ test('py/stub-body skips a prefixed shim directory with a no-op docstring', asyn
   );
 });
 
+test('py/noop-test delegates to a local assert helper only on the last statement', async () => {
+  const source = [
+    'def run_suite(cases):',
+    '    assert cases',
+    '',
+    'def compute():',
+    '    return 1',
+    '',
+    'def test_delegates():',
+    '    run_suite([])',
+    '',
+    'def test_helper_not_last():',
+    '    run_suite([])',
+    '    compute()',
+    '',
+    'def test_plain():',
+    '    compute()',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/noop-test', source, 'python', 'test_app.py');
+  assert.equal(drafts.length, 3);
+  assert.equal(drafts.filter((draft) => draft.confidence === 'medium').length, 1);
+  assert.equal(drafts.find((draft) => draft.confidence === 'medium')?.start.line, 7);
+  assert.equal(drafts.filter((draft) => draft.confidence === 'high').length, 2);
+});
+
 test('py/phantom-import ignores imports under sys.version_info guards', async () => {
   const source = [
     'import sys',

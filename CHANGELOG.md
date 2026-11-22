@@ -9,6 +9,16 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.6] - 2026-11-22
+
+### Fixed
+- `py/swallowed-exception` treats future-work wording (`later`, `next sprint/release/iteration`, `someday`, `eventually`) as noise again, while a real cleanup explanation without future wording still demotes.
+- `py/noop-test` recognises a test whose last statement calls a module-local helper containing an assertion, reporting it at medium confidence. This matches the TypeScript delegated-helper behaviour; the lexical assertion-name list remains for `verify(...)`-style helpers.
+
+### Changed
+- 245 tests, including sixth-round regression fixtures for `noise`, `py-named-helper` and `py-delegated`.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.5] - 2026-11-22
 
 ### Fixed
