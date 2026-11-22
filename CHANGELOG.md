@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 - Config `include` / `exclude` globs are matched relative to the config file's directory (or the project root when no config exists), so a root config still governs `slopgate backend` and CLI `--exclude generated/**` works without a config file.
-- Registry indexing is scoped to the repository/target, lazy-loads project deps, and respects `config.exclude`; MCP rebuilds the index per call so new modules and projects are visible, while configs invalidate on mtime.
+- Registry indexing is scoped to the repository/target, lazy-loads project deps, and respects `config.exclude`; MCP rebuilds the index per call so new modules and projects are visible, while configs invalidate on mtime. Non-git scans use a lookup boundary for ancestor manifests and sibling top-level modules.
 - Python files choose the nearest **Python** manifest rather than a nested Node-only `package.json`; TS files use the nearest `package.json`; indexes cover ancestor manifests and sibling modules.
 - Python project markers are derived from the same list as `PYTHON_MANIFESTS` (`requirements-dev.txt`, `environment.yml`, etc.).
 - `pytest.warns` / `pytest.deprecated_call` count as assertions, but a plain `warnings.warn()` does not.
@@ -14,7 +14,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - `ts/tautological-assert` no longer treats two calls with the same text as identical.
 - `ts/stub-function` recognises `unimplemented` / `Not yet implemented` placeholders.
 - Suppression directives inside block comments and before decorators now reach the finding.
-- Disabled tests (`test.skip` / `todo` / `fixme`, including inside `describe.skip`) are skipped; Cypress/Playwright implicit commands demote assertion-free tests to medium.
+- Disabled tests (`test.skip` / `todo` / `fixme`, `xdescribe`/`xcontext`/`xsuite`, including inside `describe.skip`) are skipped; Cypress/Playwright implicit commands demote assertion-free tests to medium.
 - `--write-baseline` merges the scanned scope into the root baseline instead of clobbering entries outside it; writes are atomic.
 - Empty `--include=`, `--exclude=`, `--rule=`, `--baseline=` and `--write-baseline=` values are rejected; `--diff=` falls back to HEAD.
 - Error help paths show the actual package version; `--verbose` docs describe the config/diff details it actually prints.

@@ -172,7 +172,7 @@ If the package **is** installed under `node_modules` the finding is `medium` ("u
 
 **Delegation.** If the callback’s first parameter is passed as an argument to a helper (`(t) => runSuite(t)`), the finding is `medium`: the helper may contain the assertions. Passing it as a receiver (`t.equal(...)`) is still a normal assertion; callbacks with several parameters are treated as table-driven data, not delegated context.
 
-**Disabled tests.** `test.skip`, `test.todo`, `test.fixme` and tests nested under `describe.skip` / `context.skip` / `suite.skip` are not reported. Cypress/Playwright-style commands (`cy.*`, `page.*`, `browser.*`) can fail a test implicitly, so an otherwise assertion-free test is demoted to `medium` rather than `high`.
+**Disabled tests.** `test.skip`, `test.todo`, `test.fixme`, `xdescribe`, `xcontext`, `xsuite`, and tests nested under `describe.skip` / `context.skip` / `suite.skip` are not reported. Cypress/Playwright-style commands (`cy.*`, `page.*`, `browser.*`) can fail a test implicitly, so an otherwise assertion-free test is demoted to `medium` rather than `high`.
 
 ```ts
 test('creates user', () => {

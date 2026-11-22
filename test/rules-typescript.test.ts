@@ -102,6 +102,14 @@ test('ts/noop-test skips disabled tests and demotes implicit browser commands', 
     'typescript',
   );
   assert.deepEqual(testDescribe, []);
+  assert.deepEqual(
+    await runRule('ts/noop-test', "xdescribe('group', () => { it('empty', () => {}); });\n", 'typescript'),
+    [],
+  );
+  assert.deepEqual(
+    await runRule('ts/noop-test', "xcontext('group', () => { it('empty', () => {}); });\n", 'typescript'),
+    [],
+  );
 });
 
 test('ts/noop-test recognises node:assert method assertions', async () => {

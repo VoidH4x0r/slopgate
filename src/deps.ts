@@ -329,7 +329,46 @@ async function hasProjectMarker(dir: string): Promise<boolean> {
 
 /** True when the directory directly owns a supported project manifest. */
 export async function isProjectDir(dir: string): Promise<boolean> {
-  return hasProjectMarker(path.resolve(dir));
+  const resolved = path.resolve(dir);
+  const entries = await readDirSafe(resolved);
+  if (!entries) return false;
+  return isProjectDirFromEntries(resolved, entries);
+}
+
+/** Manifest check from an existing directory listing (avoids 19 stats per dir). */
+export async function isProjectDirFromEntries(
+  dir: string,
+  entries: readonly Dirent[],
+): Promise<boolean> {
+  const files = new Set(entries.filter((entry) => entry.isFile()).map((entry) => entry.name));
+  if (files.has('package.json')) {
+    const text = await readIfExists(path.join(dir, 'package.json'));
+    const pkg = text ? (tryParseJson(text) as Record<string, unknown> | undefined) : undefined;
+    if (pkg && typeof pkg === 'object') {
+      if (
+        typeof pkg.name === 'string' ||
+        ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies', 'workspaces'].some(
+          (field) => pkg[field] !== undefined,
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+  for (const marker of PROJECT_MARKERS) {
+    if (marker === 'package.json' || marker.includes('/')) continue;
+    if (files.has(marker)) return true;
+  }
+  const hasRequirementsDir = entries.some(
+    (entry) => entry.isDirectory() && entry.name === 'requirements',
+  );
+  if (hasRequirementsDir) {
+    for (const marker of PROJECT_MARKERS) {
+      if (!marker.includes('/')) continue;
+      if (await exists(path.join(dir, marker))) return true;
+    }
+  }
+  return false;
 }
 
 /**

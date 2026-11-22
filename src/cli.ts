@@ -478,6 +478,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     projectRoot,
     configRoot: globRoot,
     indexRoot,
+    lookupRoot: scopeRoot,
     reportRoot,
     config: merged,
     ...(options.rules.length > 0 ? { onlyRules: new Set(options.rules) } : {}),

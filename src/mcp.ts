@@ -337,6 +337,7 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
         projectRoot,
         configRoot: globRoot,
         indexRoot,
+        lookupRoot: repoRoot,
         reportRoot: root,
         config,
       });

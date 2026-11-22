@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import * as path from 'node:path';
-import { isProjectDir, loadProjectDeps } from './deps.ts';
+import { isProjectDir, isProjectDirFromEntries, loadProjectDeps } from './deps.ts';
 import { DEFAULT_IGNORE_DIRS, globToRegExp, matchesAny, toPosix } from './files.ts';
 import type { LanguageId, ProjectDeps } from './types.ts';
 
@@ -11,6 +11,8 @@ const VALID_MODULE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 export interface ProjectRegistryOptions {
   /** Directory to index for projects and local modules. */
   scopeRoot: string;
+  /** Outer boundary for lazy ancestor-project lookup (cwd for non-git). */
+  lookupRoot?: string;
   /** Project used when no manifest owns the file. */
   fallbackRoot: string;
   /** Base for config include/exclude patterns. */
@@ -21,6 +23,7 @@ export interface ProjectRegistryOptions {
 
 export interface ProjectRegistry {
   scopeRoot: string;
+  lookupRoot: string;
   projectDirs: ReadonlySet<string>;
   /** Deps for the nearest project that owns the requested language. */
   depsFor(fileAbs: string, language: LanguageId): Promise<ProjectDeps>;
@@ -46,6 +49,7 @@ export async function loadProjectRegistry(
   options: ProjectRegistryOptions,
 ): Promise<ProjectRegistry> {
   const scope = path.resolve(options.scopeRoot);
+  const lookup = path.resolve(options.lookupRoot ?? scope);
   const fallbackDir = path.resolve(options.fallbackRoot);
   const excludeRoot = path.resolve(options.configRoot ?? scope);
   const excludeRe = (options.exclude ?? []).map(globToRegExp);
@@ -73,7 +77,7 @@ export async function loadProjectRegistry(
     } catch {
       return;
     }
-    if (await isProjectDir(dir)) projectDirs.add(dir);
+    if (await isProjectDirFromEntries(dir, entries)) projectDirs.add(dir);
 
     for (const entry of entries) {
       if (entry.isSymbolicLink()) continue;
@@ -92,6 +96,27 @@ export async function loadProjectRegistry(
   await walk(scope, 0);
   if (projectDirs.size === 0 && (await isProjectDir(fallbackDir))) {
     projectDirs.add(fallbackDir);
+  }
+
+  // In non-git layouts the index stays at the package, but a sibling/ancestor
+  // module still needs a cheap top-level entry (`lib/`, `newlib/`).
+  if (lookup !== scope) {
+    try {
+      const outer = await readdir(lookup, { withFileTypes: true });
+      for (const entry of outer) {
+        if (entry.isSymbolicLink() || entry.name.startsWith('.')) continue;
+        const abs = path.join(lookup, entry.name);
+        if (DEFAULT_IGNORE_DIRS.has(entry.name) || isExcluded(abs, entry.isDirectory())) continue;
+        if (entry.isDirectory() && VALID_MODULE.test(entry.name)) {
+          localModules.add(entry.name);
+        } else if (entry.isFile() && PYTHON_FILE.test(entry.name)) {
+          const stem = entry.name.replace(PYTHON_FILE, '');
+          if (VALID_MODULE.test(stem)) localModules.add(stem);
+        }
+      }
+    } catch {
+      // The lookup boundary may disappear between scans.
+    }
   }
 
   const loadProject = (dir: string): Promise<ProjectDeps> => {
@@ -116,6 +141,7 @@ export async function loadProjectRegistry(
 
   const registry: ProjectRegistry = {
     scopeRoot: scope,
+    lookupRoot: lookup,
     projectDirs,
     async depsFor(fileAbs: string, language: LanguageId): Promise<ProjectDeps> {
       let dir = path.dirname(path.resolve(fileAbs));
@@ -123,8 +149,12 @@ export async function loadProjectRegistry(
         if (projectDirs.has(dir)) {
           const deps = await loadProject(dir);
           if (matchesLanguage(deps, language)) return deps;
+        } else if (dir !== scope && (await isProjectDir(dir))) {
+          projectDirs.add(dir);
+          const deps = await loadProject(dir);
+          if (matchesLanguage(deps, language)) return deps;
         }
-        if (dir === scope) break;
+        if (dir === lookup) break;
         const parent = path.dirname(dir);
         if (parent === dir) break;
         dir = parent;

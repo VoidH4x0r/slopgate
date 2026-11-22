@@ -371,8 +371,10 @@ function insideSkippedDescribe(call: AstNode): boolean {
       const fn = collapseWhitespace(node.childForFieldName('function')?.text ?? '');
       const root = fn.split(/[.(]/)[0] ?? '';
       const descriptors = /(?:^|\.)(?:describe|context|suite)(?:\.|$)/.test(fn);
+      const xDescriptor = /(?:^|\.)x(?:describe|context|suite)(?:\.|$)/.test(fn);
+      if (xDescriptor) return true;
       if (
-        (root === 'describe' || root === 'context' || root === 'suite' || descriptors) &&
+        (['describe', 'context', 'suite'].includes(root) || descriptors) &&
         testModifiers(node).some((name) => ['skip', 'todo', 'fixme'].includes(name))
       ) {
         return true;

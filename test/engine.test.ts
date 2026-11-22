@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import test from 'node:test';
 import { DEFAULT_CONFIG } from '../src/config.ts';
@@ -123,4 +123,61 @@ test('scanProject sorts findings by file, line and rule', async () => {
     (a, b) => a.file.localeCompare(b.file) || a.start.line - b.start.line || a.ruleId.localeCompare(b.ruleId),
   );
   assert.deepEqual(result.findings, sorted);
+});
+
+test('non-git package scans see ancestor manifests through lookupRoot', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-nongit-lookup-'));
+  try {
+    await mkdir(path.join(dir, 'assets'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'pyproject.toml'),
+      '[project]\nname = "root"\nversion = "0.0.0"\ndependencies = ["requests"]\n',
+    );
+    await writeFile(path.join(dir, 'assets', 'package.json'), '{"name":"assets","private":true}\n');
+    await writeFile(path.join(dir, 'assets', 'build.py'), 'import requests\n');
+
+    const result = await scanProject({
+      root: path.join(dir, 'assets'),
+      projectRoot: path.join(dir, 'assets'),
+      indexRoot: path.join(dir, 'assets'),
+      lookupRoot: dir,
+      reportRoot: dir,
+      config: { ...DEFAULT_CONFIG, rules: {} },
+    });
+    assert.deepEqual(
+      result.findings.filter((finding) => finding.ruleId === 'py/phantom-import'),
+      [],
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('non-git package scans see sibling local modules through lookupRoot', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-nongit-sibling-'));
+  try {
+    await mkdir(path.join(dir, 'lib'), { recursive: true });
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await writeFile(path.join(dir, 'lib', 'util.py'), 'def f():\n    return 1\n');
+    await writeFile(
+      path.join(dir, 'packages', 'app', 'pyproject.toml'),
+      '[project]\nname = "app"\nversion = "0.0.0"\ndependencies = []\n',
+    );
+    await writeFile(path.join(dir, 'packages', 'app', 'app.py'), 'from lib.util import f\n');
+
+    const result = await scanProject({
+      root: path.join(dir, 'packages', 'app'),
+      projectRoot: path.join(dir, 'packages', 'app'),
+      indexRoot: path.join(dir, 'packages', 'app'),
+      lookupRoot: dir,
+      reportRoot: dir,
+      config: { ...DEFAULT_CONFIG, rules: {} },
+    });
+    assert.deepEqual(
+      result.findings.filter((finding) => finding.ruleId === 'py/phantom-import'),
+      [],
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

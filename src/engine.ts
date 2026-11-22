@@ -26,6 +26,8 @@ export interface ScanOptions {
   configRoot?: string;
   /** Root to index for projects/local modules; defaults to projectRoot. */
   indexRoot?: string;
+  /** Outer boundary for lazy ancestor-project lookup; defaults to indexRoot. */
+  lookupRoot?: string;
   /** Prebuilt registry (MCP caches this across tool calls). */
   registry?: ProjectRegistry;
   /** Root for reported finding paths; defaults to the scan base. */
@@ -67,6 +69,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   const root = targetInfo?.isFile() ? path.dirname(target) : target;
   const projectRoot = options.projectRoot ? path.resolve(options.projectRoot) : root;
   const indexRoot = options.indexRoot ? path.resolve(options.indexRoot) : projectRoot;
+  const lookupRoot = options.lookupRoot ? path.resolve(options.lookupRoot) : indexRoot;
   const reportRoot = options.reportRoot ? path.resolve(options.reportRoot) : root;
   const warnings: string[] = [];
   const { config } = options;
@@ -83,6 +86,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     options.registry ??
     (await loadProjectRegistry({
       scopeRoot: indexRoot,
+      lookupRoot,
       fallbackRoot: projectRoot,
       ...(options.configRoot ? { configRoot: path.resolve(options.configRoot) } : {}),
       exclude: config.exclude,
