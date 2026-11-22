@@ -199,13 +199,7 @@ export function createMcpServer(deps: McpDeps) {
         return textResult(`No files matched under ${target} (check include/exclude patterns)`, true);
       }
       const visible = result.findings.filter((finding) => meetsConfidence(finding.confidence, confidence));
-      const targetInfo = await stat(target).catch(() => undefined);
-      const base = targetInfo?.isFile() ? path.dirname(target) : target;
-      const prefix = prefixForRoot(deps.root, base);
-      const output = prefix
-        ? visible.map((finding) => ({ ...finding, file: `${prefix}/${finding.file}` }))
-        : visible;
-      return textResult(formatFindings(output, result, deps.version, max));
+      return textResult(formatFindings(visible, result, deps.version, max));
     }
 
     if (name === 'scan_diff') {
@@ -303,10 +297,24 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
     async scan(scanRoot: string) {
       const config = await configFor(scanRoot);
       const result = await scanProject({ root: scanRoot, config });
+
+      // Findings and baseline fingerprints are MCP-root-relative. Normalize
+      // here, before partitioning, so a root baseline matches subdirectory and
+      // single-file scans too.
+      const target = path.resolve(scanRoot);
+      const info = await stat(target).catch(() => undefined);
+      const base = info?.isFile() ? path.dirname(target) : target;
+      const prefix = prefixForRoot(root, base);
+      const normalized = prefix
+        ? result.findings.map((finding) => ({ ...finding, file: `${prefix}/${finding.file}` }))
+        : result.findings;
+
       // Respect a baseline if one exists, so agents do not re-report known debt.
       const baseline = await loadBaseline(path.join(root, '.slopgate-baseline.json'));
-      if (baseline) return { ...result, findings: partitionByBaseline(result.findings, baseline).fresh };
-      return result;
+      if (baseline) {
+        return { ...result, findings: partitionByBaseline(normalized, baseline).fresh };
+      }
+      return { ...result, findings: normalized };
     },
     diff: diffSince,
   };

@@ -9,6 +9,17 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.15] - 2026-11-22
+
+### Fixed
+- MCP `scan_path` now normalizes findings to MCP-root-relative paths inside `defaultMcpDeps.scan` before applying the root baseline, so a baseline written by `slopgate . --write-baseline` suppresses findings for subdirectory and single-file scans too. `scan_diff` is unchanged because it scans the root (empty prefix).
+- Removed the duplicate path prefixing from `scan_path`; normalization has one owner and cannot double-prefix.
+
+### Changed
+- 267 tests, including root-baseline suppression for MCP directory/file/root scans and no-double-prefix coverage.
+- Documented that the MCP server root must be the repository root; select subdirectories with `scan_path`.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.14] - 2026-11-22
 
 ### Fixed

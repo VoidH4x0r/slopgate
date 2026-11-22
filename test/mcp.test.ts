@@ -9,6 +9,7 @@ import {
   isInsideRoot,
   type McpDeps,
 } from '../src/mcp.ts';
+import { writeBaseline } from '../src/baseline.ts';
 import { DEFAULT_CONFIG, type Config } from '../src/config.ts';
 import type { ScanResult } from '../src/engine.ts';
 import type { Finding } from '../src/types.ts';
@@ -365,6 +366,37 @@ test('mcp: the target config confidence is the default for scan_path', async () 
     const text =
       (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
     assert.match(text, /py\/swallowed-exception/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('mcp: a root baseline suppresses subdirectory and file scans', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-baseline-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'packages', 'lib'), { recursive: true });
+    await writeFile(path.join(dir, 'packages', 'lib', 'app.py'), 'def stubbed():\n    pass\n');
+
+    const deps = defaultMcpDeps(dir, '0.1.0');
+    const initial = await deps.scan(path.join(dir, 'packages', 'lib'));
+    const entry = initial.findings[0];
+    assert.ok(entry);
+    assert.equal(entry.file, 'packages/lib/app.py');
+    await writeBaseline(path.join(dir, '.slopgate-baseline.json'), [entry]);
+
+    const server = createMcpServer({ ...deps, config: DEFAULT_CONFIG });
+    for (const target of ['packages/lib', 'packages/lib/app.py', '.']) {
+      const response = await call(server, {
+        jsonrpc: '2.0',
+        id: 15,
+        method: 'tools/call',
+        params: { name: 'scan_path', arguments: { path: target } },
+      });
+      const text =
+        (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+      assert.match(text, /0 finding\(s\)/, target);
+    }
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

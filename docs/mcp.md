@@ -16,7 +16,7 @@ Claude Code (`~/.claude.json` or project `.mcp.json`):
 
 Codex and other MCP clients use the same `command` + `args` pair. The optional argument after `mcp` is the repository root; it defaults to the current working directory.
 
-The server prints a single line to stderr on startup (`slopgate mcp 0.1.14 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
+The server prints a single line to stderr on startup (`slopgate mcp 0.1.15 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
 
 ## Tools
 
@@ -48,7 +48,7 @@ Returns the rule table (id, severity, default confidence, languages, title) so t
 
 ```text
 Diff since origin/main: 2 finding(s) on changed lines.
-slopgate 0.1.14 · 2 finding(s) (1 error) · 38 files scanned in 214ms
+slopgate 0.1.15 · 2 finding(s) (1 error) · 38 files scanned in 214ms
 src/users.py:12:5  error  high  py/phantom-import  `requests_v2` is imported but not declared…
     import requests_v2
     - no Python dependency manifest found
@@ -61,7 +61,7 @@ Output is capped at 50 findings per call (`maxFindings`), configurable down to 1
 - **Configuration**: `.slopgate.json` is resolved for each requested path using the same nearest-config search as the CLI (target → ancestors → repository root).
 - **Baseline**: if `.slopgate-baseline.json` exists, findings recorded in it are not returned, so an agent is not nagged about accepted debt.
 - **Confidence**: defaults to the resolved config’s `confidence` (usually `high`); `medium` and `low` are opt-in per call.
-- **Paths**: findings are reported relative to the MCP server root, so `scan_path { path: "packages/app" }` reports `packages/app/app.py`.
+- **Paths**: findings are reported relative to the MCP server root, so `scan_path { path: "packages/app" }` reports `packages/app/app.py`. The MCP root must be the repository root; select subdirectories with `scan_path` rather than pointing the server at them.
 - **Failures**: a scan error becomes a tool result with `isError: true`, never a crashed server.
 - **Exit code**: the process exits 0 when stdin closes.
 
