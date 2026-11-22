@@ -28,27 +28,14 @@ jobs:
       - name: Check that the tag matches package.json
         run: |
           node -e "const p=require('./package.json');const tag=process.env.GITHUB_REF_NAME.replace(/^v/,'');if(p.version!==tag){console.error('tag',tag,'does not match version',p.version);process.exit(1)}"
-      - name: Check whether this version is already on npm
-        id: npm
-        run: |
-          version=$(node -p "require('./package.json').version")
-          if npm view "@voidh4x0r/slopgate@${version}" version >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
       - name: Warn when NPM_TOKEN is missing
         if: env.NODE_AUTH_TOKEN == ''
-        run: echo "::warning::NPM_TOKEN is not configured; skipping npm publish (the GitHub release will still be created)."
+        run: echo "::warning::NPM_TOKEN is not configured; skipping npm publish and GitHub release."
       - name: Publish
-        if: env.NODE_AUTH_TOKEN != '' && steps.npm.outputs.exists == 'false'
+        if: env.NODE_AUTH_TOKEN != ''
         run: npm publish --provenance --access public
       - name: Create GitHub release
+        if: env.NODE_AUTH_TOKEN != ''
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
-        run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "release already exists: $GITHUB_REF_NAME"
-          else
-            gh release create "$GITHUB_REF_NAME" --generate-notes
-          fi
+          GH_TOKEN: ${{ github.token }}
