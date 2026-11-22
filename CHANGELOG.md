@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+- README benchmark count corrected to 17 CPython files; `test/docs.test.ts` now derives the file count from `benchmark/results.json` so future drift fails the suite.
+- `release.yml` is idempotent: it checks npm before publishing, skips an existing version, and creates a missing GitHub release independently of `NPM_TOKEN`.
+- Added a one-off `Backfill labels and releases` workflow for the two issue labels and the 17 historical releases.
+- Documented the tag-only release path, historical provenance limits, and the intentionally skipped `0.1.7` / `0.1.12` npm versions.
+
 ### Planned
 - Duplicate-block detection across files.
 - Go and Rust grammars.

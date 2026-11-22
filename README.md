@@ -69,7 +69,7 @@ Measured on **1,115,177 lines** of real code — the CPython standard library (a
 
 | Metric | Result |
 | --- | --- |
-| High-confidence findings | **29** (0.03 per 1,000 lines), in 18 of 1,845 CPython files |
+| High-confidence findings | **29** (0.03 per 1,000 lines), in 17 of 1,845 CPython files |
 | Labeled precision of high-confidence findings | **96.6%** (28/29 manually reviewed) |
 | Recall on 14 seeded defects | **14/14** |
 | High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |

@@ -20,4 +20,21 @@ test('docs: README and the demo artwork pin the package version', async () => {
 
   const frame = await readFile(path.join(ROOT, 'scripts', 'demo-frame.mjs'), 'utf8');
   assert.ok(frame.includes(`slopgate ${pkg.version}`), 'demo artwork banner is stale');
+
+  const results = JSON.parse(
+    await readFile(path.join(ROOT, 'benchmark', 'results.json'), 'utf8'),
+  ) as {
+    corpora: Array<{
+      name: string;
+      findingsList: Array<{ file: string; confidence: string }>;
+    }>;
+  };
+  const cpython = results.corpora.find((corpus) => corpus.name === 'cpython-stdlib');
+  assert.ok(cpython, 'benchmark results must include cpython-stdlib');
+  const high = cpython.findingsList.filter((finding) => finding.confidence === 'high');
+  const fileCount = new Set(high.map((finding) => finding.file)).size;
+  assert.ok(
+    readme.includes(`in ${fileCount} of`),
+    `README benchmark file count is stale (expected ${fileCount})`,
+  );
 });
