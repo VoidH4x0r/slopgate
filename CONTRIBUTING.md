@@ -8,13 +8,13 @@ Thanks for taking the time. This project has one rule above all others: **a find
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test           # 338 tests, ~0.5s, no network, no subprocesses inside the tests
+npm test           # 339 tests, ~0.5s, no network, no subprocesses inside the tests
 npm run typecheck
 npm run verify     # typecheck + links + tests + build + self-scan + package check
 npm run build      # emits dist/ used by the published package
 ```
 
-Node **23.6+** is required to run the test suite from source (native TypeScript execution). On Node 22.8鈥?3.5 the same suite works if you also pass `--experimental-strip-types`. The published CLI itself supports Node 20+. The CI `runtime` jobs run it on Node 20 and 22, but the source test suite only runs on Node 24.
+Node **23.6+** is required to run the test suite from source (native TypeScript execution). On Node 22.8–23.5 the same suite works if you also pass `--experimental-strip-types`. The published CLI itself supports Node 20+. The CI `runtime` jobs run it on Node 20 and 22, but the source test suite only runs on Node 24.
 
 If you are running inside a sandbox that blocks child processes (some agent harnesses do), use:
 
@@ -29,7 +29,7 @@ It runs the same files with `--test-isolation=none`, in a single process.
 ```
 src/
   cli.ts            argument parsing, exit codes, output selection
-  engine.ts         file discovery 鈫?parse 鈫?run rules 鈫?filter 鈫?sort
+  engine.ts         file discovery → parse → run rules → filter → sort
   parser.ts         tree-sitter runtime + bundled grammars (WASM)
   ast.ts            the non-null AST shape every rule sees
   files.ts          walking, ignore defaults, glob matcher
@@ -38,7 +38,7 @@ src/
   config.ts         .slopgate.json schema and defaults
   suppress.ts       slopgate-ignore-* directives
   baseline.ts       stable fingerprints for "new findings only"
-  diff.ts           git diff 鈫?changed lines
+  diff.ts           git diff → changed lines
   mcp.ts            Model Context Protocol server (stdio, JSON-RPC)
   rules/
     python.ts       Python file rules
@@ -96,7 +96,7 @@ Never raise confidence to make a rule more visible. Lower it, or drop the rule.
 - Tests must not touch the network and must not spawn processes; they run in-process in milliseconds.
 - CLI tests pass an output collector to `main(argv, io)`; never replace `process.stdout` / `process.stderr`, because Node's test runner uses them for its own protocol when test files run in separate processes.
 - Use `runRule(ruleId, source, language, deps)` for unit tests and `scanFixture(name)` for integration tests.
-- MCP tools are tested by calling `createMcpServer({...}).handle(line)` with injected `scan`/`diff` functions 鈥?see `test/mcp.test.ts`.
+- MCP tools are tested by calling `createMcpServer({...}).handle(line)` with injected `scan`/`diff` functions — see `test/mcp.test.ts`.
 - Fixtures live in `fixtures/`; a fixture is a miniature repository with manifests, not just source files.
 
 ## Pull requests
@@ -104,7 +104,7 @@ Never raise confidence to make a rule more visible. Lower it, or drop the rule.
 - One rule per PR.
 - Every rule has a negative test.
 - `npm test` and `npm run typecheck` pass, and `node scripts/check-links.mjs` reports no broken links.
-- No new runtime dependency without a discussion in an issue first 鈥?the offline, no-subprocess-during-scan design is a feature (`git` is only invoked by `--diff` and the MCP `scan_diff` tool).
+- No new runtime dependency without a discussion in an issue first — the offline, no-subprocess-during-scan design is a feature (`git` is only invoked by `--diff` and the MCP `scan_diff` tool).
 - Update `CHANGELOG.md`.
 
 ## Regenerating the demo GIF

@@ -18,30 +18,30 @@ slopgate 0.2.2  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
-            鈹?from helper import format_value
-            路 manifests checked: pyproject.toml
-            鈫?Add it to your manifest, remove the import, or wrap it in try/except ImportError if it is optional.
+            │ from helper import format_value
+            · manifests checked: pyproject.toml
+            ↳ Add it to your manifest, remove the import, or wrap it in try/except ImportError if it is optional.
 
        7:1  warning high   py/stub-body            function `get_user` is a stub (body is `pass`)
-            鈹?def get_user(user_id):
-            路 body: pass
-            鈫?Implement it, or raise NotImplementedError with a message so callers fail loudly instead of silently returning None.
+            │ def get_user(user_id):
+            · body: pass
+            ↳ Implement it, or raise NotImplementedError with a message so callers fail loudly instead of silently returning None.
 
       14:5  warning high   py/swallowed-exception  `except` swallows the error silently
-            鈹?except Exception:
-            鈫?Log it, re-raise it, or narrow the exception type and add a comment explaining why it is safe to ignore.
+            │ except Exception:
+            ↳ Log it, re-raise it, or narrow the exception type and add a comment explaining why it is safe to ignore.
 
       22:5  error   high   py/unreachable          code after `return` is unreachable
-            鈹?print("dead code after return")
-            鈫?Delete the unreachable code, or move it before the exit if it was meant to run.
+            │ print("dead code after return")
+            ↳ Delete the unreachable code, or move it before the exit if it was meant to run.
 
 tests/test_users.py
        4:1  warning high   py/noop-test            test `test_get_user` makes no assertions
-            鈹?def test_get_user():
-            鈫?Every test should be able to fail. Add an assertion that depends on the behaviour under test.
+            │ def test_get_user():
+            ↳ Every test should be able to fail. Add an assertion that depends on the behaviour under test.
 
-  13 findings in 3 files  路  4 files scanned in 50ms
-  4 error 路 9 warning 路 0 info   (13 high 路 0 medium 路 0 low confidence)
+  13 findings in 3 files  ·  4 files scanned in 50ms
+  4 error · 9 warning · 0 info   (13 high · 0 medium · 0 low confidence)
   hidden: 1 below confidence threshold
 ```
 
@@ -53,9 +53,9 @@ Models are good at producing code that compiles, imports cleanly in the editor w
 
 | What the model wrote | What it costs you |
 | --- | --- |
-| `import requests_v2` 鈥?the package does not exist | `ModuleNotFoundError` in CI, or a malicious package if that name is ever registered |
-| `def test_create(): service.create()` 鈥?no assertion | A green test with zero coverage |
-| `def sync(self): pass` 鈥?real signature, empty body | Callers get `None` and the failure surfaces three layers downstream |
+| `import requests_v2` — the package does not exist | `ModuleNotFoundError` in CI, or a malicious package if that name is ever registered |
+| `def test_create(): service.create()` — no assertion | A green test with zero coverage |
+| `def sync(self): pass` — real signature, empty body | Callers get `None` and the failure surfaces three layers downstream |
 | `except Exception: pass` | The error disappears; the incident does not |
 | `return user` followed by 12 lines of code | Dead code that nobody notices until it rots |
 
@@ -65,14 +65,14 @@ It is built for the people who review AI-generated pull requests: the reviewer w
 
 ## Does it actually catch anything?
 
-Measured on **1,115,270 lines** of real code 鈥?the CPython standard library (an adversarial corpus full of test helpers and intentional no-ops), nine popular JavaScript packages, and a 20-file AI-generated regression corpus:
+Measured on **1,115,270 lines** of real code — the CPython standard library (an adversarial corpus full of test helpers and intentional no-ops), nine popular JavaScript packages, and a 20-file AI-generated regression corpus:
 
 | Metric | Result |
 | --- | --- |
 | High-confidence findings | **43** (29 CPython + 14 AI-generated), in 17 of 1,845 CPython files |
 | Labeled precision of high-confidence findings | **97.7%** (42/43 manually reviewed) |
 | Recall on seeded defects | **30/30** (14 demo + 16 AI-generated) |
-| High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output 鈥?see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
+| High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
 
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
 
@@ -86,14 +86,14 @@ The labels, the corpus definition and the harness are in [`benchmark/`](https://
 
 |  | slopgate | style linters (ruff / eslint) | AI-slop regex scanners |
 | --- | --- | --- | --- |
-| Real AST (tree-sitter) | 鉁?| 鉁?| often regex |
-| Knows your dependency manifests | 鉁?| 鉂?| partial |
-| Confidence tiers, high by default | 鉁?| 鉂?| 鉂?|
-| `--baseline` so you can adopt it on a legacy repo | 鉁?| 鈿狅笍 per-file only | 鉂?|
-| `--diff` so CI only fails on new code | 鉁?| 鉂?| 鉂?|
-| MCP server so agents can self-check | 鉁?| 鉂?| 鉂?|
-| SARIF for GitHub code scanning | 鉁?| 鉁?| rare |
-| Zero configuration to start | 鉁?| 鉁?| 鈿狅笍 |
+| Real AST (tree-sitter) | ✅ | ✅ | often regex |
+| Knows your dependency manifests | ✅ | ❌ | partial |
+| Confidence tiers, high by default | ✅ | ❌ | ❌ |
+| `--baseline` so you can adopt it on a legacy repo | ✅ | ⚠️ per-file only | ❌ |
+| `--diff` so CI only fails on new code | ✅ | ❌ | ❌ |
+| MCP server so agents can self-check | ✅ | ❌ | ❌ |
+| SARIF for GitHub code scanning | ✅ | ✅ | rare |
+| Zero configuration to start | ✅ | ✅ | ⚠️ |
 
 ## Install
 
@@ -103,7 +103,7 @@ npm install -D @voidh4x0r/slopgate         # or pin it in your project
 npx @voidh4x0r/slopgate init               # write .slopgate.json + a GitHub Action
 ```
 
-Requires Node 20+. Python and TypeScript grammars are bundled 鈥?no Python or `tsc` needed at scan time.
+Requires Node 20+. Python and TypeScript grammars are bundled — no Python or `tsc` needed at scan time.
 
 The npm scope is `@voidh4x0r` because the unscoped name `slopgate` was rejected as too similar to the existing `slop-gate` package; the command is still `slopgate`.
 
@@ -146,10 +146,10 @@ slopgate [path] [options]
 }
 ```
 
-- `include` / `exclude` 鈥?globs relative to the **config file's directory** (or the project root when no config file exists). **A config `include` replaces the default pattern set** (the ten Python/TS/JS globs); list every extension you still want. The CLI `--include` **appends** to the effective set, so `--include "src/**"` keeps the defaults.
-- `ignoreModules` 鈥?top-level modules to always treat as declared (dynamic imports, private packages).
-- `rules` 鈥?`"off"` or an explicit severity (`"error"`, `"warning"`, `"info"`). Severity changes display and annotation level only; **CI failure is controlled by confidence and `--fail-on`**. A rule set to `"info"` stays visible and still fails when its confidence meets `--fail-on`; use `"off"` or a baseline to exempt it.
-- `confidence` / `failOn` 鈥?same meaning as the CLI flags; CLI flags win.
+- `include` / `exclude` — globs relative to the **config file's directory** (or the project root when no config file exists). **A config `include` replaces the default pattern set** (the ten Python/TS/JS globs); list every extension you still want. The CLI `--include` **appends** to the effective set, so `--include "src/**"` keeps the defaults.
+- `ignoreModules` — top-level modules to always treat as declared (dynamic imports, private packages).
+- `rules` — `"off"` or an explicit severity (`"error"`, `"warning"`, `"info"`). Severity changes display and annotation level only; **CI failure is controlled by confidence and `--fail-on`**. A rule set to `"info"` stays visible and still fails when its confidence meets `--fail-on`; use `"off"` or a baseline to exempt it.
+- `confidence` / `failOn` — same meaning as the CLI flags; CLI flags win.
 
 For example, `{"include": ["src/**"]}` scans only files under `src/`; it does **not** keep the default Python/TS/JS coverage. Add the patterns you need, or use the CLI flag to append one pattern to the defaults.
 
@@ -180,7 +180,7 @@ npx @voidh4x0r/slopgate . --diff origin/main --fail-on high
 
 ### Auditing AI-written code
 
-The defaults are tuned for human-maintained code: an interface stub in a library is often deliberate, so class-method stubs and documented `pass` bodies are `medium`. AI-generated code has the opposite prior 鈥?an unimplemented method is usually unfinished 鈥?so audit it with the medium threshold:
+The defaults are tuned for human-maintained code: an interface stub in a library is often deliberate, so class-method stubs and documented `pass` bodies are `medium`. AI-generated code has the opposite prior — an unimplemented method is usually unfinished — so audit it with the medium threshold:
 
 ```bash
 # 1. Absorb the existing medium-confidence debt once.
@@ -260,7 +260,7 @@ def todo(self):
 try { ... } catch {}
 ```
 
-`slopgate-disable-file` at the top of a file disables it entirely. Directives only count inside real comments 鈥?a mention in a string or a doc is not a suppression.
+`slopgate-disable-file` at the top of a file disables it entirely. Directives only count inside real comments — a mention in a string or a doc is not a suppression.
 
 ### Safe autofix
 
@@ -272,22 +272,22 @@ try { ... } catch {}
 
 | Rule | Catches |
 | --- | --- |
-| `py/phantom-import` 路 `ts/phantom-import` | import that no manifest declares and, for TS, that is not even installed |
-| `py/noop-test` 路 `ts/noop-test` | `test_*` / `test()` / `it()` bodies with no assertion |
-| `py/tautological-assert` 路 `ts/tautological-assert` | `assert True`, `expect(true).toBe(true)`, `x == x` |
-| `py/stub-body` 路 `ts/stub-function` | function declarations and class methods whose body is only `pass`, `...`, `{}`, or `throw new Error("not implemented")` (empty arrow callbacks are not reported unless they throw) |
-| `py/swallowed-exception` 路 `ts/swallowed-exception` | `except: pass`, `catch {}` (JS empty catch is medium by design) |
-| `py/dead-branch` 路 `ts/dead-branch` | `if False:` / `if (false)`, and their always-true twins |
-| `py/unreachable` 路 `ts/unreachable` | statements after `return` / `raise` / `throw` / `continue` |
-| `py/duplicate-block` 路 `ts/duplicate-block` | the same normalized function/method body in two or more files |
+| `py/phantom-import` · `ts/phantom-import` | import that no manifest declares and, for TS, that is not even installed |
+| `py/noop-test` · `ts/noop-test` | `test_*` / `test()` / `it()` bodies with no assertion |
+| `py/tautological-assert` · `ts/tautological-assert` | `assert True`, `expect(true).toBe(true)`, `x == x` |
+| `py/stub-body` · `ts/stub-function` | function declarations and class methods whose body is only `pass`, `...`, `{}`, or `throw new Error("not implemented")` (empty arrow callbacks are not reported unless they throw) |
+| `py/swallowed-exception` · `ts/swallowed-exception` | `except: pass`, `catch {}` (JS empty catch is medium by design) |
+| `py/dead-branch` · `ts/dead-branch` | `if False:` / `if (false)`, and their always-true twins |
+| `py/unreachable` · `ts/unreachable` | statements after `return` / `raise` / `throw` / `continue` |
+| `py/duplicate-block` · `ts/duplicate-block` | the same normalized function/method body in two or more files |
 
 ## Precision is the product
 
 Every finding carries a **confidence** derived from evidence, not vibes:
 
-- **high** 鈥?a fact you can verify by reading the line: the package is not in the manifest, the test has no assertion, the body is empty. This is what runs by default and what fails CI.
-- **medium** 鈥?a fact plus a reason it might be intentional: an empty `catch` (idiomatic in JavaScript), an exception swallowed inside a cleanup function, a test method that may delegate its assertions to a helper, any finding in a file that did not parse cleanly.
-- **low** 鈥?reserved for heuristics we are not confident about yet.
+- **high** — a fact you can verify by reading the line: the package is not in the manifest, the test has no assertion, the body is empty. This is what runs by default and what fails CI.
+- **medium** — a fact plus a reason it might be intentional: an empty `catch` (idiomatic in JavaScript), an exception swallowed inside a cleanup function, a test method that may delegate its assertions to a helper, any finding in a file that did not parse cleanly.
+- **low** — reserved for heuristics we are not confident about yet.
 
 `--confidence medium` shows the middle tier; `--confidence low` shows everything the rules can see. `--verbose` prints the resolved config, include count, baseline and diff-filter details; finding evidence is printed for every finding regardless of this flag.
 
@@ -304,12 +304,12 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 
 ## Roadmap
 
-- [x] v0.1 鈥?14 rules, Python + TS/JS, baseline, diff mode, SARIF, GitHub annotations, MCP server, suppression
-- [x] v0.2 鈥?config-root globs, language-aware project registry, MCP cache invalidation, non-git ancestor discovery
-- [x] v0.2.1 鈥?duplicate-block detection, safe `--fix` for unreachable code, AI-generated regression corpus
+- [x] v0.1 — 14 rules, Python + TS/JS, baseline, diff mode, SARIF, GitHub annotations, MCP server, suppression
+- [x] v0.2 — config-root globs, language-aware project registry, MCP cache invalidation, non-git ancestor discovery
+- [x] v0.2.1 — duplicate-block detection, safe `--fix` for unreachable code, AI-generated regression corpus
 - [x] v0.2.2 — operator-complete duplicate signatures, per-file representatives, SARIF metadata, stale-autofix guard
-- [ ] v0.3 鈥?Go and Rust grammars, VS Code diagnostics
-- [ ] v0.4 鈥?expanded published false-positive benchmark, duplicate-block semantic clones
+- [ ] v0.3 — Go and Rust grammars, VS Code diagnostics
+- [ ] v0.4 — expanded published false-positive benchmark, duplicate-block semantic clones
 
 ## Known limitations
 
@@ -320,14 +320,14 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 - Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
 - The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
-- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.2.1. A file contributes at most one representative per duplicate group.
+- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.2.2. A file contributes at most one representative per duplicate group.
 - `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off" }` if you do not need medium findings.
 - `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
 
 ## When **not** to use it
 
-- You want style, formatting or type checking 鈥?use `ruff` / `eslint` / `tsc`.
-- You need whole-program data-flow analysis 鈥?that is `semgrep` / CodeQL territory.
+- You want style, formatting or type checking — use `ruff` / `eslint` / `tsc`.
+- You need whole-program data-flow analysis — that is `semgrep` / CodeQL territory.
 - Your code is not generated or reviewed quickly; the rules still apply, but the value is lower.
 
 ## Contributing
@@ -338,7 +338,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 338 tests; the tests themselves make no network or child-process calls
+npm test            # 339 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```
