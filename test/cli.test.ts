@@ -317,6 +317,101 @@ test('cli: init from a subdirectory writes at the repository root', async () => 
   }
 });
 
+test('cli: config globs are project-root-relative for subdirectory and file scans', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-config-globs-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src', 'generated'), { recursive: true });
+    await writeFile(path.join(dir, 'src', 'app.py'), 'def stubbed():\n    pass\n');
+    await writeFile(path.join(dir, 'src', 'generated', 'g.py'), 'def generated_stub():\n    pass\n');
+
+    await writeFile(path.join(dir, '.slopgate.json'), '{"include":["src/app.py"]}\n');
+    const directory = await run([path.join(dir, 'src'), '--no-color']);
+    assert.equal(directory.status, 1, directory.stderr);
+    assert.match(directory.stdout, /^src\/app\.py$/m);
+    assert.doesNotMatch(directory.stdout, /generated\/g\.py/);
+
+    const single = await run([path.join(dir, 'src', 'app.py'), '--no-color']);
+    assert.equal(single.status, 1, single.stderr);
+    assert.match(single.stdout, /^src\/app\.py$/m);
+
+    await writeFile(path.join(dir, '.slopgate.json'), '{"exclude":["src/generated/**"]}\n');
+    const excluded = await run([path.join(dir, 'src'), '--no-color']);
+    assert.equal(excluded.status, 1, excluded.stderr);
+    assert.doesNotMatch(excluded.stdout, /generated\/g\.py/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: a monorepo root scan uses the nearest project manifest', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-monorepo-root-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'backend'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'backend', 'pyproject.toml'),
+      '[project]\nname = "backend"\nversion = "0.0.0"\ndependencies = ["django"]\n',
+    );
+    await writeFile(path.join(dir, 'backend', 'app.py'), 'import django\n');
+
+    const root = await run([dir, '--no-color']);
+    assert.equal(root.status, 0, root.stderr);
+    assert.doesNotMatch(root.stdout, /phantom-import/);
+
+    const backend = await run([path.join(dir, 'backend'), '--no-color']);
+    assert.equal(backend.status, 0, backend.stderr);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: a subdirectory scan sees Python modules outside the target', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-local-modules-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await mkdir(path.join(dir, 'lib'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'pyproject.toml'),
+      '[project]\nname = "root"\nversion = "0.0.0"\ndependencies = []\n',
+    );
+    await writeFile(path.join(dir, 'lib', 'util.py'), 'def f():\n    return 1\n');
+    await writeFile(path.join(dir, 'src', 'app.py'), 'from lib.util import f\n\nx = f()\n');
+
+    const result = await run([path.join(dir, 'src'), '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.doesNotMatch(result.stdout, /phantom-import/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: Vite tsconfig.app paths provide aliases', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-vite-alias-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src', 'ui'), { recursive: true });
+    await writeFile(path.join(dir, 'package.json'), '{"name":"app","private":true}\n');
+    await writeFile(
+      path.join(dir, 'tsconfig.json'),
+      '{"files":[],"references":[{"path":"./tsconfig.app.json"}]}\n',
+    );
+    await writeFile(
+      path.join(dir, 'tsconfig.app.json'),
+      '{"compilerOptions":{"baseUrl":".","paths":{"@ui/*":["./src/ui/*"]}}}\n',
+    );
+    await writeFile(path.join(dir, 'src', 'ui', 'helper.ts'), 'export const value = 1;\n');
+    await writeFile(path.join(dir, 'src', 'main.ts'), "import { value } from '@ui/helper';\nexport { value };\n");
+
+    const result = await run([dir, '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.doesNotMatch(result.stdout, /phantom-import/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: single-file and subdirectory scans use the repository project root', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-project-root-'));
   try {

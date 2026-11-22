@@ -5,6 +5,12 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Fixed
+- Config `include` / `exclude` globs now match project-root-relative paths for subdirectory and single-file scans (including directory pruning), not paths relative to the scan target.
+- Root scans now resolve dependencies per file: monorepo files use their nearest `pyproject.toml` / `package.json` / requirements file, and Python local-module discovery covers the whole repository rather than only scanned files.
+- Non-git scans search parent manifests/configs up to the current working directory boundary while keeping report paths relative to the scan target.
+- Vite/TypeScript aliases now come from `tsconfig.app.json`, `tsconfig.node.json`, `jsconfig.json`, `extends`, and project references; `@/`, `~/`, `$lib/`, `$app/`, `$env/`, `npm:` and `jsr:` prefixes are treated as virtual.
+- `pytest.warns` / `pytest.deprecated_call` count as test assertions.
+- Findings are computed once relative to an explicit report root; CLI/MCP/baseline/diff no longer re-prefix target-relative paths.
 - Single-file and subdirectory scans now resolve the nearest project root for manifests, aliases and same-package local modules; output and `--diff` paths use the target directory prefix.
 - Namespace distributions such as `google-cloud-storage`, `opentelemetry-api`, `azure-storage-blob`, `ruamel.yaml`, `backports.zoneinfo` and headless OpenCV satisfy their import names.
 - `py/tautological-assert` no longer treats two independent calls (`parse("x") == parse("x")`) as identical, while deterministic attribute/subscript expressions still count.

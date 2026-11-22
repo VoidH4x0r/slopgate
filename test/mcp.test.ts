@@ -269,6 +269,35 @@ test('mcp: a throwing scan becomes a tool error instead of crashing the server',
   assert.match(result.content[0]?.text ?? '', /boom/);
 });
 
+test('mcp: a monorepo root scan uses each backend manifest', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-monorepo-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'backend'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'backend', 'pyproject.toml'),
+      '[project]\nname = "backend"\nversion = "0.0.0"\ndependencies = ["django"]\n',
+    );
+    await writeFile(path.join(dir, 'backend', 'app.py'), 'import django\n');
+
+    const deps = defaultMcpDeps(dir, '0.1.0');
+    const server = createMcpServer({ ...deps, config: DEFAULT_CONFIG });
+    for (const target of ['.', 'backend']) {
+      const response = await call(server, {
+        jsonrpc: '2.0',
+        id: 17,
+        method: 'tools/call',
+        params: { name: 'scan_path', arguments: { path: target } },
+      });
+      const text =
+        (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+      assert.doesNotMatch(text, /phantom-import/, target);
+    }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('mcp: scan_path uses the nearest package config, like the CLI', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mcp-config-'));
   try {

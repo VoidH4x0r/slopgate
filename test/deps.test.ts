@@ -8,7 +8,9 @@ import {
   normalizePythonName,
   parsePythonManifestText,
   requirementName,
+  resolveProjectRoot,
 } from '../src/deps.ts';
+import { loadProjectRegistry } from '../src/projects.ts';
 import { FIXTURES } from './helpers.ts';
 
 test('normalizePythonName applies PEP 503 rules', () => {
@@ -166,6 +168,37 @@ test('loadProjectDeps expands a tsconfig baseUrl into import aliases', async () 
     );
     const deps = await loadProjectDeps(dir);
     assert.ok(deps.node.aliases.includes('components'));
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('resolveProjectRoot walks to the boundary without git', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-nongit-root-'));
+  try {
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await writeFile(path.join(dir, 'pyproject.toml'), '[project]\nname = "x"\nversion = "0"\n');
+    assert.equal(await resolveProjectRoot(path.join(dir, 'src'), dir), dir);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('a type-only nested package.json does not hide the parent project', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-type-only-'));
+  try {
+    await mkdir(path.join(dir, 'helpers'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'package.json'),
+      '{"name":"root","dependencies":{"yargs-parser":"^22"}}\n',
+    );
+    await writeFile(path.join(dir, 'helpers', 'package.json'), '{"type":"commonjs"}\n');
+    await writeFile(path.join(dir, 'helpers', 'app.ts'), "import Parser from 'yargs-parser';\n");
+    const registry = await loadProjectRegistry(dir, dir);
+    const deps = registry.depsFor(path.join(dir, 'helpers', 'app.ts'));
+    assert.equal(deps.root, dir);
+    assert.ok(deps.node.declared.has('yargs-parser'));
+    assert.ok(![...registry.projects.keys()].some((key) => key.endsWith('helpers')));
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

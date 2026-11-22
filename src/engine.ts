@@ -1,9 +1,9 @@
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import { asAst, type AstNode } from './ast.ts';
-import { loadProjectDeps } from './deps.ts';
-import { discoverFiles, type SourceFile } from './files.ts';
+import { discoverFiles, toPosix } from './files.ts';
 import { getParser } from './parser.ts';
+import { loadProjectRegistry } from './projects.ts';
 import { ALL_RULES, RULE_BY_ID } from './rules/index.ts';
 import { collectCommentRanges } from './rules/helpers.ts';
 import { isSuppressed, readSuppressions } from './suppress.ts';
@@ -22,6 +22,10 @@ export interface ScanOptions {
   config: Config;
   /** Directory that owns manifests and local modules; defaults to the scan root. */
   projectRoot?: string;
+  /** Root for repository-wide project/module discovery; defaults to projectRoot. */
+  scopeRoot?: string;
+  /** Root for reported finding paths; defaults to the scan base. */
+  reportRoot?: string;
   /** When set, only these rule ids run (CLI `--rule`). */
   onlyRules?: ReadonlySet<string>;
 }
@@ -31,47 +35,6 @@ export interface ScanResult {
   suppressedCount: number;
   stats: ScanStats;
   warnings: string[];
-}
-
-function collectLocalPythonModules(
-  files: readonly SourceFile[],
-  deps: ProjectDeps,
-  projectRoot: string,
-): void {
-  const valid = /^[A-Za-z_][A-Za-z0-9_]*$/;
-  for (const file of files) {
-    if (file.language !== 'python') continue;
-    const relative = path.relative(projectRoot, file.abs).replace(/\\/g, '/');
-    if (relative.startsWith('..') || path.isAbsolute(relative)) continue;
-    const parts = relative.split('/');
-    const fileName = parts.pop() ?? '';
-    for (const dir of parts) {
-      if (valid.test(dir)) deps.python.localModules.add(dir);
-    }
-    // Every module stem, not just top-level ones: packages import their
-    // siblings flat (`from util import x` inside `idlelib/`).
-    const stem = fileName.replace(/\.pyi?$/, '');
-    if (valid.test(stem)) deps.python.localModules.add(stem);
-  }
-}
-
-/** A single-file scan still needs its same-directory siblings for imports. */
-async function collectPythonSiblings(dir: string, deps: ProjectDeps): Promise<void> {
-  const valid = /^[A-Za-z_][A-Za-z0-9_]*$/;
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
-  for (const entry of entries) {
-    if (entry.isDirectory() && valid.test(entry.name)) {
-      deps.python.localModules.add(entry.name);
-    } else if (entry.isFile() && /\.pyi?$/.test(entry.name)) {
-      const stem = entry.name.replace(/\.pyi?$/, '');
-      if (valid.test(stem)) deps.python.localModules.add(stem);
-    }
-  }
 }
 
 function toFinding(ruleId: string, draft: RuleDraft, defaults: { severity: Finding['severity']; confidence: Finding['confidence'] }, file: string): Finding {
@@ -97,6 +60,8 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   // project root, not just the file's directory.
   const root = targetInfo?.isFile() ? path.dirname(target) : target;
   const projectRoot = options.projectRoot ? path.resolve(options.projectRoot) : root;
+  const scopeRoot = options.scopeRoot ? path.resolve(options.scopeRoot) : projectRoot;
+  const reportRoot = options.reportRoot ? path.resolve(options.reportRoot) : root;
   const warnings: string[] = [];
   const { config } = options;
 
@@ -108,16 +73,16 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     }
   }
 
-  const deps = await loadProjectDeps(projectRoot);
-  deps.ignoredModules = new Set(config.ignoreModules);
+  const registry = await loadProjectRegistry(scopeRoot, projectRoot);
+  const contexts: ProjectDeps[] = [...registry.projects.values(), registry.fallback];
+  for (const deps of contexts) deps.ignoredModules = new Set(config.ignoreModules);
 
   const { files, skipped: skippedByDiscovery } = await discoverFiles({
     root: target,
+    matchRoot: projectRoot,
     include: config.include,
     exclude: config.exclude,
   });
-  collectLocalPythonModules(files, deps, projectRoot);
-  if (targetInfo?.isFile()) await collectPythonSiblings(path.dirname(target), deps);
 
   const enabled = ALL_RULES.filter((rule) => {
     const setting = config.rules[rule.meta.id];
@@ -161,8 +126,18 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
 
     const root = asAst(tree.rootNode);
     const comments = collectCommentRanges(root);
+    const deps = registry.depsFor(file.abs);
+    const reportRelative = toPosix(path.relative(reportRoot, file.abs));
+    const findingFile =
+      reportRelative.startsWith('..') || path.isAbsolute(reportRelative)
+        ? file.rel
+        : reportRelative;
+    if (file.language !== 'python') {
+      const missing = registry.missingPackageJson(file.abs);
+      if (missing) warnings.push(missing);
+    }
     const ctx: RuleContext = {
-      file: file.rel,
+      file: findingFile,
       lines: source.split(/\r?\n/),
       root,
       language: file.language,
@@ -177,7 +152,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
       try {
         drafts = rule.run(ctx);
       } catch (error) {
-        warnings.push(`${rule.meta.id} crashed on ${file.rel}: ${(error as Error).message}`);
+      warnings.push(`${rule.meta.id} crashed on ${file.rel}: ${(error as Error).message}`);
         continue;
       }
       const configured = config.rules[rule.meta.id];
@@ -187,7 +162,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
           rule.meta.id,
           draft,
           { severity, confidence: rule.meta.confidence },
-          file.rel,
+          findingFile,
         );
         // A file that did not parse cleanly has an unreliable structure: keep
         // the finding, but never claim high confidence about it.

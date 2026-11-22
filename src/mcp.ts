@@ -160,12 +160,6 @@ function formatFindings(
   return lines.join('\n');
 }
 
-function prefixForRoot(root: string, base: string): string {
-  const relative = path.relative(root, base);
-  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) return '';
-  return relative.replace(/\\/g, '/');
-}
-
 export function createMcpServer(deps: McpDeps) {
   async function callTool(name: string, params: Record<string, unknown>): Promise<unknown> {
     if (name === 'list_rules') {
@@ -298,27 +292,25 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
     async scan(scanRoot: string) {
       const config = await configFor(scanRoot);
 
-      // Findings and baseline fingerprints are MCP-root-relative. Normalize
-      // here, before partitioning, so a root baseline matches subdirectory and
-      // single-file scans too.
       const target = path.resolve(scanRoot);
       const info = await stat(target).catch(() => undefined);
       const base = info?.isFile() ? path.dirname(target) : target;
       const repoRoot = (await findGitRoot(base)) ?? root;
       const projectRoot = await resolveProjectRoot(base, repoRoot);
-      const result = await scanProject({ root: target, projectRoot, config });
-
-      const prefix = prefixForRoot(root, base);
-      const normalized = prefix
-        ? result.findings.map((finding) => ({ ...finding, file: `${prefix}/${finding.file}` }))
-        : result.findings;
+      const result = await scanProject({
+        root: target,
+        projectRoot,
+        scopeRoot: repoRoot,
+        reportRoot: root,
+        config,
+      });
 
       // Respect a baseline if one exists, so agents do not re-report known debt.
       const baseline = await loadBaseline(path.join(root, '.slopgate-baseline.json'));
       if (baseline) {
-        return { ...result, findings: partitionByBaseline(normalized, baseline).fresh };
+        return { ...result, findings: partitionByBaseline(result.findings, baseline).fresh };
       }
-      return { ...result, findings: normalized };
+      return result;
     },
     diff: diffSince,
   };

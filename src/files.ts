@@ -42,8 +42,10 @@ const MAX_FILE_BYTES = 1024 * 1024;
 export interface SourceFile {
   /** Absolute path on disk. */
   abs: string;
-  /** Repository-relative path with forward slashes. */
+  /** Path relative to the scan target, with forward slashes. */
   rel: string;
+  /** Path relative to the config match root, with forward slashes. */
+  matchRel: string;
   language: LanguageId;
   /** Human-facing dialect: `.js` is javascript even though it parses as tsx. */
   dialect: SourceDialect;
@@ -52,6 +54,8 @@ export interface SourceFile {
 
 export interface DiscoverOptions {
   root: string;
+  /** Base for include/exclude matching; defaults to the scan root. */
+  matchRoot?: string;
   include?: readonly string[];
   exclude?: readonly string[];
   ignoreDirs?: readonly string[];
@@ -166,6 +170,7 @@ export function dialectFor(fileName: string): SourceDialect | undefined {
 
 export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverResult> {
   const root = path.resolve(options.root);
+  const configuredMatchRoot = options.matchRoot ? path.resolve(options.matchRoot) : undefined;
   const includeRe = (options.include ?? DEFAULT_INCLUDE).map(globToRegExp);
   const excludeRe = (options.exclude ?? []).map(globToRegExp);
   const ignoreDirs = new Set([...DEFAULT_IGNORE_DIRS, ...(options.ignoreDirs ?? [])]);
@@ -181,17 +186,22 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
   } catch {
     return { files, skipped: 1 };
   }
+  const matchRoot = configuredMatchRoot ?? (rootInfo.isFile() ? path.dirname(root) : root);
+  const matchRelFor = (abs: string): string =>
+    toPosix(path.relative(matchRoot, abs));
+
   if (rootInfo.isFile()) {
     const name = path.basename(root);
+    const matchRel = matchRelFor(root);
     const language = languageFor(name);
     const dialect = dialectFor(name);
-    if (!language || !dialect || !matchesAny(name, includeRe) || matchesAny(name, excludeRe)) {
+    if (!language || !dialect || !matchesAny(matchRel, includeRe) || matchesAny(matchRel, excludeRe)) {
       return { files, skipped: 1 };
     }
     if (rootInfo.size > maxBytes || rootInfo.size === 0) {
       return { files, skipped: 1 };
     }
-    files.push({ abs: root, rel: name, language, dialect, size: rootInfo.size });
+    files.push({ abs: root, rel: name, matchRel, language, dialect, size: rootInfo.size });
     return { files, skipped };
   }
 
@@ -207,12 +217,13 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
     for (const entry of entries) {
       const abs = path.join(dir, entry.name);
       const rel = toPosix(path.relative(root, abs));
+      const matchRel = matchRelFor(abs);
 
       if (entry.isSymbolicLink()) {
         continue;
       }
       if (entry.isDirectory()) {
-        if (ignoreDirs.has(entry.name) || matchesAny(rel + '/', excludeRe)) {
+        if (ignoreDirs.has(entry.name) || matchesAny(matchRel + '/', excludeRe)) {
           continue;
         }
         await walk(abs);
@@ -221,13 +232,13 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
       if (!entry.isFile()) {
         continue;
       }
-      if (matchesAny(rel, excludeRe)) {
+      if (matchesAny(matchRel, excludeRe)) {
         skipped += 1;
         continue;
       }
       const language = languageFor(entry.name);
       const dialect = dialectFor(entry.name);
-      if (!language || !dialect || !matchesAny(rel, includeRe)) {
+      if (!language || !dialect || !matchesAny(matchRel, includeRe)) {
         continue;
       }
       if (entry.name.endsWith('.min.js') || entry.name.endsWith('.min.mjs')) {
@@ -246,7 +257,7 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
         skipped += 1;
         continue;
       }
-      files.push({ abs, rel, language, dialect, size: info.size });
+      files.push({ abs, rel, matchRel, language, dialect, size: info.size });
     }
   }
 

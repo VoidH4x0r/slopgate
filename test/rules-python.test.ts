@@ -368,6 +368,23 @@ test('py/noop-test flags tests without assertions', async () => {
   assert.match(drafts[0]?.message ?? '', /makes no assertions/);
 });
 
+test('py/noop-test accepts pytest warning assertions', async () => {
+  const warns = await runRuleOnFile(
+    'py/noop-test',
+    ['def test_warns():', '    with pytest.warns(UserWarning):', '        warnings.warn("x")'].join('\n'),
+    'python',
+    'tests/test_app.py',
+  );
+  assert.deepEqual(warns, []);
+  const deprecated = await runRuleOnFile(
+    'py/noop-test',
+    ['def test_deprecated():', '    with pytest.deprecated_call():', '        old()'].join('\n'),
+    'python',
+    'tests/test_app.py',
+  );
+  assert.deepEqual(deprecated, []);
+});
+
 test('py/noop-test flags empty tests and accepts real assertions', async () => {
   const empty = await runRuleOnFile('py/noop-test', 'def test_add():\n    """later"""\n', 'python', 'tests/test_app.py');
   assert.equal(empty.length, 1);

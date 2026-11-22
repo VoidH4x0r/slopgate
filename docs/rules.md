@@ -154,12 +154,13 @@ Only the same-block case is reported. Test files are skipped — generators ther
 
 - a Node builtin (`fs`, `node:fs`, …)
 - relative (`./`, `../`, `/`)
-- a path alias from `tsconfig.json` `compilerOptions.paths`
+- a path alias from `tsconfig.json`, `tsconfig.app.json`, `tsconfig.base.json`, `tsconfig.node.json` or `jsconfig.json` (including `extends` and project references)
+- a familiar virtual prefix (`@/`, `~/`, `$lib/`, `$app/`, `$env/`, `npm:`, `jsr:`) even when no config was parsed
 - a workspace package
 - an asset (`.css`, `.svg`, `.json`, …)
 - declared in `package.json` (deps, devDeps, peerDeps, optionalDeps — including workspace manifests)
 
-Also ignored: URL specifiers (`https://unpkg.com/...`), virtual-module schemes, asset imports, and `require()` calls inside a `try` block (the optional-dependency idiom).
+Also ignored: URL specifiers (`https://unpkg.com/...`), virtual-module schemes, asset imports, and `require()` calls inside a `try` block (the optional-dependency idiom). Custom `vite.config` `resolve.alias` entries are not parsed yet; put them in a tsconfig `paths` map for now.
 
 If the package **is** installed under `node_modules` the finding is `medium` ("undeclared"). If it is not installed at all, it is `high` ("phantom"), except inside test files, where it is also `medium`.
 

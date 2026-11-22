@@ -1,9 +1,15 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { DEFAULT_CONFIG, loadConfig, meetsConfidence, normalizeConfig } from '../src/config.ts';
+import {
+  DEFAULT_CONFIG,
+  findConfigRoot,
+  loadConfig,
+  meetsConfidence,
+  normalizeConfig,
+} from '../src/config.ts';
 
 test('normalizeConfig returns defaults for an empty object', () => {
   const config = normalizeConfig({});
@@ -55,6 +61,17 @@ test('loadConfig tolerates a UTF-8 BOM', async () => {
     const { config, file } = await loadConfig(dir);
     assert.equal(file, '.slopgate.json');
     assert.equal(config.confidence, 'low');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('findConfigRoot walks to the boundary without git', async () => {
+  const dir = await mkdtemp(path.join(path.dirname(fileURLToPath(import.meta.url)), '.tmp-config-root-'));
+  try {
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await writeFile(path.join(dir, '.slopgate.json'), '{}\n');
+    assert.equal(await findConfigRoot(path.join(dir, 'src'), dir), dir);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

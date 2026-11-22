@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-22T12:37:36.909Z by `scripts/benchmark.mjs` (slopgate 0.1.18, Node v24.19.0).
+Generated 2026-11-22T13:15:26.959Z by `scripts/benchmark.mjs` (slopgate 0.1.18, Node v24.19.0).
 
 ## Summary
 
@@ -23,14 +23,14 @@ Detected **14/14** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 11484 ms.
+Scanned **1845** files (**991705** lines) in 11670 ms.
 
 Corpus digest: `027f952580cd6622`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `py/dead-branch` | 0 | 4 | 0 | 0 | — |
-| `py/noop-test` | 0 | 5935 | 0 | 0 | — |
+| `py/noop-test` | 0 | 5929 | 0 | 0 | — |
 | `py/phantom-import` | 1 | 105 | 0 | 1 | 0.0% |
 | `py/stub-body` | 0 | 281 | 33 | 0 | — |
 | `py/swallowed-exception` | 25 | 422 | 0 | 25 | 100.0% |
@@ -38,7 +38,7 @@ Corpus digest: `027f952580cd6622`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 38 ms.
+Scanned **7** files (**2783** lines) in 44 ms.
 
 Package: `express@5.3.0`.
 
@@ -49,7 +49,7 @@ Corpus digest: `d2b720bf4294881f`.
 
 ## chalk
 
-Scanned **2** files (**799** lines) in 7 ms.
+Scanned **2** files (**799** lines) in 8 ms.
 
 Package: `chalk@6.0.1`.
 
@@ -60,7 +60,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 143 ms.
+Scanned **111** files (**8363** lines) in 154 ms.
 
 Package: `execa@10.2.1`.
 
@@ -72,7 +72,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 52 ms.
+Scanned **49** files (**3166** lines) in 56 ms.
 
 Package: `semver@7.8.6`.
 
@@ -83,7 +83,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 39 ms.
+Scanned **7** files (**4225** lines) in 41 ms.
 
 Package: `commander@15.1.0`.
 
@@ -94,7 +94,7 @@ Corpus digest: `a1904525101c27be`.
 
 ## debug
 
-Scanned **4** files (**841** lines) in 10 ms.
+Scanned **4** files (**841** lines) in 11 ms.
 
 Package: `debug@4.4.3`.
 
@@ -106,7 +106,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 841 ms.
+Scanned **409** files (**100880** lines) in 872 ms.
 
 Package: `eslint@10.15.0`.
 
@@ -119,7 +119,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 42 ms.
+Scanned **7** files (**2217** lines) in 39 ms.
 
 Package: `glob@14.0.6`.
 
@@ -130,7 +130,7 @@ Corpus digest: `dc4dc56c06b64fb8`.
 
 ## yargs
 
-Scanned **5** files (**198** lines) in 6 ms.
+Scanned **5** files (**198** lines) in 11 ms.
 
 Package: `yargs@18.2.0`.
 

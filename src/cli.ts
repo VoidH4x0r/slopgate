@@ -13,7 +13,7 @@ import {
   type Config,
   type FailOn,
 } from './config.ts';
-import { assertSafeRef, diffSince, findRepoRoot, isInDiffWithPrefix } from './diff.ts';
+import { assertSafeRef, diffSince, findRepoRoot, isInDiff } from './diff.ts';
 import { resolveProjectRoot } from './deps.ts';
 import { scanProject } from './engine.ts';
 import { serveMcp } from './mcp.ts';
@@ -408,6 +408,16 @@ async function runMcp(options: Options): Promise<number> {
   return 0;
 }
 
+/** Git root, else cwd when it contains the scan target, else the target itself. */
+function scopeBoundary(scanBase: string, repoRoot: string | undefined): string {
+  if (repoRoot) return repoRoot;
+  const cwd = path.resolve(process.cwd());
+  const relative = path.relative(cwd, scanBase);
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))
+    ? cwd
+    : scanBase;
+}
+
 async function runScan(options: Options, io: CliIo): Promise<number> {
   if (options.paths.length > 1) {
     throw new Error('only one path is supported; run slopgate once per path');
@@ -419,8 +429,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   }
   const scanBase = targetInfo.isFile() ? path.dirname(target) : target;
   const repoRoot = await findGitRoot(scanBase);
-  const configRoot = await findConfigRoot(scanBase, repoRoot);
-  const projectRoot = await resolveProjectRoot(scanBase, repoRoot);
+  const scopeRoot = scopeBoundary(scanBase, repoRoot);
+  const configRoot = await findConfigRoot(scanBase, scopeRoot);
+  const projectRoot = await resolveProjectRoot(scanBase, scopeRoot);
+  const reportRoot = repoRoot ?? scanBase;
   const { config, file: configFile } = await loadConfig(configRoot);
 
   if (options.rules.length > 0) {
@@ -448,6 +460,8 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const result = await scanProject({
     root: target,
     projectRoot,
+    scopeRoot,
+    reportRoot,
     config: merged,
     ...(options.rules.length > 0 ? { onlyRules: new Set(options.rules) } : {}),
   });
@@ -460,41 +474,28 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     );
   }
 
-  const scanBaseForOutput = scanBase;
-  let outputPrefix = '';
-  if (repoRoot) {
-    const relative = path.relative(repoRoot, scanBaseForOutput);
-    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-      outputPrefix = relative.replace(/\\/g, '/');
-    }
-  }
-  const toRepoRelative = (items: readonly Finding[]): Finding[] =>
-    outputPrefix
-      ? items.map((finding) => ({ ...finding, file: `${outputPrefix}/${finding.file}` }))
-      : [...items];
-
   const baselineRoot = repoRoot ?? scanBase;
   const baselinePath = path.resolve(baselineRoot, options.baseline ?? DEFAULT_BASELINE);
   const explicitWrite = options.writeBaseline;
   if (explicitWrite) {
     const writeTarget = path.resolve(baselineRoot, explicitWrite);
-    // Record the current findings, not the diff-filtered subset, with the same
-    // repo-relative keys used when reading the baseline.
-    const toRecord = toRepoRelative(result.findings);
-    await writeBaseline(writeTarget, toRecord);
-    writeOut(io, `wrote ${toRecord.length} findings to ${path.relative(process.cwd(), writeTarget)}`);
+    // Findings are already report-root-relative, the same keys the baseline
+    // uses when it is read back.
+    await writeBaseline(writeTarget, result.findings);
+    writeOut(
+      io,
+      `wrote ${result.findings.length} findings to ${path.relative(process.cwd(), writeTarget)}`,
+    );
     return 0;
   }
 
   let findings: Finding[] = result.findings;
   let onlyDiff = 0;
   if (options.diff !== undefined) {
-    // git paths are relative to the repository root, not to the scan target.
-    const repoRoot = await findRepoRoot(scanBase);
-    const set = await diffSince(repoRoot, options.diff);
-    const prefix = path.relative(repoRoot, scanBase);
+    const gitRoot = await findRepoRoot(scanBase);
+    const set = await diffSince(gitRoot, options.diff);
     const before = findings.length;
-    findings = findings.filter((finding) => isInDiffWithPrefix(finding, set, prefix));
+    findings = findings.filter((finding) => isInDiff(finding, set));
     onlyDiff = before - findings.length;
   }
 
@@ -502,10 +503,8 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   if (baseline === undefined && options.baseline !== undefined) {
     throw new Error(`baseline file not found: ${baselinePath}`);
   }
-  // Baseline fingerprints and report paths both use repo-relative paths, so
-  // one root baseline works for every scan target.
-  const normalizedFindings = toRepoRelative(findings);
-  const { fresh, known } = partitionByBaseline(normalizedFindings, baseline);
+  // Baseline fingerprints and report paths both use the same root.
+  const { fresh, known } = partitionByBaseline(findings, baseline);
   // `--fail-on` below `--confidence` must lower the display threshold too,
   // otherwise the setting can never fail CI (the findings are filtered out).
   const displayConfidence: Confidence =

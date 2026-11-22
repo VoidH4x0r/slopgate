@@ -294,7 +294,7 @@ async function readIfExists(p: string): Promise<string | undefined> {
   }
 }
 
-const PROJECT_MARKERS = [
+export const PROJECT_MARKERS = [
   'pyproject.toml',
   'setup.py',
   'setup.cfg',
@@ -310,9 +310,30 @@ const PROJECT_MARKERS = [
 
 async function hasProjectMarker(dir: string): Promise<boolean> {
   for (const marker of PROJECT_MARKERS) {
+    if (marker === 'package.json') {
+      const text = await readIfExists(path.join(dir, marker));
+      const pkg = text ? (tryParseJson(text) as Record<string, unknown> | undefined) : undefined;
+      if (!pkg || typeof pkg !== 'object') continue;
+      // A package.json containing only `{ "type": "commonjs" }` is a module
+      // scope marker, not a project root.
+      if (
+        typeof pkg.name === 'string' ||
+        ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies', 'workspaces'].some(
+          (field) => pkg[field] !== undefined,
+        )
+      ) {
+        return true;
+      }
+      continue;
+    }
     if (await exists(path.join(dir, marker))) return true;
   }
   return false;
+}
+
+/** True when the directory directly owns a supported project manifest. */
+export async function isProjectDir(dir: string): Promise<boolean> {
+  return hasProjectMarker(path.resolve(dir));
 }
 
 /**
@@ -436,40 +457,141 @@ function stripJsonComments(text: string): string {
   return out;
 }
 
-async function loadTsconfigAliases(root: string): Promise<string[]> {
-  const aliases: string[] = [];
-  for (const name of ['tsconfig.json', 'tsconfig.base.json']) {
-    const text = await readIfExists(path.join(root, name));
-    if (!text) continue;
-    const parsed = tryParseJson(stripJsonComments(text)) as
-      | { compilerOptions?: { paths?: Record<string, unknown>; baseUrl?: string } }
-      | undefined;
-    if (!parsed) continue;
-    const paths = parsed.compilerOptions?.paths;
-    if (paths && typeof paths === 'object') {
-      for (const key of Object.keys(paths)) {
-        const cleaned = key.replace(/\/\*$/, '').replace(/\*$/, '');
-        if (cleaned) aliases.push(cleaned);
+function stripJsonTrailingCommas(text: string): string {
+  let out = '';
+  let quote: string | undefined;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i] ?? '';
+    if (quote) {
+      out += ch;
+      if (ch === '\\') {
+        out += text[i + 1] ?? '';
+        i += 1;
+      } else if (ch === quote) {
+        quote = undefined;
       }
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+      out += ch;
+      continue;
+    }
+    if (ch === ',') {
+      let next = i + 1;
+      while (next < text.length && /\s/.test(text[next] ?? '')) next += 1;
+      if (text[next] === ']' || text[next] === '}') continue;
+    }
+    out += ch;
+  }
+  return out;
+}
+
+function parseJsonc(text: string): unknown {
+  return tryParseJson(stripJsonTrailingCommas(stripJsonComments(text)));
+}
+
+const TSCONFIG_NAMES = [
+  'tsconfig.json',
+  'tsconfig.app.json',
+  'tsconfig.base.json',
+  'tsconfig.node.json',
+  'jsconfig.json',
+];
+
+interface TsCompilerOptions {
+  paths?: Record<string, unknown>;
+  baseUrl?: string;
+}
+
+async function readTsconfig(
+  file: string,
+  seen: Set<string>,
+): Promise<{ paths: Record<string, unknown>; baseUrl?: string; baseDir: string }> {
+  const abs = path.resolve(file);
+  if (seen.has(abs)) return { paths: {}, baseDir: path.dirname(abs) };
+  seen.add(abs);
+  const text = await readIfExists(abs);
+  if (text === undefined) return { paths: {}, baseDir: path.dirname(abs) };
+  const parsed = parseJsonc(text) as
+    | {
+        compilerOptions?: TsCompilerOptions;
+        extends?: string | string[];
+        references?: Array<{ path?: string }>;
+      }
+    | undefined;
+  if (!parsed) return { paths: {}, baseDir: path.dirname(abs) };
+
+  const dir = path.dirname(abs);
+  let paths: Record<string, unknown> = {};
+  let baseUrl: string | undefined;
+  const merge = (inherited: { paths: Record<string, unknown>; baseUrl?: string; baseDir: string }): void => {
+    paths = { ...paths, ...inherited.paths };
+    if (inherited.baseUrl) baseUrl = inherited.baseUrl;
+  };
+
+  const extendsList = Array.isArray(parsed.extends)
+    ? parsed.extends
+    : parsed.extends
+      ? [parsed.extends]
+      : [];
+  for (const extension of extendsList) {
+    if (!extension.startsWith('.')) continue; // package-based extends is out of scope
+    let inheritedPath = path.resolve(dir, extension);
+    try {
+      if ((await stat(inheritedPath)).isDirectory()) inheritedPath = path.join(inheritedPath, 'tsconfig.json');
+      else if (!inheritedPath.endsWith('.json')) inheritedPath += '.json';
+    } catch {
+      inheritedPath += '.json';
+    }
+    merge(await readTsconfig(inheritedPath, seen));
+  }
+
+  const own = parsed.compilerOptions ?? {};
+  if (own.paths && typeof own.paths === 'object') paths = { ...paths, ...own.paths };
+  if (typeof own.baseUrl === 'string') baseUrl = path.resolve(dir, own.baseUrl);
+  else if (baseUrl && !path.isAbsolute(baseUrl)) baseUrl = path.resolve(dir, baseUrl);
+
+  for (const reference of parsed.references ?? []) {
+    if (typeof reference.path !== 'string') continue;
+    let refPath = path.resolve(dir, reference.path);
+    try {
+      if ((await stat(refPath)).isDirectory()) refPath = path.join(refPath, 'tsconfig.json');
+    } catch {
+      // let readIfExists decide
+    }
+    merge(await readTsconfig(refPath, seen));
+  }
+
+  return { paths, baseDir: dir, ...(baseUrl ? { baseUrl } : {}) };
+}
+
+async function loadTsconfigAliases(root: string): Promise<string[]> {
+  const aliases = new Set<string>();
+  const seen = new Set<string>();
+  for (const name of TSCONFIG_NAMES) {
+    const file = path.join(root, name);
+    const config = await readTsconfig(file, seen);
+    for (const key of Object.keys(config.paths)) {
+      const cleaned = key.replace(/\/\*$/, '').replace(/\*$/, '');
+      if (cleaned) aliases.add(cleaned);
     }
     // With only `baseUrl`, TypeScript resolves bare imports under that
     // directory (`components/button` -> `src/components/button`). The first
     // path segment is the alias prefix this checker can match.
-    const baseUrl = parsed.compilerOptions?.baseUrl;
-    if (typeof baseUrl === 'string') {
-      const base = path.resolve(root, baseUrl);
-      const entries = await readDirSafe(base);
+    if (config.baseUrl) {
+      const entries = await readDirSafe(config.baseUrl);
       for (const entry of entries ?? []) {
         if (entry.name.startsWith('.')) continue;
-        if (entry.isDirectory()) aliases.push(entry.name);
+        if (entry.isDirectory()) aliases.add(entry.name);
         else if (entry.isFile()) {
           const stem = entry.name.replace(/\.(?:[cm]?[jt]sx?)$/, '');
-          if (stem !== entry.name) aliases.push(stem);
+          if (stem !== entry.name) aliases.add(stem);
         }
       }
     }
   }
-  return aliases;
+  return [...aliases];
 }
 
 async function loadInstalledPackages(root: string): Promise<Set<string>> {

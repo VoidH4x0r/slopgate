@@ -19,7 +19,8 @@ const NODE_BUILTINS = new Set(builtinModules.flatMap((name) => [name, `node:${na
 
 const ASSET_SPECIFIER =
   /\.(css|scss|sass|less|styl|svg|png|jpe?g|gif|webp|avif|ico|json|wasm|mdx?|txt|graphql|gql|vue|svelte|astro|html?)(\?.*)?$/i;
-const VIRTUAL_SPECIFIER = /^(virtual|vite|webpack|bun|deno|astro|parcel|rollup|pnp|data|file|https?|blob):/;
+const VIRTUAL_SPECIFIER =
+  /^(virtual|vite|webpack|bun|deno|astro|parcel|rollup|pnp|data|file|https?|blob):|^(?:@|~)\/|^\$(?:lib|app|env)\/|^(?:npm|jsr):/;
 
 const TERMINATORS = new Set([
   'return_statement',
