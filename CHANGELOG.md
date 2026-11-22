@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-11-23
+
+### Fixed
+- `isCjkDocument` now uses CJK density plus the share of lines containing CJK, so an English document with a single four-character Chinese phrase is not treated as a Chinese document.
+- Repeated U+8DEF runs are rejected only with ASCII context; short Chinese text no longer false-positives, while ASCII-context repetitions still do.
+
+### Changed
+- 343 tests.
+- Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**.
+
 ## [0.2.7] - 2026-11-23
 
 ### Fixed

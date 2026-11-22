@@ -14,12 +14,25 @@ const LATIN_MOJIBAKE = /â€|Ã[\u0080-\u00bf]|Â[\u0080-\u00bf]|ð[\u0080-\u01
 // ASCII/number/table context; Chinese prose such as `前方 路 口` must pass.
 const MOJIBAKE_AROUND_ASCII =
   /(?:[A-Za-z0-9|)\]}])\s*路(?=\s|$)|(?:^|\s)路(?=\s*[A-Za-z0-9|([{])/u;
-const ROAD_RUN = /路{2,}|(?:^|\s)路(?:\s+路)+/u;
+
+function hasAsciiRoadRun(text: string): boolean {
+  for (const match of text.matchAll(/路{2,}(?:\s+路+)*|路(?:\s+路)+/gu)) {
+    const start = match.index ?? 0;
+    const before = text.slice(0, start).trimEnd().at(-1) ?? '';
+    const after = text.slice(start + match[0].length).trimStart()[0] ?? '';
+    if (/[A-Za-z0-9|)\]}([{]/.test(before) || /[A-Za-z0-9|([{]/.test(after)) return true;
+  }
+  return false;
+}
 
 function isCjkDocument(text: string): boolean {
+  const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
   const chars = [...text].filter((char) => !/\s/.test(char));
   const cjk = chars.filter((char) => /[\u4e00-\u9fff]/u.test(char)).length;
   if (cjk < 5) return false;
+  const density = cjk / chars.length;
+  const cjkLines = lines.filter((line) => /[\u4e00-\u9fff]/u.test(line)).length;
+  if (density < 0.1 || cjkLines / lines.length < 0.3) return false;
   const runs = text.match(/[\u4e00-\u9fff]{4,}/gu) ?? [];
   if (runs.length === 0) return false;
   // Every 4+ CJK run must be free of mojibake markers and must not consist
@@ -39,7 +52,7 @@ function markdownProblem(text: string): string | undefined {
   // rare CJK characters are legitimate content.
   if (isCjkDocument(text)) return undefined;
   if (CJK_MOJIBAKE.test(text)) return 'GBK/CP936 mojibake';
-  if (ROAD_RUN.test(text)) return 'repeated 路 (mojibake for ·)';
+  if (hasAsciiRoadRun(text)) return 'repeated 路 (mojibake for ·)';
   if (MOJIBAKE_AROUND_ASCII.test(text)) return 'whitespace-delimited 路 (mojibake for ·)';
   return undefined;
 }
@@ -76,7 +89,32 @@ test('docs: markdown files contain no mojibake or replacement characters', async
   assert.equal(markdownProblem('中文文档 鈥鈥鈥鈥'), 'GBK/CP936 mojibake');
   assert.equal(markdownProblem('中文文档 路路 说明'), undefined);
   assert.equal(markdownProblem('English 路路路路'), 'repeated 路 (mojibake for ·)');
+  assert.equal(markdownProblem('English 路 路 路 路'), 'repeated 路 (mojibake for ·)');
   assert.equal(markdownProblem('English 路路路路路'), 'repeated 路 (mojibake for ·)');
+  assert.equal(markdownProblem('中文 路路'), undefined);
+  const mixed = [
+    'English line one',
+    'English line two',
+    'English line three',
+    'English line four',
+    'English line five',
+    'English line six',
+    'English line seven',
+    'English line eight',
+    '道路工程 example',
+    'A 鈥 marker',
+  ].join('\n');
+  assert.equal(markdownProblem(mixed), 'GBK/CP936 mojibake');
+  const chineseCode = [
+    '# 中文文档',
+    '',
+    '这是中文说明。',
+    '',
+    '```ts',
+    'const x = 1;',
+    '```',
+  ].join('\n');
+  assert.equal(markdownProblem(chineseCode), undefined);
   assert.equal(markdownProblem('English 鈥 鈥 鈥 鈥 鈥'), 'GBK/CP936 mojibake');
   assert.equal(markdownProblem('English 鈥鈥鈥鈥'), 'GBK/CP936 mojibake');
   assert.equal(markdownProblem('slopgate 0.2.3 路 4 files'), 'whitespace-delimited 路 (mojibake for ·)');
