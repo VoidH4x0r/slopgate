@@ -11,7 +11,8 @@ import {
   type Config,
 } from './config.ts';
 import { diffSince, isInDiff, type DiffSet } from './diff.ts';
-import { resolveProjectRoot } from './deps.ts';
+import { resolveProjectRoot, isProjectDir } from './deps.ts';
+import { loadProjectRegistry, type ProjectRegistry } from './projects.ts';
 import { scanProject, type ScanResult } from './engine.ts';
 import { ALL_RULES } from './rules/index.ts';
 import type { Confidence, Finding } from './types.ts';
@@ -273,10 +274,14 @@ export function createMcpServer(deps: McpDeps) {
 
 export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'config'> {
   const configCache = new Map<string, Promise<Config>>();
-  const configFor = async (start: string): Promise<Config> => {
+  const registryCache = new Map<string, Promise<ProjectRegistry>>();
+  const configRootFor = async (start: string): Promise<string> => {
     const target = path.resolve(start);
     const repoRoot = (await findGitRoot(target)) ?? root;
-    const configRoot = await findConfigRoot(target, repoRoot);
+    return findConfigRoot(target, repoRoot);
+  };
+  const configFor = async (start: string): Promise<Config> => {
+    const configRoot = await configRootFor(start);
     let pending = configCache.get(configRoot);
     if (!pending) {
       pending = loadConfig(configRoot).then((loaded) => loaded.config);
@@ -297,11 +302,32 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
       const base = info?.isFile() ? path.dirname(target) : target;
       const repoRoot = (await findGitRoot(base)) ?? root;
       const projectRoot = await resolveProjectRoot(base, repoRoot);
+      const configRoot = await configRootFor(scanRoot);
+      const indexRoot = (await isProjectDir(projectRoot)) ? projectRoot : base;
+      const registryKey = JSON.stringify([
+        indexRoot,
+        configRoot,
+        config.exclude,
+        config.ignoreModules,
+      ]);
+      let registry = registryCache.get(registryKey);
+      if (!registry) {
+        registry = loadProjectRegistry({
+          scopeRoot: indexRoot,
+          fallbackRoot: projectRoot,
+          configRoot,
+          exclude: config.exclude,
+          ignoreModules: config.ignoreModules,
+        });
+        registryCache.set(registryKey, registry);
+      }
       const result = await scanProject({
         root: target,
         projectRoot,
-        scopeRoot: repoRoot,
+        configRoot,
+        indexRoot,
         reportRoot: root,
+        registry: await registry,
         config,
       });
 

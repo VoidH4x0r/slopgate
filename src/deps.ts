@@ -294,19 +294,15 @@ async function readIfExists(p: string): Promise<string | undefined> {
   }
 }
 
-export const PROJECT_MARKERS = [
-  'pyproject.toml',
-  'setup.py',
-  'setup.cfg',
-  'Pipfile',
-  'requirements.txt',
-  'requirements.in',
-  'requirements/all.txt',
-  'requirements/base.txt',
-  'requirements/dev.txt',
-  'requirements/prod.txt',
-  'package.json',
+const PYTHON_MANIFESTS = [
+  'pyproject.toml', 'setup.py', 'setup.cfg', 'Pipfile', 'requirements.txt',
+  'requirements.in', 'requirements-dev.txt', 'requirements_dev.txt', 'dev-requirements.txt',
+  'requirements/all.txt', 'requirements/base.txt', 'requirements/dev.txt', 'requirements/prod.txt',
+  'requirements/main.txt', 'requirements/test.txt', 'requirements/tests.txt',
+  'environment.yml', 'environment.yaml',
 ];
+
+export const PROJECT_MARKERS = [...PYTHON_MANIFESTS, 'package.json'];
 
 async function hasProjectMarker(dir: string): Promise<boolean> {
   for (const marker of PROJECT_MARKERS) {
@@ -383,14 +379,6 @@ async function readDirSafe(dir: string): Promise<Dirent[] | undefined> {
     return undefined;
   }
 }
-
-const PYTHON_MANIFESTS = [
-  'pyproject.toml', 'setup.py', 'setup.cfg', 'Pipfile', 'requirements.txt',
-  'requirements.in', 'requirements-dev.txt', 'requirements_dev.txt', 'dev-requirements.txt',
-  'requirements/base.txt', 'requirements/dev.txt', 'requirements/prod.txt',
-  'requirements/main.txt', 'requirements/test.txt', 'requirements/tests.txt',
-  'environment.yml', 'environment.yaml',
-];
 
 async function loadPythonDeps(root: string): Promise<PythonDeps> {
   const declared = new Set<string>();

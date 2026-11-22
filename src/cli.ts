@@ -14,7 +14,7 @@ import {
   type FailOn,
 } from './config.ts';
 import { assertSafeRef, diffSince, findRepoRoot, isInDiff } from './diff.ts';
-import { resolveProjectRoot } from './deps.ts';
+import { resolveProjectRoot, isProjectDir } from './deps.ts';
 import { scanProject } from './engine.ts';
 import { serveMcp } from './mcp.ts';
 import { renderGithub } from './reporters/github.ts';
@@ -430,9 +430,13 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const scanBase = targetInfo.isFile() ? path.dirname(target) : target;
   const repoRoot = await findGitRoot(scanBase);
   const scopeRoot = scopeBoundary(scanBase, repoRoot);
-  const configRoot = await findConfigRoot(scanBase, scopeRoot);
   const projectRoot = await resolveProjectRoot(scanBase, scopeRoot);
+  // In git, a root config applies to every package. Without git, do not let a
+  // parent project's config leak across a nested project boundary.
+  const configBoundary = repoRoot ?? projectRoot;
+  const configRoot = await findConfigRoot(scanBase, configBoundary);
   const reportRoot = repoRoot ?? scanBase;
+  const indexRoot = (await isProjectDir(projectRoot)) ? projectRoot : scanBase;
   const { config, file: configFile } = await loadConfig(configRoot);
 
   if (options.rules.length > 0) {
@@ -460,7 +464,8 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const result = await scanProject({
     root: target,
     projectRoot,
-    scopeRoot,
+    configRoot,
+    indexRoot,
     reportRoot,
     config: merged,
     ...(options.rules.length > 0 ? { onlyRules: new Set(options.rules) } : {}),

@@ -5,6 +5,11 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Fixed
+- Config `include` / `exclude` globs are matched relative to the **config root** they came from, so a root config still governs `slopgate backend` when `backend` has its own manifest.
+- Registry indexing is scoped to the project/target, lazy-loads project deps, respects `config.exclude`, and is cached across MCP tool calls.
+- Python files choose the nearest **Python** manifest rather than a nested Node-only `package.json`; TS files use the nearest `package.json`.
+- Python project markers are derived from the same list as `PYTHON_MANIFESTS` (`requirements-dev.txt`, `environment.yml`, etc.).
+- `pytest.warns` / `pytest.deprecated_call` count as assertions, but a plain `warnings.warn()` does not.
 - Config `include` / `exclude` globs now match project-root-relative paths for subdirectory and single-file scans (including directory pruning), not paths relative to the scan target.
 - Root scans now resolve dependencies per file: monorepo files use their nearest `pyproject.toml` / `package.json` / requirements file, and Python local-module discovery covers the whole repository rather than only scanned files.
 - Non-git scans search parent manifests/configs up to the current working directory boundary while keeping report paths relative to the scan target.

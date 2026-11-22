@@ -194,11 +194,11 @@ test('a type-only nested package.json does not hide the parent project', async (
     );
     await writeFile(path.join(dir, 'helpers', 'package.json'), '{"type":"commonjs"}\n');
     await writeFile(path.join(dir, 'helpers', 'app.ts'), "import Parser from 'yargs-parser';\n");
-    const registry = await loadProjectRegistry(dir, dir);
-    const deps = registry.depsFor(path.join(dir, 'helpers', 'app.ts'));
+    const registry = await loadProjectRegistry({ scopeRoot: dir, fallbackRoot: dir });
+    const deps = await registry.depsFor(path.join(dir, 'helpers', 'app.ts'), 'typescript');
     assert.equal(deps.root, dir);
     assert.ok(deps.node.declared.has('yargs-parser'));
-    assert.ok(![...registry.projects.keys()].some((key) => key.endsWith('helpers')));
+    assert.ok(![...registry.projectDirs].some((key) => key.endsWith('helpers')));
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import { asAst, type AstNode } from './ast.ts';
 import { discoverFiles, toPosix } from './files.ts';
 import { getParser } from './parser.ts';
-import { loadProjectRegistry } from './projects.ts';
+import { loadProjectRegistry, type ProjectRegistry } from './projects.ts';
 import { ALL_RULES, RULE_BY_ID } from './rules/index.ts';
 import { collectCommentRanges } from './rules/helpers.ts';
 import { isSuppressed, readSuppressions } from './suppress.ts';
@@ -22,8 +22,12 @@ export interface ScanOptions {
   config: Config;
   /** Directory that owns manifests and local modules; defaults to the scan root. */
   projectRoot?: string;
-  /** Root for repository-wide project/module discovery; defaults to projectRoot. */
-  scopeRoot?: string;
+  /** Directory that owns the active `.slopgate.json`; config globs are relative to it. */
+  configRoot?: string;
+  /** Root to index for projects/local modules; defaults to projectRoot. */
+  indexRoot?: string;
+  /** Prebuilt registry (MCP caches this across tool calls). */
+  registry?: ProjectRegistry;
   /** Root for reported finding paths; defaults to the scan base. */
   reportRoot?: string;
   /** When set, only these rule ids run (CLI `--rule`). */
@@ -60,7 +64,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   // project root, not just the file's directory.
   const root = targetInfo?.isFile() ? path.dirname(target) : target;
   const projectRoot = options.projectRoot ? path.resolve(options.projectRoot) : root;
-  const scopeRoot = options.scopeRoot ? path.resolve(options.scopeRoot) : projectRoot;
+  const indexRoot = options.indexRoot ? path.resolve(options.indexRoot) : projectRoot;
   const reportRoot = options.reportRoot ? path.resolve(options.reportRoot) : root;
   const warnings: string[] = [];
   const { config } = options;
@@ -73,13 +77,19 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     }
   }
 
-  const registry = await loadProjectRegistry(scopeRoot, projectRoot);
-  const contexts: ProjectDeps[] = [...registry.projects.values(), registry.fallback];
-  for (const deps of contexts) deps.ignoredModules = new Set(config.ignoreModules);
+  const registry =
+    options.registry ??
+    (await loadProjectRegistry({
+      scopeRoot: indexRoot,
+      fallbackRoot: projectRoot,
+      ...(options.configRoot ? { configRoot: path.resolve(options.configRoot) } : {}),
+      exclude: config.exclude,
+      ignoreModules: config.ignoreModules,
+    }));
 
   const { files, skipped: skippedByDiscovery } = await discoverFiles({
     root: target,
-    matchRoot: projectRoot,
+    matchRoot: options.configRoot ? path.resolve(options.configRoot) : projectRoot,
     include: config.include,
     exclude: config.exclude,
   });
@@ -126,14 +136,14 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
 
     const root = asAst(tree.rootNode);
     const comments = collectCommentRanges(root);
-    const deps = registry.depsFor(file.abs);
+    const deps = await registry.depsFor(file.abs, file.language);
     const reportRelative = toPosix(path.relative(reportRoot, file.abs));
     const findingFile =
       reportRelative.startsWith('..') || path.isAbsolute(reportRelative)
         ? file.rel
         : reportRelative;
     if (file.language !== 'python') {
-      const missing = registry.missingPackageJson(file.abs);
+      const missing = await registry.missingPackageJson(file.abs, file.language);
       if (missing) warnings.push(missing);
     }
     const ctx: RuleContext = {

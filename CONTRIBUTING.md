@@ -8,7 +8,7 @@ Thanks for taking the time. This project has one rule above all others: **a find
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test           # 287 tests, ~0.5s, no network, no subprocesses inside the tests
+npm test           # 291 tests, ~0.5s, no network, no subprocesses inside the tests
 npm run typecheck
 npm run verify     # typecheck + links + tests + build + self-scan + package check
 npm run build      # emits dist/ used by the published package
@@ -34,6 +34,7 @@ src/
   ast.ts            the non-null AST shape every rule sees
   files.ts          walking, ignore defaults, glob matcher
   deps.ts           manifest parsing (Python + Node), alias/workspace resolution
+  projects.ts       lazy per-file project registry + local-module index
   config.ts         .slopgate.json schema and defaults
   suppress.ts       slopgate-ignore-* directives
   baseline.ts       stable fingerprints for "new findings only"

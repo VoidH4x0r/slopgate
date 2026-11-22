@@ -344,6 +344,35 @@ test('cli: config globs are project-root-relative for subdirectory and file scan
   }
 });
 
+test('cli: a root config still governs a child package with its own manifest', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-config-child-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'backend', 'generated'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'backend', 'pyproject.toml'),
+      '[project]\nname = "backend"\nversion = "0.0.0"\ndependencies = []\n',
+    );
+    await writeFile(path.join(dir, 'backend', 'app.py'), 'def stubbed():\n    pass\n');
+    await writeFile(
+      path.join(dir, 'backend', 'generated', 'g.py'),
+      'def generated_stub():\n    pass\n',
+    );
+    await writeFile(path.join(dir, '.slopgate.json'), '{"include":["backend/app.py"]}\n');
+    const included = await run([path.join(dir, 'backend'), '--no-color']);
+    assert.equal(included.status, 1, included.stderr);
+    assert.match(included.stdout, /^backend\/app\.py$/m);
+    assert.doesNotMatch(included.stdout, /generated\/g\.py/);
+
+    await writeFile(path.join(dir, '.slopgate.json'), '{"exclude":["backend/generated/**"]}\n');
+    const excluded = await run([path.join(dir, 'backend'), '--no-color']);
+    assert.equal(excluded.status, 1, excluded.stderr);
+    assert.doesNotMatch(excluded.stdout, /generated\/g\.py/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: a monorepo root scan uses the nearest project manifest', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-monorepo-root-'));
   try {
@@ -380,6 +409,64 @@ test('cli: a subdirectory scan sees Python modules outside the target', async ()
     await writeFile(path.join(dir, 'src', 'app.py'), 'from lib.util import f\n\nx = f()\n');
 
     const result = await run([path.join(dir, 'src'), '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.doesNotMatch(result.stdout, /phantom-import/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: a nested package.json does not select the wrong language project', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mixed-projects-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'assets'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'pyproject.toml'),
+      '[project]\nname = "root"\nversion = "0.0.0"\ndependencies = ["requests"]\n',
+    );
+    await writeFile(path.join(dir, 'assets', 'package.json'), '{"name":"assets","private":true}\n');
+    await writeFile(path.join(dir, 'assets', 'build.py'), 'import requests\n');
+
+    const result = await run([dir, '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.doesNotMatch(result.stdout, /phantom-import/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: registry indexing respects config excludes', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-registry-exclude-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await mkdir(path.join(dir, 'fixtures', 'x'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'pyproject.toml'),
+      '[project]\nname = "root"\nversion = "0.0.0"\ndependencies = []\n',
+    );
+    await writeFile(path.join(dir, 'fixtures', 'x', 'phantom_helper.py'), 'def f():\n    return 1\n');
+    await writeFile(path.join(dir, 'src', 'app.py'), 'import phantom_helper\n');
+    await writeFile(path.join(dir, '.slopgate.json'), '{"exclude":["fixtures/**"]}\n');
+
+    const result = await run([path.join(dir, 'src'), '--no-color']);
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stdout, /py\/phantom-import/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: nested requirements-dev.txt marks a Python project', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-python-marker-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'backend', 'src'), { recursive: true });
+    await writeFile(path.join(dir, 'backend', 'requirements-dev.txt'), 'requests>=2\n');
+    await writeFile(path.join(dir, 'backend', 'src', 'app.py'), 'import requests\n');
+
+    const result = await run([path.join(dir, 'backend', 'src'), '--no-color']);
     assert.equal(result.status, 0, result.stderr);
     assert.doesNotMatch(result.stdout, /phantom-import/);
   } finally {

@@ -114,7 +114,7 @@ function testFunctionName(fn: AstNode): string | undefined {
 }
 
 const ASSERTION_CALLEE =
-  /(^|\.)(assert\w*|raises|warns?|warns_once|deprecated_call|expect|expects|should\w*|fail|check|verify|match_snapshot)$/;
+  /(^|\.)(assert\w*|raises|warns|warns_once|deprecated_call|expect|expects|should\w*|fail|check|verify|match_snapshot)$/;
 
 function hasAssertion(body: AstNode): boolean {
   let found = false;
