@@ -319,7 +319,8 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 - Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
 - The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
-- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.2.1.
+- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.2.1. A file contributes at most one representative per duplicate group.
+- `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off" }` if you do not need medium findings.
 - `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
 
 ## When **not** to use it
@@ -336,7 +337,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 327 tests; the tests themselves make no network or child-process calls
+npm test            # 332 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

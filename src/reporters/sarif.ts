@@ -1,5 +1,5 @@
 import { findingFingerprint } from '../baseline.ts';
-import { RULE_BY_ID } from '../rules/index.ts';
+import { ALL_RULE_BY_ID } from '../rules/index.ts';
 import type { Finding } from '../types.ts';
 
 const SARIF_LEVEL: Record<Finding['severity'], 'error' | 'warning' | 'note'> = {
@@ -21,7 +21,7 @@ export function renderSarif(findings: readonly Finding[], version: string): stri
   }
 
   const rules = [...usedRules.entries()].map(([ruleId, finding]) => {
-    const meta = RULE_BY_ID.get(ruleId)?.meta;
+    const meta = ALL_RULE_BY_ID.get(ruleId)?.meta;
     return {
       id: ruleId,
       name: meta?.title ?? ruleId,

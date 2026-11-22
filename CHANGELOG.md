@@ -12,7 +12,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - `fixtures/ai-generated`: 20-file AI-generated regression corpus with provenance, 32 labeled high-confidence fingerprints and 30/30 seeded recall.
 
 ### Changed
-- 327 tests.
+- 332 tests.
 - Benchmark: **43 high-confidence findings** across 1,115,270 lines, **97.7% labeled precision (42/43)**, **30/30 seeded defects**, 0 high findings on 601 JavaScript files.
 - `slopgate rules` now lists 16 rules.
 

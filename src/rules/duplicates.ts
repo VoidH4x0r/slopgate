@@ -18,7 +18,7 @@ interface Candidate {
   start: ReturnType<typeof startOf>;
   end: ReturnType<typeof endOf>;
   snippet: string;
-  signature: string;
+  hash: string;
   lines: number;
   tokens: number;
   kind: 'function' | 'method';
@@ -46,27 +46,54 @@ function isCandidate(node: AstNode, language: LanguageId): boolean {
   return parent?.type === 'variable_declarator' && parent.childForFieldName('value') === node;
 }
 
+const FUNCTION_NODE_TYPES = new Set([
+  'function_definition',
+  'function_declaration',
+  'method_definition',
+  'function_expression',
+  'arrow_function',
+]);
+
+/** Nested helpers are covered when their enclosing function is duplicated. */
+function hasFunctionAncestor(node: AstNode): boolean {
+  let current = node.parent;
+  while (current) {
+    if (FUNCTION_NODE_TYPES.has(current.type)) return true;
+    current = current.parent;
+  }
+  return false;
+}
+
 /**
  * A normalized structural signature. Comments are ignored; whitespace is
- * collapsed; identifiers and literals are preserved. This deliberately reports
- * exact normalized copies, not renamed semantic clones.
+ * collapsed; identifiers, literals **and anonymous operators** are preserved.
+ * This deliberately reports exact normalized copies, not renamed semantic
+ * clones.
  */
-function signatureOf(body: AstNode): { signature: string; tokens: number } {
-  const parts: string[] = [];
+function signatureOf(body: AstNode): { hash: string; tokens: number } {
+  const hash = createHash('sha256');
   let tokens = 0;
-  walk(body, (node) => {
-    if (isComment(node)) return false;
-    parts.push(node.type);
-    if (node.namedChildren.length === 0) {
+  const stack: AstNode[] = [body];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node || isComment(node)) continue;
+    hash.update(node.type);
+    hash.update('\u0000');
+    if (node.children.length === 0) {
       const text = collapseWhitespace(node.text);
       if (text.length > 0) {
-        parts.push(text);
+        hash.update(text);
+        hash.update('\u0000');
         tokens += 1;
       }
+      continue;
     }
-    return true;
-  });
-  return { signature: parts.join('\u0000'), tokens };
+    for (let index = node.children.length - 1; index >= 0; index -= 1) {
+      const child = node.children[index];
+      if (child) stack.push(child);
+    }
+  }
+  return { hash: hash.digest('hex'), tokens };
 }
 
 function collectRule(kind: 'function' | 'method', language: LanguageId): ProjectRule {
@@ -89,7 +116,7 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
     collect(ctx) {
       if (ctx.language !== language || isTestPath(ctx.file)) return;
       for (const node of collectCandidates(ctx.root, language)) {
-        if (!isCandidate(node, language)) continue;
+        if (!isCandidate(node, language) || hasFunctionAncestor(node)) continue;
         const body = bodyOf(node);
         if (!body || body.type === 'expression') continue;
         const lines = body.endPosition.row - body.startPosition.row + 1;
@@ -103,7 +130,7 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
           start: startOf(node),
           end: endOf(node),
           snippet: snippetOf(ctx, node),
-          signature: normalized.signature,
+          hash: normalized.hash,
           lines,
           tokens: normalized.tokens,
           kind: node.type === 'method_definition' ? 'method' : kind,
@@ -113,7 +140,7 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
     finish() {
       const groups = new Map<string, Candidate[]>();
       for (const candidate of candidates) {
-        const key = `${candidate.language}\u0000${createHash('sha256').update(candidate.signature).digest('hex')}`;
+        const key = `${candidate.language}\u0000${candidate.hash}`;
         const group = groups.get(key);
         if (group) group.push(candidate);
         else groups.set(key, [candidate]);
@@ -121,15 +148,19 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
 
       const drafts: ProjectFindingDraft[] = [];
       for (const group of groups.values()) {
-        if (new Set(group.map((candidate) => candidate.file)).size < 2) continue;
-        group.sort(
+        const byFile = new Map<string, Candidate>();
+        for (const candidate of group) {
+          if (!byFile.has(candidate.file)) byFile.set(candidate.file, candidate);
+        }
+        if (byFile.size < 2) continue;
+        const representatives = [...byFile.values()].sort(
           (a, b) =>
             a.file.localeCompare(b.file) ||
             a.start.line - b.start.line ||
             a.start.column - b.start.column,
         );
-        for (const candidate of group) {
-          const others = group.filter((other) => other !== candidate);
+        for (const candidate of representatives) {
+          const others = representatives.filter((other) => other.file !== candidate.file);
           const firstOther = others[0];
           if (!firstOther) continue;
           drafts.push({

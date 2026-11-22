@@ -142,6 +142,8 @@ export interface ProjectRule {
 export interface ScanFix {
   finding: Finding;
   fileAbs: string;
+  /** SHA-1 of the BOM-stripped source the offsets were computed against. */
+  sourceHash: string;
   edits: readonly FixEdit[];
 }
 

@@ -131,6 +131,24 @@ test('duplicate-block finds TypeScript function bodies', async () => {
   }
 });
 
+test('duplicate-block treats operators as part of the signature', async () => {
+  const changed = BODY.replace('total += value', 'total -= value')
+    .replace('total = total * 2', 'total = total / 2')
+    .replace('total = total + 1', 'total = total - 1')
+    .replace('if total < 0', 'if total > 0');
+  const result = await scanTwoFiles(BODY, changed);
+  assert.equal(result.findings.filter((f) => f.ruleId === 'py/duplicate-block').length, 0);
+});
+
+test('duplicate-block reports one representative per file', async () => {
+  const sameFile = `${BODY}\n${BODY.replace('compute', 'compute_again')}\n`;
+  const result = await scanTwoFiles(sameFile, BODY);
+  const duplicates = result.findings.filter((f) => f.ruleId === 'py/duplicate-block');
+  assert.equal(duplicates.length, 2);
+  assert.ok(duplicates.every((finding) => !finding.message.includes(`${finding.file}:`)));
+  assert.ok(duplicates.every((finding) => finding.evidence.some((item) => item.startsWith('also at:'))));
+});
+
 test('duplicate-block skips files that do not parse', async () => {
   const result = await scanTwoFiles(BODY, `${BODY}\nthis is not python !!!\n`);
   assert.equal(result.findings.filter((f) => f.ruleId === 'py/duplicate-block').length, 0);

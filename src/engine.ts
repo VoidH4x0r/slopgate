@@ -1,4 +1,5 @@
 import { readFile, stat } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import * as path from 'node:path';
 import { asAst, type AstNode } from './ast.ts';
 import { discoverFiles, toPosix } from './files.ts';
@@ -184,6 +185,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     };
     const suppressions = readSuppressions(source, commentLines);
     suppressionsByFile.set(findingFile, suppressions);
+    let sourceHash: string | undefined;
 
     for (const projectRule of enabledProject) {
       if (hadParseError || !projectRule.meta.languages.includes(file.language)) continue;
@@ -230,7 +232,8 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
         seen.add(key);
         findings.push(finding);
         if (!hadParseError && draft.fix && draft.fix.edits.length > 0) {
-          fixes.push({ finding, fileAbs: file.abs, edits: draft.fix.edits });
+          sourceHash ??= createHash('sha1').update(source).digest('hex');
+          fixes.push({ finding, fileAbs: file.abs, sourceHash, edits: draft.fix.edits });
         }
       }
     }

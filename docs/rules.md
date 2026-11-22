@@ -16,6 +16,7 @@ Every rule runs on a real AST (tree-sitter), reports a **confidence**, and has a
 | [`py/swallowed-exception`](#pyswallowed-exception) | Python | warning | high / medium |
 | [`py/dead-branch`](#pydead-branch) | Python | warning | high / medium |
 | [`py/unreachable`](#pyunreachable) | Python | error | high |
+| [`py/duplicate-block`](#pyduplicate-block) | Python | warning | medium |
 | [`ts/phantom-import`](#tsphantom-import) | TS/JS | error | high / medium |
 | [`ts/noop-test`](#tsnoop-test) | TS/JS | warning | high |
 | [`ts/tautological-assert`](#tstautological-assert) | TS/JS | warning | high |
@@ -23,6 +24,7 @@ Every rule runs on a real AST (tree-sitter), reports a **confidence**, and has a
 | [`ts/swallowed-exception`](#tsswallowed-exception) | TS/JS | warning | medium |
 | [`ts/dead-branch`](#tsdead-branch) | TS/JS | warning | high / medium |
 | [`ts/unreachable`](#tsunreachable) | TS/JS | error | high |
+| [`ts/duplicate-block`](#tsduplicate-block) | TS/JS | warning | medium |
 
 ---
 
@@ -138,7 +140,7 @@ if False:
 
 **What it catches.** The same normalized function body in two or more Python files. Comments and whitespace are ignored; identifiers and literals are preserved, so renaming a local variable makes the bodies different. A body must span at least **6 lines** and contain at least **15 leaf tokens**.
 
-**Not reported.** Copies inside a single file, test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers. This is deliberately exact normalization, not a clone detector.
+**Not reported.** Copies only inside a single file (a file contributes at most one representative to a cross-file duplicate group), test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers. This is deliberately exact normalization, not a clone detector.
 
 **Confidence.** `medium`: duplication can be intentional boilerplate. Each occurrence is reported with the other locations.
 
@@ -238,7 +240,7 @@ try {
 
 **What it catches.** The same normalized function or method body in two or more TypeScript/JavaScript files. Function declarations, class methods, and function/arrow values assigned to variables are considered. Comments and whitespace are ignored; identifiers and literals are preserved. A body must span at least **6 lines** and contain at least **15 leaf tokens**.
 
-**Not reported.** Callbacks passed to other calls, copies inside a single file, test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
+**Not reported.** Callbacks passed to other calls, copies only inside a single file (a file contributes at most one representative to a cross-file duplicate group), test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
 
 **Confidence.** `medium`: duplication can be intentional boilerplate. Each occurrence is reported with the other locations.
 

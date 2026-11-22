@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
@@ -96,6 +97,24 @@ test('dry-run validates edits without writing', async () => {
   }
 });
 
+test('fix refuses stale offsets when the file changed after scanning', async () => {
+  const dir = await fixture({
+    'app.py': 'def f():\n    return 1\n    print("dead")\n',
+  });
+  try {
+    const result = await scan(dir);
+    const changed = 'def f():\n    return 2\n    print("dead")\n';
+    await writeFile(path.join(dir, 'app.py'), changed);
+    const applied = await applyFixes(result.fixes, { write: true });
+    assert.equal(applied.fixedFindings, 0);
+    assert.equal(applied.skippedFindings, 1);
+    assert.match(applied.warnings.join('\n'), /changed after it was scanned/);
+    assert.equal(await readFile(path.join(dir, 'app.py'), 'utf8'), changed);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('fix skips overlapping edits instead of corrupting the file', async () => {
   const dir = await fixture({ 'app.py': '1234567890\n' });
   try {
@@ -112,6 +131,7 @@ test('fix skips overlapping edits instead of corrupting the file', async () => {
         evidence: [],
       },
       fileAbs: path.join(dir, 'app.py'),
+      sourceHash: createHash('sha1').update('1234567890\n').digest('hex'),
       edits: [
         { start: 0, end: 5, replacement: '' },
         { start: 4, end: 6, replacement: '' },

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import test from 'node:test';
 import { ROOT } from './helpers.ts';
+import { ALL_RULE_METAS } from '../src/rules/index.ts';
 
 test('docs: README and the demo artwork pin the package version', async () => {
   const pkg = JSON.parse(await readFile(path.join(ROOT, 'package.json'), 'utf8')) as {
@@ -37,4 +38,11 @@ test('docs: README and the demo artwork pin the package version', async () => {
     readme.includes(`in ${fileCount} of`),
     `README benchmark file count is stale (expected ${fileCount})`,
   );
+});
+
+test('docs: the rule table lists every registered rule', async () => {
+  const rules = await readFile(path.join(ROOT, 'docs', 'rules.md'), 'utf8');
+  const ids = new Set([...rules.matchAll(/^\| \[`([^`]+)`\]/gm)].map((match) => match[1]));
+  const registered = new Set(ALL_RULE_METAS.map((meta) => meta.id));
+  assert.deepEqual([...ids].sort(), [...registered].sort());
 });

@@ -1,4 +1,5 @@
 import { chmod, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import type { ScanFix } from './types.ts';
 
 export interface FixApplyResult {
@@ -10,6 +11,7 @@ export interface FixApplyResult {
 
 interface FilePlan {
   file: string;
+  sourceHash: string;
   findings: number;
   edits: Array<{ start: number; end: number; replacement: string }>;
 }
@@ -24,7 +26,18 @@ export async function applyFixes(
 ): Promise<FixApplyResult> {
   const byFile = new Map<string, FilePlan>();
   for (const fix of fixes) {
-    const plan = byFile.get(fix.fileAbs) ?? { file: fix.fileAbs, findings: 0, edits: [] };
+    const existing = byFile.get(fix.fileAbs);
+    if (existing && existing.sourceHash !== fix.sourceHash) {
+      existing.findings += 1;
+      existing.sourceHash = '\u0000mismatch';
+      continue;
+    }
+    const plan = existing ?? {
+      file: fix.fileAbs,
+      sourceHash: fix.sourceHash,
+      findings: 0,
+      edits: [],
+    };
     plan.findings += 1;
     for (const edit of fix.edits) {
       plan.edits.push({ ...edit });
@@ -44,6 +57,11 @@ export async function applyFixes(
     }
     const hadBom = raw.length >= 3 && raw[0] === 0xef && raw[1] === 0xbb && raw[2] === 0xbf;
     const source = raw.toString('utf8').replace(/^\uFEFF/, '');
+    if (plan.sourceHash === '\u0000mismatch' || plan.sourceHash !== createHash('sha1').update(source).digest('hex')) {
+      result.skippedFindings += plan.findings;
+      result.warnings.push(`skipped fixes in ${plan.file}: the file changed after it was scanned`);
+      continue;
+    }
     const unique = new Map<string, { start: number; end: number; replacement: string }>();
     for (const edit of plan.edits) {
       const key = `${edit.start}:${edit.end}:${edit.replacement}`;

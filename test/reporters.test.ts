@@ -59,6 +59,34 @@ test('renderSarif emits a valid SARIF 2.1.0 skeleton', () => {
   assert.ok(parsed.runs[0]?.results[0]?.partialFingerprints.primaryLocationLineHash);
 });
 
+test('renderSarif includes metadata for cross-file duplicate rules', () => {
+  const duplicate: Finding = {
+    ...findings[0]!,
+    ruleId: 'py/duplicate-block',
+    severity: 'warning',
+    confidence: 'medium',
+  };
+  const parsed = JSON.parse(renderSarif([duplicate], '0.1.0')) as {
+    runs: Array<{
+      tool: {
+        driver: {
+          rules: Array<{
+            id: string;
+            name: string;
+            fullDescription: { text: string };
+            properties: { tags: string[] };
+          }>;
+        };
+      };
+    }>;
+  };
+  const rule = parsed.runs[0]?.tool.driver.rules[0];
+  assert.equal(rule?.id, 'py/duplicate-block');
+  assert.equal(rule?.name, 'Duplicated function body');
+  assert.match(rule?.fullDescription.text ?? '', /same normalized function/);
+  assert.ok(rule?.properties.tags.includes('duplication'));
+});
+
 test('renderSarif percent-encodes artifact URIs', () => {
   const [finding] = findings;
   assert.ok(finding);
