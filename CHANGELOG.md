@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-11-23
+
+### Fixed
+- The encoding guard now checks every 4+ CJK run: any run containing a known mojibake marker rejects the document, even when an earlier run is clean.
+- Repeated `路` runs (including whitespace-separated runs) in non-Chinese documents are rejected as `·` mojibake; legitimate `道路工程`, `前方 路 口` and `中文文档 路路 说明` still pass.
+
+### Changed
+- 343 tests.
+- Benchmark high count remains **43 / 97.7% (42/43) / 30/30 seeded**.
+
 ## [0.2.6] - 2026-11-23
 
 ### Fixed

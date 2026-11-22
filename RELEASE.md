@@ -56,7 +56,7 @@ npm config delete //registry.npmjs.org/:_authToken
 ### 2b. CI publish (after adding NPM_TOKEN)
 
 ```bash
-git tag -a v0.2.6 -m "slopgate 0.2.6"
+git tag -a v0.2.7 -m "slopgate 0.2.7"
 git push origin main --follow-tags
 ```
 
@@ -65,7 +65,7 @@ Only do this once the repository secret exists. Without it the workflow still va
 ## 3. Post-flight
 
 - [ ] `npm view @voidh4x0r/slopgate version` shows the new version
-- [ ] `npx @voidh4x0r/slopgate@0.2.6 --version` works on a clean machine
+- [ ] `npx @voidh4x0r/slopgate@0.2.7 --version` works on a clean machine
 - [ ] GitHub release notes read correctly (if the tag path was used)
 - [ ] The provenance badge shows on the npm page (CI publish only)
 
