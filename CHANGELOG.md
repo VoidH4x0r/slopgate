@@ -9,6 +9,17 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.12] - 2026-11-22
+
+### Fixed
+- Baseline fingerprints are normalized to repository-relative paths, so one baseline written with `slopgate .`, `slopgate src` or `slopgate src/a.py` suppresses the same findings from any target.
+- `slopgate init <subdirectory>` writes `.slopgate.json` and `.github/workflows/slopgate.yml` at the repository root, matching scan/config semantics; non-git targets keep the requested directory.
+
+### Changed
+- **Migration:** baselines written by 0.1.11 while scanning a subdirectory contain target-relative keys and are no longer matched; recreate them from the root or with the current version. Baselines written from the repository root remain compatible.
+- 261 tests, including mixed root/directory/file baseline reads and subdirectory `init`.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+
 ## [0.1.11] - 2026-11-22
 
 ### Fixed

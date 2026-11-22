@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.1.11  ·  4 files  ·  39ms
+slopgate 0.1.12  ·  4 files  ·  39ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -151,11 +151,11 @@ slopgate [path] [options]
 
 For example, `{"include": ["src/**"]}` scans only files under `src/`; it does **not** keep the default Python/TS/JS coverage. Add the patterns you need, or use the CLI flag to append one pattern to the defaults.
 
-The default `.slopgate-baseline.json` also lives at the repository root. `--baseline` and `--write-baseline` paths resolve there, so scanning `src` and then the repository root share one baseline.
+The default `.slopgate-baseline.json` also lives at the repository root. `--baseline` and `--write-baseline` paths resolve there, so scanning `src` and then the repository root share one baseline. Baseline fingerprints use the same repository-relative paths as reports, so one root baseline works for `slopgate .`, `slopgate src`, and `slopgate path/to/file.py`.
 
 Reported paths (including SARIF and GitHub annotations) are relative to the nearest git repository root. If the target is outside a git repository, paths stay relative to the scan target.
 
-`slopgate init` writes a minimal config plus a GitHub Actions workflow.
+`slopgate init` writes a minimal config plus a GitHub Actions workflow at the repository root (falling back to the target directory outside git).
 
 ### Adopting it on an existing repository
 
@@ -210,7 +210,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.1.11 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.12 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -218,7 +218,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.1.11 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.12 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -303,7 +303,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 259 tests; the tests themselves make no network or child-process calls
+npm test            # 261 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

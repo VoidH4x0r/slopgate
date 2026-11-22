@@ -351,8 +351,9 @@ jobs:
 `;
 
 async function runInit(options: Options, io: CliIo, version: string): Promise<number> {
-  const root = path.resolve(options.paths[0] ?? '.');
-  await mkdir(root, { recursive: true });
+  const requested = path.resolve(options.paths[0] ?? '.');
+  await mkdir(requested, { recursive: true });
+  const root = (await findGitRoot(requested)) ?? requested;
   const configPath = path.join(root, '.slopgate.json');
   const workflowPath = path.join(root, '.github', 'workflows', 'slopgate.yml');
 
@@ -445,13 +446,29 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     );
   }
 
+  const scanBase = targetInfo.isFile() ? path.dirname(target) : target;
+  const outputRoot = await findGitRoot(scanBase);
+  let outputPrefix = '';
+  if (outputRoot) {
+    const relative = path.relative(outputRoot, scanBase);
+    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+      outputPrefix = relative.replace(/\\/g, '/');
+    }
+  }
+  const toRepoRelative = (items: readonly Finding[]): Finding[] =>
+    outputPrefix
+      ? items.map((finding) => ({ ...finding, file: `${outputPrefix}/${finding.file}` }))
+      : [...items];
+
   const baselinePath = path.resolve(configRoot, options.baseline ?? DEFAULT_BASELINE);
   const explicitWrite = options.writeBaseline;
   if (explicitWrite) {
     const writeTarget = path.resolve(configRoot, explicitWrite);
-    // Record the current findings, not the diff-filtered subset.
-    await writeBaseline(writeTarget, result.findings);
-    writeOut(io, `wrote ${result.findings.length} findings to ${path.relative(process.cwd(), writeTarget)}`);
+    // Record the current findings, not the diff-filtered subset, with the same
+    // repo-relative keys used when reading the baseline.
+    const toRecord = toRepoRelative(result.findings);
+    await writeBaseline(writeTarget, toRecord);
+    writeOut(io, `wrote ${toRecord.length} findings to ${path.relative(process.cwd(), writeTarget)}`);
     return 0;
   }
 
@@ -471,7 +488,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   if (baseline === undefined && options.baseline !== undefined) {
     throw new Error(`baseline file not found: ${baselinePath}`);
   }
-  const { fresh, known } = partitionByBaseline(findings, baseline);
+  // Baseline fingerprints and report paths both use repo-relative paths, so
+  // one root baseline works for every scan target.
+  const normalizedFindings = toRepoRelative(findings);
+  const { fresh, known } = partitionByBaseline(normalizedFindings, baseline);
   // `--fail-on` below `--confidence` must lower the display threshold too,
   // otherwise the setting can never fail CI (the findings are filtered out).
   const displayConfidence: Confidence =
@@ -481,24 +501,8 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const visible = fresh.filter((finding) => meetsConfidence(finding.confidence, displayConfidence));
   const hidden = fresh.length - visible.length;
 
-  // Reporters (SARIF, GitHub workflow commands) resolve paths from the repo
-  // root, not from the scan target. Prefix output findings only: baseline
-  // fingerprints and diff filtering keep using the raw target-relative paths.
-  const scanBase = targetInfo.isFile() ? path.dirname(target) : target;
-  const outputRoot = await findGitRoot(scanBase);
-  let outputPrefix = '';
-  if (outputRoot) {
-    const relative = path.relative(outputRoot, scanBase);
-    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-      outputPrefix = relative.replace(/\\/g, '/');
-    }
-  }
-  const outputVisible = outputPrefix
-    ? visible.map((finding) => ({ ...finding, file: `${outputPrefix}/${finding.file}` }))
-    : visible;
-
   const run: ScanRun = {
-    visible: outputVisible,
+    visible,
     stats: result.stats,
     suppressed: result.suppressedCount,
     baselined: known.length,
@@ -512,7 +516,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     writeOut(
       io,
       renderJson({
-        findings: outputVisible,
+        findings: visible,
         stats: run.stats,
         version,
         suppressedByComment: run.suppressed,
@@ -521,14 +525,14 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
       }),
     );
   } else if (options.format === 'sarif') {
-    writeOut(io, renderSarif(outputVisible, version));
+    writeOut(io, renderSarif(visible, version));
   } else if (options.format === 'github') {
-    writeOut(io, renderGithub(outputVisible, run.stats));
+    writeOut(io, renderGithub(visible, run.stats));
   } else {
     writeOut(
       io,
       renderPretty({
-        findings: outputVisible,
+        findings: visible,
         stats: run.stats,
         suppressedByComment: run.suppressed,
         baselined: run.baselined,

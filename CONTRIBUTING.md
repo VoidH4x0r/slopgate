@@ -8,7 +8,7 @@ Thanks for taking the time. This project has one rule above all others: **a find
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test           # 259 tests, ~0.5s, no network, no subprocesses inside the tests
+npm test           # 261 tests, ~0.5s, no network, no subprocesses inside the tests
 npm run typecheck
 npm run verify     # typecheck + links + tests + build + self-scan + package check
 npm run build      # emits dist/ used by the published package

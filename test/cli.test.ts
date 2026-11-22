@@ -207,11 +207,27 @@ test('cli: --fail-on medium lowers the display threshold and fails the run', asy
 test('cli: init pins the current version instead of writing @latest', async () => {
   const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-init-'));
   try {
+    await mkdir(path.join(dir, '.git'));
     const result = await run(['init', dir]);
     assert.equal(result.status, 0, result.stderr);
     const workflow = await readFile(path.join(dir, '.github', 'workflows', 'slopgate.yml'), 'utf8');
     assert.match(workflow, /@\d+\.\d+\.\d+ \. --fail-on high/);
     assert.ok(!workflow.includes('@latest'), 'the generated workflow must be reproducible');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: init from a subdirectory writes at the repository root', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-init-root-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'));
+    const result = await run(['init', path.join(dir, 'src')]);
+    assert.equal(result.status, 0, result.stderr);
+    await readFile(path.join(dir, '.slopgate.json'), 'utf8');
+    await readFile(path.join(dir, '.github', 'workflows', 'slopgate.yml'), 'utf8');
+    await assert.rejects(readFile(path.join(dir, 'src', '.slopgate.json'), 'utf8'));
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -320,6 +336,40 @@ test('cli: the default baseline is written and read at the repository root', asy
     };
     assert.deepEqual(payload.findings, []);
     assert.equal(payload.summary.baselined, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cli: baseline keys work across root, directory and file targets', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-mixed-baseline-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'));
+    await writeFile(path.join(dir, 'src', 'a.py'), 'def stubbed():\n    pass\n');
+
+    const rootWrite = await run([dir, '--write-baseline']);
+    assert.equal(rootWrite.status, 0, rootWrite.stderr);
+    const fileRead = await run([path.join(dir, 'src', 'a.py'), '--format', 'json']);
+    assert.equal(fileRead.status, 0, fileRead.stderr);
+    const filePayload = JSON.parse(fileRead.stdout) as {
+      findings: unknown[];
+      summary: { baselined: number };
+    };
+    assert.deepEqual(filePayload.findings, []);
+    assert.equal(filePayload.summary.baselined, 1);
+
+    await rm(path.join(dir, '.slopgate-baseline.json'), { force: true });
+    const dirWrite = await run([path.join(dir, 'src'), '--write-baseline']);
+    assert.equal(dirWrite.status, 0, dirWrite.stderr);
+    const rootRead = await run([dir, '--format', 'json']);
+    assert.equal(rootRead.status, 0, rootRead.stderr);
+    const rootPayload = JSON.parse(rootRead.stdout) as {
+      findings: unknown[];
+      summary: { baselined: number };
+    };
+    assert.deepEqual(rootPayload.findings, []);
+    assert.equal(rootPayload.summary.baselined, 1);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
