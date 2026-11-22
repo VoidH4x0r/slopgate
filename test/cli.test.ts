@@ -138,6 +138,12 @@ test('cli: a config value from Object.prototype is rejected', async () => {
   assert.match(result.stderr, /confidence/);
 });
 
+test('cli: an unknown rule id in config exits 2 even with --quiet', async () => {
+  const result = await run(['fixtures/regressions/bad-rule-config', '--quiet', '--no-color']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /unknown rule in config: py\/does-not-exist/);
+});
+
 test('cli: --fail-on medium lowers the display threshold and fails the run', async () => {
   const result = await run(['fixtures/regressions/failon', '--fail-on', 'medium', '--format', 'json']);
   assert.equal(result.status, 1, result.stderr);

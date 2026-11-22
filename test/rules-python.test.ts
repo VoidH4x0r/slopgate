@@ -282,6 +282,32 @@ test('py/noop-test delegates to a local assert helper only on the last statement
   assert.equal(drafts.filter((draft) => draft.confidence === 'high').length, 2);
 });
 
+test('py/noop-test caches helper checks and ignores unknown calls', async () => {
+  const source = [
+    'def run_suite(cases):',
+    '    assert cases',
+    '',
+    'def compute():',
+    '    return 1',
+    '',
+    'def test_a():',
+    '    run_suite([])',
+    '',
+    'def test_b():',
+    '    run_suite([])',
+    '',
+    'def test_c():',
+    '    compute()',
+    '',
+    'def test_imported():',
+    '    helper()',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/noop-test', source, 'python', 'test_app.py');
+  assert.equal(drafts.length, 4);
+  assert.equal(drafts.filter((draft) => draft.confidence === 'medium').length, 2);
+  assert.equal(drafts.filter((draft) => draft.confidence === 'high').length, 2);
+});
+
 test('py/phantom-import ignores imports under sys.version_info guards', async () => {
   const source = [
     'import sys',

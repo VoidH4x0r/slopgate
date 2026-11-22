@@ -9,6 +9,17 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.8] - 2026-11-22
+
+### Fixed
+- `py/noop-test` now looks up only the local helper called by the test’s last statement. The name→node map is a light single walk; `hasAssertion` runs once per called helper and is cached. Test-heavy files no longer scan every function body, and the full CPython benchmark returns to ≈10.98 s (from 11.72 s).
+- Unknown rule ids in `.slopgate.json` are now configuration errors (exit 2, MCP tool error), matching `--rule py/nope` and the README exit-code table. `--quiet` no longer hides the message.
+
+### Changed
+- 252 tests, including the `bad-rule-config` CLI case, the engine rejection test, and helper-lookup coverage.
+- Benchmark findings unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+- Performance-guard recommendation for the large CPython corpus tightened from 10% to 5%.
+
 ## [0.1.7] - 2026-11-22
 
 ### Fixed

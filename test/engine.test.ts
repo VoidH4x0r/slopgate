@@ -83,9 +83,11 @@ test('scanProject applies suppression comments', async () => {
   assert.equal(result.suppressedCount, 1);
 });
 
-test('scanProject warns about unknown rule ids in the config', async () => {
-  const result = await scanFixture('demo', { rules: { 'py/does-not-exist': 'off' } });
-  assert.ok(result.warnings.some((warning) => warning.includes('py/does-not-exist')));
+test('scanProject rejects unknown rule ids in the config', async () => {
+  await assert.rejects(
+    () => scanFixture('demo', { rules: { 'py/does-not-exist': 'off' } }),
+    /py\/does-not-exist/,
+  );
 });
 
 test('scanProject accepts a single file and still resolves project manifests', async () => {

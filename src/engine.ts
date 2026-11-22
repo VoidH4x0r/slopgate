@@ -73,7 +73,11 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   const { config } = options;
 
   for (const ruleId of Object.keys(config.rules)) {
-    if (!RULE_BY_ID.has(ruleId)) warnings.push(`unknown rule in config: ${ruleId}`);
+    if (!RULE_BY_ID.has(ruleId)) {
+      throw new Error(
+        `unknown rule in config: ${ruleId} (run \`slopgate rules\` to list the ${ALL_RULES.length} rule ids)`,
+      );
+    }
   }
 
   const deps = await loadProjectDeps(root);

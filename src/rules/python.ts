@@ -137,24 +137,20 @@ function bodyCallsSelf(body: AstNode): boolean {
   return found;
 }
 
-/** Module-local helpers whose bodies contain an assertion. */
-function localAssertionHelpers(root: AstNode): Map<string, AstNode> {
-  const helpers = new Map<string, AstNode>();
+/** Lightweight name → node index; assertion checks happen on demand. */
+function localFunctionDefinitions(root: AstNode): Map<string, AstNode> {
+  const definitions = new Map<string, AstNode>();
   for (const fn of descendantsOfType(root, ['function_definition'])) {
     if (fn.parent?.type === 'class_definition') continue;
     const name = fn.childForFieldName('name')?.text;
     if (!name || testFunctionName(fn)) continue;
-    const body = fn.childForFieldName('body');
-    if (body && hasAssertion(body)) helpers.set(name, fn);
+    definitions.set(name, fn);
   }
-  return helpers;
+  return definitions;
 }
 
-/** The last statement calling a local helper can carry the assertions. */
-function delegatesToLocalHelper(
-  statements: readonly AstNode[],
-  helpers: ReadonlyMap<string, AstNode>,
-): string | undefined {
+/** Name of the bare local call in the test's last statement, if any. */
+function lastLocalCallName(statements: readonly AstNode[]): string | undefined {
   const last = statements[statements.length - 1];
   if (!last) return undefined;
   const call =
@@ -163,7 +159,30 @@ function delegatesToLocalHelper(
       : undefined;
   if (call?.type !== 'call') return undefined;
   const name = collapseWhitespace(call.childForFieldName('function')?.text ?? '');
-  return /^[A-Za-z_]\w*$/.test(name) && helpers.has(name) ? name : undefined;
+  return /^[A-Za-z_]\w*$/.test(name) ? name : undefined;
+}
+
+/**
+ * Only check the helper the last statement actually calls. The definition map
+ * is built on first hit and each helper's assertion result is cached, so a
+ * test-heavy file does not run `hasAssertion` over every function.
+ */
+function delegatesToLocalHelper(
+  statements: readonly AstNode[],
+  definitions: () => ReadonlyMap<string, AstNode>,
+  assertionCache: Map<string, boolean>,
+): string | undefined {
+  const name = lastLocalCallName(statements);
+  if (!name) return undefined;
+  const helper = definitions().get(name);
+  if (!helper) return undefined;
+  let asserts = assertionCache.get(name);
+  if (asserts === undefined) {
+    const body = helper.childForFieldName('body');
+    asserts = body !== null && hasAssertion(body);
+    assertionCache.set(name, asserts);
+  }
+  return asserts ? name : undefined;
 }
 
 function placeholderForm(block: AstNode): string | undefined {
@@ -322,13 +341,14 @@ const noopTest: Rule = {
     if (ctx.language !== 'python') return [];
     if (isStubFile(ctx.file)) return [];
     const drafts: RuleDraft[] = [];
-    // Building the helper index costs a full-tree walk plus an assertion walk
-    // per function. Only do it when a test actually lacks an assertion.
-    let helperIndex: Map<string, AstNode> | undefined;
-    const helpers = (): Map<string, AstNode> => {
-      helperIndex ??= localAssertionHelpers(ctx.root);
-      return helperIndex;
+    // A test-dense file may have thousands of assertion-free tests. Build the
+    // name index once, and only assert-check the helper actually called.
+    let definitionIndex: Map<string, AstNode> | undefined;
+    const definitions = (): Map<string, AstNode> => {
+      definitionIndex ??= localFunctionDefinitions(ctx.root);
+      return definitionIndex;
     };
+    const helperAssertions = new Map<string, boolean>();
 
     for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
       const name = testFunctionName(fn);
@@ -363,7 +383,7 @@ const noopTest: Rule = {
       }
       if (!hasAssertion(body)) {
         const delegatesToSelf = bodyCallsSelf(body);
-        const delegatedTo = delegatesToLocalHelper(statements, helpers());
+        const delegatedTo = delegatesToLocalHelper(statements, definitions, helperAssertions);
         const parameters = fn.childForFieldName('parameters');
         const parameterCount = parameters
           ? parameters.namedChildren.filter((child) => child.type !== 'comment').length
