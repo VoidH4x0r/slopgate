@@ -28,6 +28,13 @@ jobs:
           gh label create precision --color 0e8a16 --description "Precision / false-positive benchmark work" 2>/dev/null || true
           gh label edit precision --color 0e8a16 --description "Precision / false-positive benchmark work"
 
+      - name: Show token permissions and tag rules
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}" --jq '{permissions: .permissions}' || true
+          gh api "repos/${GITHUB_REPOSITORY}/rulesets?includes_parents=true" --jq '.[] | {name: .name, target: .target, enforcement: .enforcement}' || true
+
       - name: Create historical tags and releases
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
@@ -39,7 +46,13 @@ jobs:
               echo "release already exists: $tag"
               continue
             fi
-            gh release create "$tag" --target "$sha" --title "slopgate ${tag#v}" --generate-notes
+            if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" >/dev/null 2>&1; then
+              echo "tag already exists: $tag"
+            else
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
+                -f ref="refs/tags/${tag}" -f sha="$sha"
+            fi
+            gh release create "$tag" --title "slopgate ${tag#v}" --generate-notes
           done <<'EOF'
           v0.1.0 cbc5cdf88f0470611a9a7c316cee56779cfa1128
           v0.1.1 4d905d2de06b66400a9a717a471cdbf1b1bcaec9

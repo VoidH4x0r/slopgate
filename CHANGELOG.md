@@ -9,7 +9,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - `release.yml` is idempotent: it checks npm before publishing, skips an existing version, and creates a missing GitHub release independently of `NPM_TOKEN`.
 - Added a one-off `Backfill labels and releases` workflow for the two issue labels and the historical releases.
 - Published historical `0.1.7` and `0.1.12` to npm from their actual commits under the `legacy` dist-tag; `latest` remains `0.1.18`.
-- Documented the tag-only release path, historical provenance limits, the skipped `0.0.0-stage` release, and the 403 permissions fix.
+- Documented the tag-only release path, historical provenance limits, the skipped `0.0.0-stage` release, and the 403 permissions/tag-ruleset fixes.
 
 ### Planned
 - Duplicate-block detection across files.

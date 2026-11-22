@@ -76,7 +76,10 @@ Use the actual version number. The workflow file at that tag commit must already
 If the workflow fails with `HTTP 403: Resource not accessible by integration`:
 
 1. Open **Settings → Actions → General → Workflow permissions**, select **Read and write permissions**, and save. Re-run the failed workflow.
-2. If organization policy blocks that setting, create a `RELEASE_TOKEN` secret (fine-grained PAT with **Contents: read/write** and **Issues: read/write** for this repository). The backfill and release workflows prefer `RELEASE_TOKEN` and fall back to `github.token`.
+2. Check **Settings → Rules → Rulesets** for a tag ruleset matching `v*` that blocks GitHub Actions from creating tags. Grant the GitHub Actions integration bypass, or temporarily disable that rule for the backfill.
+3. If organization policy blocks write permissions, create a `RELEASE_TOKEN` secret (fine-grained PAT with **Contents: read/write** and **Issues: read/write** for this repository). The backfill and release workflows prefer `RELEASE_TOKEN` and fall back to `github.token`.
+
+The backfill creates each tag through the Git References API first, then creates the release from the existing tag. This surfaces tag-rule failures at the `/git/refs` endpoint instead of the less specific release endpoint.
 
 What happens:
 
