@@ -54,3 +54,23 @@ test('a typo in a rule-specific directive does not suppress everything', () => {
   );
   assert.equal(isSuppressed(finding(2, 'py/stub-body'), suppressions), false);
 });
+
+test('ignore-next-line works inside a block comment and across decorators', () => {
+  const block = [
+    '/*',
+    ' * slopgate-ignore-next-line ts/stub-function',
+    ' */',
+    "export function stub() { throw new Error('not implemented'); }",
+  ].join('\n');
+  const blockSuppressions = readSuppressions(block, new Set([1, 2, 3]));
+  assert.equal(isSuppressed(finding(4, 'ts/stub-function'), blockSuppressions), true);
+
+  const decorated = [
+    '# slopgate-ignore-next-line py/noop-test',
+    '@pytest.mark.skip',
+    'def test_decorated():',
+    '    create_user()',
+  ].join('\n');
+  const decoratedSuppressions = readSuppressions(decorated, new Set([1]));
+  assert.equal(isSuppressed(finding(3, 'py/noop-test'), decoratedSuppressions), true);
+});

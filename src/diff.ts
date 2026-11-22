@@ -199,10 +199,13 @@ export function isInDiff(finding: Finding, set: DiffSet): boolean {
  * prefix before comparing against git's repository-root paths.
  */
 export function isInDiffWithPrefix(finding: Finding, set: DiffSet, prefix: string): boolean {
-  if (isInDiff(finding, set)) return true;
   const clean = prefix.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, '');
-  if (clean.length === 0 || clean.startsWith('..')) return false;
-  return isInDiff({ ...finding, file: `${clean}/${finding.file}` }, set);
+  if (clean.length === 0 || clean.startsWith('..')) return isInDiff(finding, set);
+  const prefixed = { ...finding, file: `${clean}/${finding.file}` };
+  if (isInDiff(prefixed, set)) return true;
+  // A caller that already passes repo-relative findings must not be
+  // double-prefixed; only trust the raw path when it already has this prefix.
+  return finding.file.startsWith(`${clean}/`) && isInDiff(finding, set);
 }
 
 /** Repository root for a path inside a git working tree. */

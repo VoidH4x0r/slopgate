@@ -3,7 +3,7 @@ import { mkdir, readFile, realpath, stat, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { loadBaseline, partitionByBaseline, writeBaseline } from './baseline.ts';
+import { loadBaseline, mergeBaseline, partitionByBaseline } from './baseline.ts';
 import {
   confidenceRank,
   findConfigRoot,
@@ -71,7 +71,7 @@ Options:
   --rule <id>                    only run this rule (repeatable)
   --no-color                     disable ANSI colors
   --quiet                        only print the summary
-  --verbose                      print warnings and per-file details
+  --verbose                      print config, include, baseline and diff details
   --force                        overwrite files in \`init\`
   --strict                       \`init\`: medium confidence + fail-on medium
   -h, --help                     show this help
@@ -219,22 +219,33 @@ function parseArgs(argv: readonly string[]): { options: Options; error?: string 
         options.failOn = value as FailOn;
         break;
       case 'baseline':
+        if (value === '') return { options, error: 'option --baseline needs a non-empty path' };
         options.baseline = value ?? DEFAULT_BASELINE;
         break;
       case 'write-baseline':
+        if (value === '') return { options, error: 'option --write-baseline needs a non-empty path' };
         options.writeBaseline = value ?? DEFAULT_BASELINE;
         break;
       case 'diff':
-        options.diff = value ?? 'HEAD';
+        options.diff = value && value.length > 0 ? value : 'HEAD';
         break;
       case 'include':
-        if (value) options.include.push(value);
+        if (value === undefined || value === '') {
+          return { options, error: 'option --include needs a value' };
+        }
+        options.include.push(value);
         break;
       case 'exclude':
-        if (value) options.exclude.push(value);
+        if (value === undefined || value === '') {
+          return { options, error: 'option --exclude needs a value' };
+        }
+        options.exclude.push(value);
         break;
       case 'rule':
-        if (value) options.rules.push(value);
+        if (value === undefined || value === '') {
+          return { options, error: 'option --rule needs a value' };
+        }
+        options.rules.push(value);
         break;
       default:
         break;
@@ -484,12 +495,17 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const explicitWrite = options.writeBaseline;
   if (explicitWrite) {
     const writeTarget = path.resolve(baselineRoot, explicitWrite);
-    // Findings are already report-root-relative, the same keys the baseline
-    // uses when it is read back.
-    await writeBaseline(writeTarget, result.findings);
+    // Only replace entries covered by this scan; a subdirectory or --rule run
+    // must not discard the rest of the root baseline.
+    const baseline = await mergeBaseline(
+      writeTarget,
+      result.findings,
+      result.files,
+      options.rules.length > 0 ? new Set(options.rules) : undefined,
+    );
     writeOut(
       io,
-      `wrote ${result.findings.length} findings to ${path.relative(process.cwd(), writeTarget)}`,
+      `wrote ${result.findings.length} findings to ${path.relative(process.cwd(), writeTarget)} (baseline now ${baseline.entries.length})`,
     );
     return 0;
   }
@@ -579,9 +595,10 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
 }
 
 export async function main(argv: readonly string[], io: CliIo = defaultIo()): Promise<number> {
+  const version = await readVersion();
   const { options, error } = parseArgs(argv);
   if (error) {
-    io.err(`slopgate: ${error}\n\n${helpText()}`);
+    io.err(`slopgate: ${error}\n\n${helpText(version)}`);
     return 2;
   }
   if (options.strict && options.command !== 'init' && options.command !== 'help' && options.command !== 'version') {
@@ -591,21 +608,21 @@ export async function main(argv: readonly string[], io: CliIo = defaultIo()): Pr
   try {
     switch (options.command) {
       case 'help':
-        writeOut(io, helpText(await readVersion()));
+        writeOut(io, helpText(version));
         return 0;
       case 'version':
-        writeOut(io, await readVersion());
+        writeOut(io, version);
         return 0;
       case 'rules':
         return await runRules(options, io);
       case 'init':
-        return await runInit(options, io, await readVersion());
+        return await runInit(options, io, version);
       case 'mcp':
         return await runMcp(options);
       case 'scan':
         return await runScan(options, io);
       default:
-        io.err(`slopgate: unknown command\n\n${helpText()}`);
+        io.err(`slopgate: unknown command\n\n${helpText(version)}`);
         return 2;
     }
   } catch (caught) {

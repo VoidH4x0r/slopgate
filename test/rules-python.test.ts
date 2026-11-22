@@ -464,6 +464,16 @@ test('py/stub-body flags placeholder bodies', async () => {
   }
 });
 
+test('py/stub-body treats a decorated top-level function as module-level', async () => {
+  const drafts = await runRule(
+    'py/stub-body',
+    ['@app.get("/users")', 'def list_users():', '    pass'].join('\n'),
+    'python',
+  );
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
 test('py/stub-body ignores abstract, protocol, dunder and real bodies', async () => {
   const abstract = [
     'from abc import abstractmethod',

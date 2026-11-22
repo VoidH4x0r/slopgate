@@ -313,6 +313,7 @@ const TEST_MODIFIERS = new Set([
   'only',
   'skip',
   'todo',
+  'fixme',
   'concurrent',
   'sequential',
   'each',
@@ -329,14 +330,37 @@ const TEST_MODIFIERS = new Set([
  * The root segment alone is not enough: `test.valid.forEach(...)` inside
  * ESLint's rule tester is a data loop, not a test.
  */
+function testModifiers(fn: AstNode): string[] {
+  let node = fn;
+  if (node.type === 'call_expression') node = node.childForFieldName('function') ?? node;
+  const text = collapseWhitespace(node.text);
+  return [...text.matchAll(/\.([A-Za-z_$][\w$]*)/g)].map((match) => match[1] ?? '');
+}
+
 function isTestCall(fn: AstNode): boolean {
   let node = fn;
   if (node.type === 'call_expression') node = node.childForFieldName('function') ?? node;
   const text = collapseWhitespace(node.text);
   const root = text.split(/[.(]/)[0] ?? '';
   if (root !== 'test' && root !== 'it') return false;
-  const modifiers = [...text.matchAll(/\.([A-Za-z_$][\w$]*)/g)].map((match) => match[1] ?? '');
-  return modifiers.every((name) => TEST_MODIFIERS.has(name));
+  return testModifiers(fn).every((name) => TEST_MODIFIERS.has(name));
+}
+
+/** Cypress/Playwright-style commands fail the test implicitly. */
+function hasImplicitFrameworkAction(body: AstNode): boolean {
+  let found = false;
+  walk(body, (node) => {
+    if (found) return false;
+    if (node.type === 'call_expression') {
+      const fn = collapseWhitespace(node.childForFieldName('function')?.text ?? '');
+      if (/^(?:cy|page|browser)\./.test(fn)) {
+        found = true;
+        return false;
+      }
+    }
+    return true;
+  });
+  return found;
 }
 
 const noopTest: Rule = {
@@ -357,6 +381,7 @@ const noopTest: Rule = {
     for (const call of descendantsOfType(ctx.root, ['call_expression'])) {
       const fn = call.childForFieldName('function');
       if (!fn || !isTestCall(fn)) continue;
+      if (testModifiers(fn).some((name) => ['skip', 'todo', 'fixme'].includes(name))) continue;
 
       const args = call.childForFieldName('arguments');
       if (!args) continue;
@@ -369,20 +394,27 @@ const noopTest: Rule = {
 
       const label = args.namedChildren[0]?.type === 'string' ? truncate(args.namedChildren[0].text, 60) : undefined;
       const delegated = delegatedHelper(body, callback);
+      const implicit = hasImplicitFrameworkAction(body);
 
       if (body.type !== 'statement_block') {
         if (!hasAssertion(body, aliases)) {
           drafts.push({
-            message: delegated ? 'test delegates its assertions to a helper' : 'test makes no assertions',
+            message: delegated
+              ? 'test delegates its assertions to a helper'
+              : implicit
+                ? 'test has no explicit assertions'
+                : 'test makes no assertions',
             start: startOf(call),
             end: endOf(body),
             snippet: snippetOf(ctx, call),
-            confidence: delegated ? 'medium' : 'high',
+            confidence: delegated || implicit ? 'medium' : 'high',
             evidence: [
               `test: ${label ?? '(anonymous)'}`,
               ...(delegated
                 ? [`first parameter is passed to \`${delegated}\`; the helper may assert`]
-                : ['the test body only calls code without checking a result']),
+                : implicit
+                  ? ['a Cypress/Playwright command can fail the test implicitly']
+                  : ['the test body only calls code without checking a result']),
             ],
             help: 'Every test should be able to fail. Add an assertion that depends on the behaviour under test.',
           });
@@ -405,17 +437,23 @@ const noopTest: Rule = {
       }
       if (!hasAssertion(body, aliases)) {
         drafts.push({
-          message: delegated ? 'test delegates its assertions to a helper' : 'test makes no assertions',
+          message: delegated
+            ? 'test delegates its assertions to a helper'
+            : implicit
+              ? 'test has no explicit assertions'
+              : 'test makes no assertions',
           start: startOf(call),
           end: endOf(body),
           snippet: snippetOf(ctx, call),
-          confidence: delegated ? 'medium' : 'high',
+          confidence: delegated || implicit ? 'medium' : 'high',
           evidence: [
             `test: ${label ?? '(anonymous)'}`,
             `statements: ${statements.length}`,
             ...(delegated
               ? [`first parameter is passed to \`${delegated}\`; the helper may assert`]
-              : ['no expect() / assert() found']),
+              : implicit
+                ? ['a Cypress/Playwright command can fail the test implicitly']
+                : ['no expect() / assert() found']),
           ],
           help: 'Every test should be able to fail. Add an assertion that depends on the behaviour under test.',
         });
@@ -424,6 +462,40 @@ const noopTest: Rule = {
     return drafts;
   },
 };
+
+function stableTsOperand(node: AstNode | undefined): boolean {
+  if (!node) return false;
+  if (
+    [
+      'identifier',
+      'number',
+      'string',
+      'true',
+      'false',
+      'null',
+      'undefined',
+      'this',
+    ].includes(node.type)
+  ) {
+    return true;
+  }
+  if (node.type === 'parenthesized_expression') {
+    return stableTsOperand(node.namedChildren[0]);
+  }
+  if (node.type === 'member_expression') {
+    return stableTsOperand(node.childForFieldName('object') ?? node.namedChildren[0]);
+  }
+  if (node.type === 'subscript_expression') {
+    return (
+      stableTsOperand(node.childForFieldName('object') ?? node.namedChildren[0]) &&
+      stableTsOperand(node.childForFieldName('index') ?? node.namedChildren[1])
+    );
+  }
+  if (node.type === 'binary_expression' || node.type === 'unary_expression') {
+    return node.namedChildren.every((child) => stableTsOperand(child));
+  }
+  return false;
+}
 
 const tautologicalAssert: Rule = {
   meta: {
@@ -446,17 +518,21 @@ const tautologicalAssert: Rule = {
       if (!property) continue;
       const object = fn.childForFieldName('object');
       const args = call.childForFieldName('arguments');
-      const actual = args?.namedChildren[0]?.text;
+      const actualNode = args?.namedChildren[0];
+      const actual = actualNode?.text;
       if (actual === undefined) continue;
 
-      let expected: string | undefined;
+      let expectedNode: AstNode | undefined;
       if (object?.type === 'call_expression' && collapseWhitespace(object.childForFieldName('function')?.text ?? '') === 'expect') {
-        expected = object.childForFieldName('arguments')?.namedChildren[0]?.text;
+        expectedNode = object.childForFieldName('arguments')?.namedChildren[0];
       }
+      const expected = expectedNode?.text;
 
       const isSelf =
         expected !== undefined &&
         expected === actual &&
+        stableTsOperand(expectedNode) &&
+        stableTsOperand(actualNode) &&
         ['toBe', 'toEqual', 'toStrictEqual'].includes(property);
       const isTruthyTrue = property === 'toBeTruthy' && expected === 'true';
 
@@ -478,7 +554,9 @@ function stubForm(body: AstNode): string | undefined {
   const statements = body.namedChildren.filter((child) => !isComment(child));
   if (statements.length === 0) return 'empty body';
   if (statements.length === 1 && statements[0]?.type === 'throw_statement') {
-    if (/not\s*implemented|notimplemented|todo/i.test(statements[0].text)) return 'throws "not implemented"';
+    if (/not[\s_-]*(?:yet[\s_-]*)?implemented|unimplemented|todo/i.test(statements[0].text)) {
+      return 'throws "not implemented"';
+    }
   }
   return undefined;
 }

@@ -551,7 +551,9 @@ const stubBody: Rule = {
       const form = placeholderForm(body);
       if (!form) continue;
 
-      const moduleLevel = fn.parent?.type === 'module';
+      const moduleLevel =
+        fn.parent?.type === 'module' ||
+        (fn.parent?.type === 'decorated_definition' && fn.parent.parent?.type === 'module');
       const documented = hasDocstring(fn);
       const publicName = !name.startsWith('_');
       let confidence: Confidence = 'medium';

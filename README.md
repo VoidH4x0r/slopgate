@@ -280,7 +280,7 @@ Every finding carries a **confidence** derived from evidence, not vibes:
 - **medium** — a fact plus a reason it might be intentional: an empty `catch` (idiomatic in JavaScript), an exception swallowed inside a cleanup function, a test method that may delegate its assertions to a helper, any finding in a file that did not parse cleanly.
 - **low** — reserved for heuristics we are not confident about yet.
 
-`--confidence medium` shows the middle tier; `--confidence low` shows everything the rules can see. `--verbose` prints the evidence behind each confidence level.
+`--confidence medium` shows the middle tier; `--confidence low` shows everything the rules can see. `--verbose` prints the resolved config, include count, baseline and diff-filter details; finding evidence is printed for every finding regardless of this flag.
 
 We would rather miss a finding than teach you to ignore the tool. That is also why rules skip test files where the scaffolding is intentional, and why a file with syntax errors can never produce a high-confidence finding.
 
@@ -321,7 +321,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 291 tests; the tests themselves make no network or child-process calls
+npm test            # 298 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

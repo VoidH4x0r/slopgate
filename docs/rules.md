@@ -51,7 +51,7 @@ except ImportError:
 
 ## py/noop-test
 
-**What it catches.** A function named `test_*` (or `testCamelCase`) whose body has no `assert`, no `pytest.raises`, no `self.assert*`, no mock verification, and no `expect`-style call.
+**What it catches.** A function named `test_*` (or `testCamelCase`) whose body has no `assert`, no `pytest.raises` / `pytest.warns` / `pytest.deprecated_call`, no `self.assert*`, no mock verification, and no `expect`-style call. A bare `warnings.warn()` is not an assertion and does not count.
 
 ```python
 def test_create_user():
@@ -93,7 +93,7 @@ def sync_accounts(self):
     pass                     # signature without implementation → finding
 ```
 
-**Confidence.** `high` only for a module-level, public, undocumented function whose body is `pass`/`...`. Everything else is `medium` (`raise NotImplementedError`, documented functions, methods, private helpers, `return None` → `low`), because interface placeholders and abstract hooks look identical to abandoned stubs. When auditing AI-generated code, most real stub findings are `medium`; use `--confidence medium` (see README “Auditing AI-written code”).
+**Confidence.** `high` only for a module-level, public, undocumented function whose body is `pass`/`...`; a top-level `@decorator` does not change that. Everything else is `medium` (`raise NotImplementedError`, documented functions, methods, private helpers, `return None` → `low`), because interface placeholders and abstract hooks look identical to abandoned stubs. When auditing AI-generated code, most real stub findings are `medium`; use `--confidence medium` (see README “Auditing AI-written code”).
 
 **Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op modules with an exact `dummy/`, `_dummy/`, `noop/` or `no-op/` path segment, a file stem starting with `dummy_`/`noop_`/`_dummy_`, or a prefixed `dummy_*`/`noop_*` directory whose module docstring says it is a shim; test files, and anything named `test_*` (handled by `py/noop-test`).
 

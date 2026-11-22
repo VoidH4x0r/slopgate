@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import type { Finding } from './types.ts';
 
 export interface BaselineEntry {
@@ -67,7 +67,7 @@ export async function loadBaseline(file: string): Promise<BaselineFile | undefin
   }
 }
 
-export async function writeBaseline(file: string, findings: readonly Finding[]): Promise<BaselineFile> {
+function entriesFromFindings(findings: readonly Finding[]): BaselineEntry[] {
   const groups = new Map<string, BaselineEntry>();
   for (const finding of findings) {
     const fingerprint = findingFingerprint(finding);
@@ -83,14 +83,54 @@ export async function writeBaseline(file: string, findings: readonly Finding[]):
       count: 1,
     });
   }
+  return [...groups.values()];
+}
 
+/** Write a baseline atomically so a failure cannot truncate the old file. */
+async function writeBaselineEntries(
+  file: string,
+  entries: readonly BaselineEntry[],
+): Promise<BaselineFile> {
   const baseline: BaselineFile = {
     version: 1,
     createdAt: new Date().toISOString(),
-    entries: [...groups.values()],
+    entries: [...entries],
   };
-  await writeFile(file, JSON.stringify(baseline, null, 2) + '\n', 'utf8');
+  const temp = `${file}.${process.pid}.${Date.now()}.tmp`;
+  try {
+    await writeFile(temp, JSON.stringify(baseline, null, 2) + '\n', 'utf8');
+    await rename(temp, file);
+  } catch (error) {
+    await unlink(temp).catch(() => undefined);
+    throw error;
+  }
   return baseline;
+}
+
+export async function writeBaseline(file: string, findings: readonly Finding[]): Promise<BaselineFile> {
+  return writeBaselineEntries(file, entriesFromFindings(findings));
+}
+
+/**
+ * Update only the part of the baseline covered by this scan: entries for files
+ * outside the scanned set, or for rules not selected by `--rule`, are kept.
+ */
+export async function mergeBaseline(
+  file: string,
+  findings: readonly Finding[],
+  scannedFiles: readonly string[],
+  onlyRules?: ReadonlySet<string>,
+): Promise<BaselineFile> {
+  const existing = await loadBaseline(file);
+  const scanned = new Set(scannedFiles);
+  const current = entriesFromFindings(findings);
+  const currentFingerprints = new Set(current.map((entry) => entry.fingerprint));
+  const preserved = (existing?.entries ?? []).filter(
+    (entry) =>
+      (!scanned.has(entry.file) || (onlyRules !== undefined && !onlyRules.has(entry.ruleId))) &&
+      !currentFingerprints.has(entry.fingerprint),
+  );
+  return writeBaselineEntries(file, [...preserved, ...current]);
 }
 
 export interface BaselinePartition {

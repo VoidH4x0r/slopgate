@@ -69,8 +69,24 @@ test('cli: unknown options exit 2 with a helpful message', async () => {
   const result = await run(['fixtures/demo', '--nope']);
   assert.equal(result.status, 2);
   assert.match(result.stderr, /unknown option: --nope/);
+  assert.match(result.stderr, /slopgate 0\.1\.\d+/);
+  assert.doesNotMatch(result.stderr, /slopgate 0\.1\.0 —/);
 });
 
+test('cli: empty value flags are rejected instead of silently ignored', async () => {
+  for (const flag of ['--include=', '--exclude=', '--rule=', '--baseline=', '--write-baseline=']) {
+    const result = await run([flag]);
+    assert.equal(result.status, 2, flag);
+    assert.match(result.stderr, /needs a (?:non-empty )?value|non-empty path/, flag);
+  }
+});
+
+test('cli: --diff= falls back to HEAD', async () => {
+  const result = await run(['fixtures/demo', '--diff=', '--no-color']);
+  // Depending on whether the fixture is inside git, this reaches git or exits
+  // with its error; either way it must not be rejected as an empty ref.
+  assert.doesNotMatch(result.stderr, /empty git ref/);
+});
 test('cli: a missing path exits 2 instead of silently scanning nothing', async () => {
   const result = await run(['this-path-does-not-exist-42']);
   assert.equal(result.status, 2);
@@ -116,6 +132,26 @@ test('cli: github annotations are emitted and the exit code is honoured', async 
   assert.equal(passing.status, 0);
 });
 
+test('cli: a subdirectory --write-baseline preserves the root baseline', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-baseline-merge-'));
+  try {
+    await mkdir(path.join(dir, '.git'));
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await writeFile(path.join(dir, 'a.py'), 'def root_stub():\n    pass\n');
+    await writeFile(path.join(dir, 'src', 'b.py'), 'def src_stub():\n    pass\n');
+
+    const rootWrite = await run([dir, '--write-baseline', '--no-color']);
+    assert.equal(rootWrite.status, 0, rootWrite.stderr);
+    const srcWrite = await run([path.join(dir, 'src'), '--write-baseline', '--no-color']);
+    assert.equal(srcWrite.status, 0, srcWrite.stderr);
+
+    const scan = await run([dir, '--no-color']);
+    assert.equal(scan.status, 0, scan.stderr);
+    assert.match(scan.stdout, /hidden: 2 in baseline/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
 test('cli: an explicitly requested baseline that does not exist exits 2', async () => {
   const result = await run(['fixtures/demo', '--baseline', 'no-such-baseline.json']);
   assert.equal(result.status, 2);

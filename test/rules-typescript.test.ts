@@ -72,6 +72,25 @@ test('ts/noop-test accepts tests that assert', async () => {
   assert.deepEqual(drafts, []);
 });
 
+test('ts/noop-test skips disabled tests and demotes implicit browser commands', async () => {
+  assert.deepEqual(
+    await runRule('ts/noop-test', "test.skip('a', () => {});\n", 'typescript'),
+    [],
+  );
+  assert.deepEqual(
+    await runRule('ts/noop-test', "test.todo('later', () => {});\n", 'typescript'),
+    [],
+  );
+  const cypress = await runRule(
+    'ts/noop-test',
+    "it('browser', () => { cy.visit('/'); cy.contains('Welcome'); });\n",
+    'typescript',
+  );
+  assert.equal(cypress.length, 1);
+  assert.equal(cypress[0]?.confidence, 'medium');
+  assert.match(cypress[0]?.message ?? '', /no explicit assertions/);
+});
+
 test('ts/noop-test recognises node:assert method assertions', async () => {
   const source = [
     "import assert from 'node:assert/strict';",
@@ -283,11 +302,19 @@ test('ts/stub-function reports object-literal arrow stubs at medium', async () =
 test('ts/tautological-assert finds self-comparisons', async () => {
   assert.equal((await runRule('ts/tautological-assert', 'expect(true).toBe(true);\n', 'typescript')).length, 1);
   assert.equal((await runRule('ts/tautological-assert', 'expect(x).toEqual(x);\n', 'typescript')).length, 1);
+  assert.equal(
+    (await runRule('ts/tautological-assert', 'expect(obj.value).toEqual(obj.value);\n', 'typescript')).length,
+    1,
+  );
 });
 
 test('ts/tautological-assert accepts real assertions', async () => {
   assert.deepEqual(await runRule('ts/tautological-assert', 'expect(add(1, 2)).toBe(3);\n', 'typescript'), []);
   assert.deepEqual(await runRule('ts/tautological-assert', 'expect(a).toBe(b);\n', 'typescript'), []);
+  assert.deepEqual(
+    await runRule('ts/tautological-assert', 'expect(getValue()).toEqual(getValue());\n', 'typescript'),
+    [],
+  );
 });
 
 test('ts/stub-function flags empty and not-implemented bodies', async () => {
@@ -295,13 +322,15 @@ test('ts/stub-function flags empty and not-implemented bodies', async () => {
   assert.equal(empty.length, 1);
   assert.equal(empty[0]?.confidence, 'medium');
 
-  const notImplemented = await runRule(
-    'ts/stub-function',
-    "export function stub() { throw new Error('not implemented'); }\n",
-    'typescript',
-  );
-  assert.equal(notImplemented.length, 1);
-  assert.equal(notImplemented[0]?.confidence, 'high');
+  for (const message of ['not implemented', 'unimplemented', 'Not yet implemented']) {
+    const drafts = await runRule(
+      'ts/stub-function',
+      `export function stub() { throw new Error('${message}'); }\n`,
+      'typescript',
+    );
+    assert.equal(drafts.length, 1, message);
+    assert.equal(drafts[0]?.confidence, 'high');
+  }
 
   assert.equal((await runRule('ts/stub-function', 'class A { m() {} }\n', 'typescript')).length, 1);
 });

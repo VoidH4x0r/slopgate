@@ -186,4 +186,9 @@ test('isInDiffWithPrefix maps subdirectory findings onto repo-root diff paths', 
   assert.equal(isInDiffWithPrefix(subFinding, set, '../outside'), false);
   // Already repo-root relative: the prefix must not double-apply.
   assert.equal(isInDiffWithPrefix(finding('src/app.py', 11), set, 'src'), true);
+  // A root-level app.py must not be mistaken for src/app.py.
+  const rootOnly = parseUnifiedDiff(
+    ['diff --git a/app.py b/app.py', '--- a/app.py', '+++ b/app.py', '@@ -10,0 +11,1 @@', '+x'].join('\n'),
+  );
+  assert.equal(isInDiffWithPrefix(subFinding, rootOnly, 'src'), false);
 });

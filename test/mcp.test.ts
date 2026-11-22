@@ -42,6 +42,7 @@ const config: Config = {
 function scanResult(findings: Finding[], files = 3): ScanResult {
   return {
     findings,
+    files: [],
     suppressedCount: 0,
     warnings: [],
     stats: {

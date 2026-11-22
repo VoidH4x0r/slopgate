@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   findingFingerprint,
   loadBaseline,
+  mergeBaseline,
   partitionByBaseline,
   type BaselineFile,
   writeBaseline,
@@ -107,6 +108,34 @@ test('writeBaseline stores the count for duplicate fingerprints', async () => {
 
     const loaded = await loadBaseline(file);
     assert.equal(loaded?.entries[0]?.count, 2);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('mergeBaseline preserves entries outside the scanned files and rules', async () => {
+  const dir = await mkdtemp(path.join(HERE, '.tmp-baseline-merge-'));
+  try {
+    const file = path.join(dir, 'baseline.json');
+    const root = makeFinding({ file: 'a.py' });
+    const src = makeFinding({ file: 'src/b.py' });
+    const otherRule = makeFinding({ file: 'src/b.py', ruleId: 'py/noop-test' });
+    await writeBaseline(file, [root, src, otherRule]);
+
+    const merged = await mergeBaseline(file, [src], ['src/b.py']);
+    assert.deepEqual(
+      merged.entries.map((entry) => entry.file).sort(),
+      ['a.py', 'src/b.py'],
+    );
+
+    await writeBaseline(file, [root, src, otherRule]);
+    const ruleScoped = await mergeBaseline(
+      file,
+      [src],
+      ['src/b.py'],
+      new Set(['py/stub-body']),
+    );
+    assert.ok(ruleScoped.entries.some((entry) => entry.ruleId === 'py/noop-test'));
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

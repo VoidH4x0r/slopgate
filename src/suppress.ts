@@ -21,6 +21,25 @@ function ruleList(raw: string): Set<string> | 'all' {
   return new Set(ids);
 }
 
+/** First real code line after a comment block, skipping decorators. */
+function nextCodeLine(lines: readonly string[], startIndex: number): number | undefined {
+  for (let index = startIndex; index < lines.length; index += 1) {
+    const text = (lines[index] ?? '').trim();
+    if (
+      text.length === 0 ||
+      text.startsWith('#') ||
+      text.startsWith('//') ||
+      text.startsWith('/*') ||
+      text.startsWith('*') ||
+      text.startsWith('@')
+    ) {
+      continue;
+    }
+    return index + 1;
+  }
+  return undefined;
+}
+
 /**
  * @param commentLines 1-based lines that actually contain a comment node.
  *   When supplied, directives inside string literals or docs are ignored.
@@ -39,7 +58,7 @@ export function readSuppressions(source: string, commentLines?: ReadonlySet<numb
     }
     const next = NEXT_LINE.exec(line);
     if (next) {
-      const target = index + 2;
+      const target = nextCodeLine(lines, index + 1) ?? index + 2;
       suppressions.lineRules.set(target, ruleList(next[1] ?? ''));
       continue;
     }

@@ -36,6 +36,8 @@ export interface ScanOptions {
 
 export interface ScanResult {
   findings: Finding[];
+  /** Report-root-relative files that were scanned (including parse failures). */
+  files: string[];
   suppressedCount: number;
   stats: ScanStats;
   warnings: string[];
@@ -103,6 +105,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
 
   const byLanguage: Record<SourceDialect, number> = { python: 0, javascript: 0, typescript: 0, tsx: 0 };
   const findings: Finding[] = [];
+  const scannedFiles: string[] = [];
   const seen = new Set<string>();
   let suppressedCount = 0;
   let parseErrors = 0;
@@ -124,6 +127,12 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     // numbers in findings.
     const source = buffer.toString('utf8').replace(/^\uFEFF/, '');
     byLanguage[file.dialect] += 1;
+    const reportRelative = toPosix(path.relative(reportRoot, file.abs));
+    const findingFile =
+      reportRelative.startsWith('..') || path.isAbsolute(reportRelative)
+        ? file.rel
+        : reportRelative;
+    scannedFiles.push(findingFile);
 
     const parser = await getParser(file.language);
     const tree = parser.parse(source);
@@ -136,12 +145,13 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
 
     const root = asAst(tree.rootNode);
     const comments = collectCommentRanges(root);
+    const commentLines = new Set<number>();
+    for (const comment of comments) {
+      for (let line = comment.startLine; line <= comment.endLine; line += 1) {
+        commentLines.add(line);
+      }
+    }
     const deps = await registry.depsFor(file.abs, file.language);
-    const reportRelative = toPosix(path.relative(reportRoot, file.abs));
-    const findingFile =
-      reportRelative.startsWith('..') || path.isAbsolute(reportRelative)
-        ? file.rel
-        : reportRelative;
     if (file.language !== 'python') {
       const missing = await registry.missingPackageJson(file.abs, file.language);
       if (missing) warnings.push(missing);
@@ -154,7 +164,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
       deps,
       comments,
     };
-    const suppressions = readSuppressions(source, new Set(comments.map((comment) => comment.startLine)));
+    const suppressions = readSuppressions(source, commentLines);
 
     for (const rule of enabled) {
       if (!rule.meta.languages.includes(file.language)) continue;
@@ -218,5 +228,5 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     durationMs: Math.round(performance.now() - started),
   };
 
-  return { findings, suppressedCount, stats, warnings };
+  return { findings, files: scannedFiles, suppressedCount, stats, warnings };
 }
