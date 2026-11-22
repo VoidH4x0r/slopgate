@@ -20,7 +20,7 @@ jobs:
 
       - name: Create issue labels
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
         run: |
           set -e
           gh label create false-positive --color d73a4a --description "Confirmed or suspected false positive" 2>/dev/null || true
@@ -30,7 +30,7 @@ jobs:
 
       - name: Create historical tags and releases
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
         run: |
           set -e
           while read -r tag sha; do
@@ -48,10 +48,12 @@ jobs:
           v0.1.4 5449533af410aa8e34a9065279348c4eb3a31219
           v0.1.5 d6e6668a84592437db54eaa0286d3460165ee22c
           v0.1.6 bc7078706eab06524c0098dea31257b36118f68c
+          v0.1.7 a72cedcbc7f2d337fa4ce74160d5a875d98873b7
           v0.1.8 2cd33f2863764b0c454efdc1650b115552ee610c
           v0.1.9 931e016fbe7f71f954b4901520bfb2915e63a3ec
           v0.1.10 5541a14537369089f6d6404b28400fffd437bf23
           v0.1.11 e568fed0ad266b32dbf041a2cc63f208b2cc0b1d
+          v0.1.12 93d4a90529397e41ace18eca6944032cfcf1a702
           v0.1.13 932cb72e5c0713d058b98e72178e686566728695
           v0.1.14 8edbe981bbe9585741351e2f73f633b38605b2c5
           v0.1.15 b965dc8d08a2860a6f4e0d0e8d6bcf0d03a1319d

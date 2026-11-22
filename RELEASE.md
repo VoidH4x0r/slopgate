@@ -16,14 +16,14 @@ It replaces the slug in `package.json`, README badges, the CLI help, SARIF metad
 
 ## 0b. One-off historical backfill
 
-The first 17 published versions predate the tag workflow, so they have no tags or GitHub releases. Run **Actions → Backfill labels and releases → Run workflow** once after this workflow reaches `main`. It:
+The 19 stable published versions (0.1.0–0.1.18) predate the tag workflow, so they have no tags or GitHub releases. Run **Actions → Backfill labels and releases → Run workflow** once after this workflow reaches `main`. It:
 
 - creates the `false-positive` and `precision` issue labels used by the false-positive issue template;
-- creates tags and GitHub releases for the 17 published versions, mapped to the commit that carried that `package.json` version.
+- creates tags and GitHub releases for the 19 published versions, mapped to the commit that carried that `package.json` version.
 
 The workflow is idempotent (`gh release view` is checked first). Delete it after the backfill if you do not want to keep an admin-only workflow.
 
-Do **not** backfill `0.0.0-stage` (npm staging publish with no matching commit), `0.1.7`, or `0.1.12` (never published). npm permits gaps in version numbers; publishing old source under a skipped number would be misleading. The versions are intentionally absent.
+Do **not** create a release for `0.0.0-stage`: it is a staging npm publish with no matching commit. It is intentionally omitted. The npm versions `0.1.7` and `0.1.12` were published later from their actual commits (`a72cedc` and `93d4a90`) under the `legacy` dist-tag; `latest` remains 0.1.18.
 
 Provenance cannot be added retroactively to these releases. npm attestations are created at publish time; only versions published by the CI workflow below will show the badge.
 
@@ -72,6 +72,11 @@ git push origin v0.1.19
 ```
 
 Use the actual version number. The workflow file at that tag commit must already contain the idempotency guard; the tag is created after the release commit is on `main`.
+
+If the workflow fails with `HTTP 403: Resource not accessible by integration`:
+
+1. Open **Settings → Actions → General → Workflow permissions**, select **Read and write permissions**, and save. Re-run the failed workflow.
+2. If organization policy blocks that setting, create a `RELEASE_TOKEN` secret (fine-grained PAT with **Contents: read/write** and **Issues: read/write** for this repository). The backfill and release workflows prefer `RELEASE_TOKEN` and fall back to `github.token`.
 
 What happens:
 
