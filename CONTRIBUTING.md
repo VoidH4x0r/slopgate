@@ -106,11 +106,11 @@ Never raise confidence to make a rule more visible. Lower it, or drop the rule.
 ## Regenerating the demo GIF
 
 ```bash
-npm install --no-save sharp gifenc
-npm run demo:gif          # writes docs/demo.gif
+npm install --no-save sharp gifenc opentype.js
+npm run demo:gif          # writes docs/demo.gif and docs/demo-preview.png
 ```
 
-`sharp` and `gifenc` are optional: contributors never need them, and the generated GIF is committed.
+`sharp`, `gifenc` and `opentype.js` are optional: contributors never need them, and the generated GIF is committed. The text is vectorised with a monospace TTF; the script uses Consolas on Windows and DejaVu Sans Mono on Linux, or the path in `SLOPGATE_DEMO_FONT`.
 
 ## Reporting false positives
 

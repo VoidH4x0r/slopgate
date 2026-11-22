@@ -1,6 +1,9 @@
 # Release checklist
 
-The release workflow (`.github/workflows/release.yml`) publishes on a `v*` tag. Nothing is published from a laptop.
+Two supported paths:
+
+- **Local publish (default today):** `npm publish` from a verified checkout. The `NPM_TOKEN` secret is not configured yet, so do not push a `v*` tag.
+- **CI publish (after setup):** add an `NPM_TOKEN` repository secret, then a `v*` tag lets `.github/workflows/release.yml` verify the version, run the suite, publish with provenance and create the GitHub release.
 
 ## 0. Repository slug (already done for this repository)
 
@@ -23,31 +26,47 @@ npm run verify      # typecheck + links + tests + build + self-scan + package co
 
 - [ ] CI is green on `main`
 - [ ] `CHANGELOG.md` has an entry for the new version
-- [ ] `package.json` version bumped
+- [ ] `package.json` version bumped (`npm version patch --no-git-tag-version`)
 - [ ] Benchmark regenerated and not worse than the published number
 
 ```bash
-node scripts/benchmark.mjs --corpus cpython=/path/to/cpython/Lib
-git diff benchmark/report.md
+# Run the full ten-corpus command from docs/benchmark.md (§ Reproducing), then:
+git diff benchmark/report.md benchmark/results.json benchmark/labels.json
 ```
 
-If precision dropped by more than two points, fix the rule or lower its confidence before releasing.
+The script reports stale labels and unlabeled high findings; both should be zero before a release. If precision dropped by more than two points, fix the rule or lower its confidence first.
 
-## 2. Tag and push
+## 2. Publish
+
+### 2a. Local publish (default)
 
 ```bash
-git tag -a v0.1.0 -m "slopgate 0.1.0"
+npm publish --access public          # add --otp=123456 if 2FA prompts
+```
+
+Requires an authenticated npm session (`npm login`) or a short-lived granular token:
+
+```bash
+npm config set //registry.npmjs.org/:_authToken "npm_..."
+npm publish --access public
+npm config delete //registry.npmjs.org/:_authToken
+```
+
+### 2b. CI publish (after adding NPM_TOKEN)
+
+```bash
+git tag -a v0.1.1 -m "slopgate 0.1.1"
 git push origin main --follow-tags
 ```
 
-The workflow verifies that the tag matches `package.json`, runs the suite, publishes to npm with provenance, and creates a GitHub release.
+Only do this once the repository secret exists; without it the workflow fails after the version check.
 
 ## 3. Post-flight
 
 - [ ] `npm view @voidh4x0r/slopgate version` shows the new version
-- [ ] `npx @voidh4x0r/slopgate@0.1.0 --version` works on a clean machine
-- [ ] GitHub release notes read correctly
-- [ ] The provenance badge shows on the npm page
+- [ ] `npx @voidh4x0r/slopgate@0.1.1 --version` works on a clean machine
+- [ ] GitHub release notes read correctly (if the tag path was used)
+- [ ] The provenance badge shows on the npm page (CI publish only)
 
 ## 4. If something breaks
 
@@ -57,6 +76,8 @@ The workflow verifies that the tag matches `package.json`, runs the suite, publi
 
 - **patch** — rule precision fixes, docs, dependencies
 - **minor** — new rules, new output format, new CLI flag
-- **major** — rule id rename, config schema break, exit code change
+- **major** — rule id rename, config schema break, breaking CLI/exit-code change
+
+Before 1.0, a patch release may change an exit code when the previous behaviour silently hid a failure (for example, zero matched files used to exit 0); call it out explicitly in the changelog and the release notes.
 
 Adding a rule is a minor release even though it may surface new findings; that is why `--write-baseline` and `--diff` exist.
