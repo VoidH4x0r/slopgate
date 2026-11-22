@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.1.3): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
+> Status (0.1.4): **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects detected, and 0 high findings on 601 JavaScript files (9 packages, 123,472 lines).**
 
 ## The claim
 
@@ -20,6 +20,10 @@ Two halves, both real code:
 Repositories are not vendored. Each corpus is identified in `benchmark/results.json` by a **SHA-256 digest over its scanned files, truncated to 64 bits** (relative path + content), plus the package name/version when a `package.json` exists. The digest lets another checkout prove it is running the same tree without publishing absolute paths. The CPython corpus is a local 3.14.7 install rather than a git checkout, so it is identified by digest and version, not by commit.
 
 Known false positive in the published run: `platform.py` imports `java.lang` inside the Jython-only `_java_getprop` helper. The pattern is present, but the report is not actionable on CPython; it is labeled `fp` and counted in the ratio.
+
+### What the JavaScript half does not cover
+
+The nine packages are popular, hand-maintained libraries, not a hostile JavaScript corpus. They contain **no Tape/TAP test suites, no bundler chunks, and no interface-stub class methods**, so their 0-high result is evidence for those packages, not for JavaScript generally. A separate 6,012-file Electron `app.asar` corpus (not bundled here) exposed three pattern classes: 126 `t.equal`-style assertions, 83 hoisted declarations after `return`, and 65 class methods that throw `Not implemented`. Version 0.1.4 fixes the underlying rules and adds small regression fixtures for each pattern; version 0.2.0 will add a real Tape/TAP package and a bundled-app corpus to this benchmark.
 
 ## Reproducing
 

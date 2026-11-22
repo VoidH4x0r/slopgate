@@ -135,3 +135,49 @@ test('regression: dummy_threading-style modules are skipped', async () => {
   const result = await scanFixture('regressions/dummy-variants');
   assert.deepEqual(ruleFindings(result, 'py/stub-body'), []);
 });
+
+test('regression: tape assertions count, the assertion-free test still reports', async () => {
+  const result = await scanFixture('regressions/tape-assert');
+  const findings = ruleFindings(result, 'ts/noop-test');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.start.line, 13);
+});
+
+test('regression: hoisted function declarations are not unreachable', async () => {
+  const result = await scanFixture('regressions/hoisted-fn');
+  const findings = ruleFindings(result, 'ts/unreachable');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.start.line, 16);
+});
+
+test('regression: named and require-bound node:assert imports count', async () => {
+  const result = await scanFixture('regressions/assert-forms');
+  assert.deepEqual(ruleFindings(result, 'ts/noop-test'), []);
+});
+
+test('regression: above-try comments need explanation wording', async () => {
+  const result = await scanFixture('regressions/above-heuristic');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 5);
+  assert.equal(findings.filter((finding) => finding.confidence === 'medium').length, 3);
+  assert.equal(findings.filter((finding) => finding.confidence === 'high').length, 2);
+});
+
+test('regression: trailing comments on the preceding code line do not demote', async () => {
+  const result = await scanFixture('regressions/above-trailing');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 2);
+  assert.ok(findings.every((finding) => finding.confidence === 'high'));
+});
+
+test('regression: a TODO between try and except does not demote', async () => {
+  const result = await scanFixture('regressions/between-asymmetry');
+  const findings = ruleFindings(result, 'py/swallowed-exception');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0]?.confidence, 'high');
+});
+
+test('regression: prefixed dummy directories with a shim docstring are skipped', async () => {
+  const result = await scanFixture('regressions/dummy-dir-shim');
+  assert.deepEqual(ruleFindings(result, 'py/stub-body'), []);
+});

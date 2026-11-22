@@ -9,6 +9,21 @@ All notable changes to this project are documented here. The format follows [Kee
 - Go and Rust grammars.
 - VS Code diagnostics.
 
+## [0.1.4] - 2026-11-22
+
+### Fixed
+- `ts/noop-test` recognises the Tape/TAP assertion API again (`t.equal`, `t.deepEqual`, `t.strictEqual`, `t.doesNotThrow`, …), fixing a regression introduced in 0.1.1; a framework matrix test now pins the accepted assertion families.
+- `ts/unreachable` no longer reports hoisted `function`/generator declarations or bare `var` statements after a `return`; `let`/`const` and initialised `var` are still reported.
+- `ts/stub-function` reports class-method `throw new Error("Not implemented")` at medium confidence; standalone/exported throw-stubs remain high.
+- `py/stub-body` skips `dummy_multiprocessing/`-style prefixed directories when the module docstring identifies a no-op shim, while `dummy_data/` remains reported.
+- `py/swallowed-exception` only accepts standalone explanatory comments; a trailing comment on a preceding code line no longer demotes. Above-`try` comments need paired failure/intent wording (or a strong phrase such as "harmless"), and TODO/FIXME/refactor comments do not count. Inline comments on the handler line still count.
+- `ts/dead-branch` now has the same nearby-comment demotion as `py/dead-branch`.
+
+### Changed
+- 228 tests, including fourth-round regression fixtures for `tape-assert`, `hoisted-fn`, `assert-forms`, `above-heuristic`, `above-trailing`, `between-asymmetry` and `dummy-dir-shim`.
+- Benchmark unchanged at **29 high-confidence findings across 991,705 lines of CPython, 96.6% labeled precision (28/29), 14/14 seeded defects, 0 high findings on 601 JavaScript files**; `staleLabels: []`, `unlabeledHigh: []`.
+- Docs now state that the nine JS packages do not exercise Tape/TAP or bundled output, and record the Electron-asar corpus findings as the motivation for the 0.2.0 JS corpus expansion.
+
 ## [0.1.3] - 2026-11-22
 
 ### Fixed

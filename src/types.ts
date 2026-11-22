@@ -21,6 +21,8 @@ export interface Position {
 export interface CommentRange {
   startLine: number;
   endLine: number;
+  /** 1-based column of the comment marker, for standalone-comment checks. */
+  startColumn: number;
 }
 
 export interface Finding {

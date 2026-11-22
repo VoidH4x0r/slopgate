@@ -157,6 +157,78 @@ test('py/stub-body handles dummy_threading-style module names', async () => {
   assert.equal(drafts.length, 1);
 });
 
+test('py/swallowed-exception ignores a trailing comment on the preceding code line', async () => {
+  const source = [
+    'def f(ctx):',
+    '    value = ctx.read()  # returns an error string when invalid',
+    '    try:',
+    '        ctx.flush(value)',
+    '    except Exception:',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('py/swallowed-exception ignores a TODO comment between try and except', async () => {
+  const source = [
+    'def f(ctx):',
+    '    try:',
+    '        ctx.flush()',
+    '    # TODO: this block is long, refactor it next sprint',
+    '    except Exception:',
+    '        pass',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('py/swallowed-exception accepts an inline comment on the handler line', async () => {
+  const source = [
+    'def f(ctx):',
+    '    try:',
+    '        ctx.flush()',
+    '    except Exception:',
+    '        pass  # result will be None',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/swallowed-exception', source, 'python', 'app.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('py/stub-body skips a prefixed shim directory with a no-op docstring', async () => {
+  const source = [
+    '"""Dummy implementations of the multiprocessing API, for single-threaded builds.',
+    '',
+    'Every function here is a deliberate no-op.',
+    '"""',
+    '',
+    'def freeze_support():',
+    '    pass',
+  ].join('\n');
+  assert.deepEqual(
+    await runRuleOnFile('py/stub-body', source, 'python', 'dummy_multiprocessing/__init__.py'),
+    [],
+  );
+  const noDocstring = 'def freeze_support():\n    pass\n';
+  assert.equal(
+    (await runRuleOnFile('py/stub-body', noDocstring, 'python', 'dummy_multiprocessing/__init__.py')).length,
+    1,
+  );
+  const realModule = [
+    '"""A real module that happens to live in a dummy-prefixed directory."""',
+    '',
+    'def load():',
+    '    pass',
+  ].join('\n');
+  assert.equal(
+    (await runRuleOnFile('py/stub-body', realModule, 'python', 'dummy_data/loader.py')).length,
+    1,
+  );
+});
+
 test('py/phantom-import ignores imports under sys.version_info guards', async () => {
   const source = [
     'import sys',

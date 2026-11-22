@@ -157,6 +157,73 @@ test('ts/noop-test does not accept arbitrary .strictEqual calls', async () => {
   assert.equal(drafts.length, 1);
 });
 
+test('ts/unreachable ignores hoisted function and bare var declarations', async () => {
+  const source = [
+    'function f() {',
+    '  return 1;',
+    '  function helper() { return 2; }',
+    '  var a;',
+    '}',
+  ].join('\n');
+  assert.deepEqual(await runRule('ts/unreachable', source, 'typescript'), []);
+});
+
+test('ts/unreachable still reports initialised var and lexical declarations', async () => {
+  const varSource = ['function f() {', '  return 1;', '  var a = 2;', '}'].join('\n');
+  const letSource = ['function f() {', '  return 1;', '  let a;', '}'].join('\n');
+  assert.equal((await runRule('ts/unreachable', varSource, 'typescript')).length, 1);
+  assert.equal((await runRule('ts/unreachable', letSource, 'typescript')).length, 1);
+});
+
+test('ts/unreachable reports real code after a hoisted declaration', async () => {
+  const source = [
+    'function f() {',
+    '  return 1;',
+    '  function helper() { return 2; }',
+    '  console.log(helper());',
+    '}',
+  ].join('\n');
+  const drafts = await runRule('ts/unreachable', source, 'typescript');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.start.line, 4);
+});
+
+test('ts/stub-function treats class-method interface stubs as medium', async () => {
+  const source = [
+    'class Base {',
+    "  run() { throw new Error('Not implemented'); }",
+    '}',
+    "function run() { throw new Error('Not implemented'); }",
+  ].join('\n');
+  const drafts = await runRule('ts/stub-function', source, 'typescript');
+  assert.equal(drafts.length, 2);
+  assert.equal(drafts.find((draft) => draft.start.line === 2)?.confidence, 'medium');
+  assert.equal(drafts.find((draft) => draft.start.line === 4)?.confidence, 'high');
+});
+
+test('ts/dead-branch demotes a commented if (false)', async () => {
+  const source = [
+    '// This path is intentionally disabled until the migration lands.',
+    'if (false) {',
+    '  migrate();',
+    '}',
+  ].join('\n');
+  const drafts = await runRule('ts/dead-branch', source, 'typescript');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
+test('ts/dead-branch keeps uncommented if (false) at high', async () => {
+  const drafts = await runRule('ts/dead-branch', 'if (false) {\n  migrate();\n}\n', 'typescript');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'high');
+});
+
+test('ts/noop-test does not treat arbitrary .equal as an assertion', async () => {
+  const drafts = await runRule('ts/noop-test', "test('x', () => { foo.equal(1, 1); });\n", 'typescript');
+  assert.equal(drafts.length, 1);
+});
+
 test('ts/tautological-assert finds self-comparisons', async () => {
   assert.equal((await runRule('ts/tautological-assert', 'expect(true).toBe(true);\n', 'typescript')).length, 1);
   assert.equal((await runRule('ts/tautological-assert', 'expect(x).toEqual(x);\n', 'typescript')).length, 1);

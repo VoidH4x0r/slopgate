@@ -144,6 +144,23 @@ const T_ASSERTION_MEMBERS = new Set([
   'pass',
   'fail',
   'assert',
+  // Tape / TAP. The `t.` prefix is required, so these cannot match arbitrary
+  // `.equal` calls from other libraries.
+  'equal',
+  'equals',
+  'notEqual',
+  'deepEqual',
+  'notDeepEqual',
+  'looseEqual',
+  'notLooseEqual',
+  'deepLooseEqual',
+  'notDeepLooseEqual',
+  'strictEqual',
+  'notStrictEqual',
+  'error',
+  'notOk',
+  'doesNotThrow',
+  'notMatch',
 ]);
 
 /**
@@ -463,9 +480,10 @@ const stubFunction: Rule = {
         end: endOf(body),
         snippet: snippetOf(ctx, node),
         // An empty body is a weak signal in JavaScript: callbacks and dispatch
-        // tables legitimately do nothing. Only an explicit "not implemented"
-        // throw is evidence of an abandoned implementation.
-        confidence: form === 'empty body' ? 'medium' : 'high',
+        // tables legitimately do nothing. A class method that throws
+        // "not implemented" is also the standard way to declare an interface
+        // member for subclasses, so only standalone functions keep high.
+        confidence: form === 'empty body' || node.type === 'method_definition' ? 'medium' : 'high',
         evidence: [`body: ${form}`],
         help: 'Implement it, or throw an error with a message so callers fail loudly instead of silently doing nothing.',
       });
@@ -556,6 +574,13 @@ const deadBranch: Rule = {
       if (!isFalse && !isTrue) continue;
       if (isTrue && node.type === 'while_statement') continue;
 
+      // A nearby comment usually marks a deliberate disabled branch.
+      const commented = hasCommentBetween(
+        ctx,
+        Math.max(1, node.startPosition.row),
+        node.endPosition.row + 1,
+      );
+
       drafts.push({
         message: isFalse
           ? `\`${node.type === 'while_statement' ? 'while' : 'if'} (${text})\` is dead code`
@@ -563,14 +588,31 @@ const deadBranch: Rule = {
         start: startOf(node),
         end: endOf(condition),
         snippet: snippetOf(ctx, node),
-        confidence: isFalse ? 'high' : 'medium',
-        evidence: [`condition: ${text}`],
+        confidence: isFalse && !commented ? 'high' : 'medium',
+        evidence: [
+          `condition: ${text}`,
+          ...(commented ? ['a nearby comment suggests this is a deliberate switch'] : []),
+        ],
         help: 'Replace the constant with the flag or configuration value it is standing in for.',
       });
     }
     return drafts;
   },
 };
+
+/**
+ * Function declarations and bare `var` statements are hoisted: they are usable
+ * before a `return` even when written after it. `let`/`const` and initialised
+ * `var` statements execute at their position, so they remain genuinely dead.
+ */
+function isHoistedDeclaration(statement: AstNode): boolean {
+  if (statement.type === 'function_declaration' || statement.type === 'generator_function_declaration') {
+    return true;
+  }
+  if (statement.type !== 'variable_declaration') return false;
+  const declarators = statement.namedChildren.filter((child) => child.type === 'variable_declarator');
+  return declarators.length > 0 && declarators.every((declarator) => !declarator.childForFieldName('value'));
+}
 
 const unreachable: Rule = {
   meta: {
@@ -592,8 +634,9 @@ const unreachable: Rule = {
       const index = statements.findIndex((statement) => TERMINATORS.has(statement.type));
       if (index === -1) continue;
       const terminator = statements[index];
-      const firstUnreachable = statements[index + 1];
-      if (!terminator || !firstUnreachable) continue;
+      if (!terminator) continue;
+      const firstUnreachable = statements.slice(index + 1).find((statement) => !isHoistedDeclaration(statement));
+      if (!firstUnreachable) continue;
       const count = statements.length - index - 1;
       const keyword = terminator.type.replace('_statement', '');
 

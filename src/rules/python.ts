@@ -1,7 +1,7 @@
 import type { AstNode } from '../ast.ts';
 import { normalizePythonName } from '../deps.ts';
 import { IMPLICIT_MODULES, IMPORT_TO_DISTRIBUTION, PYTHON_STDLIB } from '../data/python-stdlib.ts';
-import type { Confidence, Rule, RuleContext, RuleDraft } from '../types.ts';
+import type { CommentRange, Confidence, Rule, RuleContext, RuleDraft } from '../types.ts';
 import {
   ancestorOfType,
   collapseWhitespace,
@@ -17,6 +17,7 @@ import {
   isStubFile,
   isTestPath,
   looksLikeTestModule,
+  moduleDocstring,
   snippetOf,
   startOf,
   statementsOf,
@@ -424,7 +425,7 @@ const stubBody: Rule = {
     if (ctx.language !== 'python') return [];
     if (isTestPath(ctx.file)) return [];
     // Type stubs and deliberate no-op shims are made of `pass`/`...`.
-    if (isStubFile(ctx.file) || isNoopModulePath(ctx.file)) return [];
+    if (isStubFile(ctx.file) || isNoopModulePath(ctx.file) || isDocumentedNoopDirectory(ctx)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
@@ -471,16 +472,68 @@ const stubBody: Rule = {
   },
 };
 
-/** A comment that actually explains why an error is safe to ignore. */
-const EXPLANATION_WORDS =
-  /error|fail|ignore|abort|expected|safe|best effort|intentional|throw|except|swallow|\bok\b/i;
+/** A comment that explains why a failure is safe to ignore. */
+const FAILURE_WORDS = /error|fail|throw|exception|invalid|log|raise/i;
+const INTENT_WORDS = /ignor\w*|abort|skip|safe|accept|fallback|best effort|tolerate|\bok\b|fine/i;
+const STRONG_EXPLANATION =
+  /harmless|benign|intentional|by design|safe to ignore|expected (?:error|failure|exception|behaviou?r)/i;
+/** Comments that describe future work, not why an error is safe to ignore. */
+const NOISE_COMMENT = /(?:^|\s)(TODO|FIXME|XXX|HACK)\b|refactor|cleanup|next sprint/i;
 
-function explanatoryCommentBetween(ctx: RuleContext, fromLine: number, toLine: number): boolean {
+function isExplanationText(text: string): boolean {
+  return STRONG_EXPLANATION.test(text) || (FAILURE_WORDS.test(text) && INTENT_WORDS.test(text));
+}
+
+function overlaps(comment: CommentRange, fromLine: number, toLine: number): boolean {
+  return comment.startLine <= toLine && comment.endLine >= fromLine;
+}
+
+/** A comment is standalone when only whitespace precedes its marker. */
+function isStandaloneComment(ctx: RuleContext, comment: CommentRange): boolean {
+  const line = ctx.lines[comment.startLine - 1] ?? '';
+  return line.slice(0, Math.max(0, comment.startColumn - 1)).trim().length === 0;
+}
+
+function commentText(ctx: RuleContext, comment: CommentRange): string {
+  return ctx.lines.slice(comment.startLine - 1, comment.endLine).join(' ');
+}
+
+function explanationCommentBetween(ctx: RuleContext, fromLine: number, toLine: number): boolean {
+  return ctx.comments.some(
+    (comment) =>
+      overlaps(comment, fromLine, toLine) &&
+      isStandaloneComment(ctx, comment) &&
+      isExplanationText(commentText(ctx, comment)),
+  );
+}
+
+function supportingCommentBetween(
+  ctx: RuleContext,
+  fromLine: number,
+  toLine: number,
+  handlerStartLine: number,
+): boolean {
   return ctx.comments.some((comment) => {
-    if (comment.startLine > toLine || comment.endLine < fromLine) return false;
-    const text = ctx.lines.slice(comment.startLine - 1, comment.endLine).join(' ');
-    return EXPLANATION_WORDS.test(text);
+    if (!overlaps(comment, fromLine, toLine)) return false;
+    const text = commentText(ctx, comment);
+    if (NOISE_COMMENT.test(text)) return false;
+    // A comment on the `pass` line is unambiguously about that handler, so it
+    // may be inline. Comments before the handler must start their own line:
+    // a trailing comment on a previous statement often describes that
+    // statement, not the exception.
+    return isStandaloneComment(ctx, comment) || comment.startLine >= handlerStartLine;
   });
+}
+
+const NOOP_DIR_PREFIX = /^(dummy|noop|no_op|no-op)[-_]/;
+const NOOP_MODULE_DOC =
+  /dummy implementation|deliberate(?:ly)? no-?op|single-threaded|faux implementation|stand-?in|shim module/i;
+
+/** A prefixed directory is only a shim when its module docstring says so. */
+function isDocumentedNoopDirectory(ctx: RuleContext): boolean {
+  const dirs = ctx.file.toLowerCase().split('/').slice(0, -1);
+  if (!dirs.some((dir) => NOOP_DIR_PREFIX.test(dir))) return false;
+  return NOOP_MODULE_DOC.test(moduleDocstring(ctx.root) ?? '');
 }
 
 const swallowedException: Rule = {
@@ -504,7 +557,7 @@ const swallowedException: Rule = {
       const tryBody = tryNode.namedChildren.find((child) => child.type === 'block');
       // A comment immediately above `try` often explains the failure policy.
       const aboveStart = Math.max(1, tryNode.startPosition.row);
-      const above = explanatoryCommentBetween(ctx, aboveStart, tryNode.startPosition.row + 1);
+      const above = explanationCommentBetween(ctx, aboveStart, tryNode.startPosition.row + 1);
       /** 0-based end row of the previous region, or -1 when there is no try body. */
       let previousEndRow = tryBody ? tryBody.endPosition.row : -1;
       for (const clause of tryNode.namedChildren) {
@@ -534,7 +587,9 @@ const swallowedException: Rule = {
         // Optional-dependency idiom: swallowing a missing import is the point.
         if (/ImportError|ModuleNotFoundError/.test(typeText)) continue;
 
-        const commented = above || hasCommentBetween(ctx, betweenStart, handlerEndRow + 1);
+        const commented =
+          above ||
+          supportingCommentBetween(ctx, betweenStart, handlerEndRow + 1, body.startPosition.row + 1);
         const bare = typeText.length === 0;
         const broad = bare || /^(\(?\s*)?(Exception|BaseException)(\s*\))?$/.test(typeText);
         const cleanup = insideCleanupFunction(clause);

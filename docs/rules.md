@@ -94,7 +94,7 @@ def sync_accounts(self):
 
 **Confidence.** `high` only for a module-level, public, undocumented function whose body is `pass`/`...`. Everything else is `medium` (`raise NotImplementedError`, documented functions, methods, private helpers, `return None` → `low`), because interface placeholders and abstract hooks look identical to abandoned stubs.
 
-**Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op modules with an exact `dummy/`, `_dummy/`, `noop/` or `no-op/` path segment or a file stem starting with `dummy_`/`noop_`/`_dummy_`, test files, and anything named `test_*` (handled by `py/noop-test`).
+**Not reported.** `@abstractmethod` and `Protocol` members, `__init__`/`__new__`/`__post_init__`/`setUp`/`tearDown`, functions inside `if TYPE_CHECKING:`, `.pyi` type stubs, deliberate no-op modules with an exact `dummy/`, `_dummy/`, `noop/` or `no-op/` path segment, a file stem starting with `dummy_`/`noop_`/`_dummy_`, or a prefixed `dummy_*`/`noop_*` directory whose module docstring says it is a shim; test files, and anything named `test_*` (handled by `py/noop-test`).
 
 ---
 
@@ -111,8 +111,9 @@ except Exception:
 
 **Confidence.**
 
-- `high` only for a bare `except:` or `except Exception` / `BaseException`, with no comment, outside a cleanup function.
-- `medium` when the caught type is specific (`except KeyError`), when a comment explains it — immediately above `try` with explanation wording, between the try body and this handler (or between handlers), or inside the handler — or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
+- `high` only for a bare `except:` or `except Exception` / `BaseException`, with no explanatory comment, outside a cleanup function.
+- `medium` when the caught type is specific (`except KeyError`), when a standalone comment explains it — immediately above `try` with explanation wording, between the try body and this handler (or between handlers), or inside the handler — or when it sits inside `close`/`__del__`/`shutdown`/`cleanup`-style code.
+- Trailing comments on preceding code lines never count, and TODO/FIXME/refactor comments do not count as explanations.
 
 **Not reported.** `except ImportError` / `ModuleNotFoundError` (the optional-dependency idiom), `try` blocks with an `else` clause (the `try/except: pass/else: fail` assertion idiom), test files, and handlers that log or re-raise.
 
@@ -164,7 +165,7 @@ If the package **is** installed under `node_modules` the finding is `medium` ("u
 
 ## ts/noop-test
 
-**What it catches.** A test whose callback has an empty body or no assertion. Recognises `assert` / `node:assert` methods, renamed `node:assert` imports (namespace, default, named aliases and `require` bindings), `expect(...)` chains, `expectTypeOf`, `should`, `chai`, and `node:test` context assertions (`t.ok`, `t.assert.*`).
+**What it catches.** A test whose callback has an empty body or no assertion. Recognises `assert` / `node:assert` methods, renamed `node:assert` imports (namespace, default, named aliases and `require` bindings), Tape/TAP (`t.equal`, `t.deepEqual`, `t.strictEqual`, `t.doesNotThrow`, …), `expect(...)` chains, `expectTypeOf`, `should`, `chai`, and `node:test` context assertions (`t.ok`, `t.assert.*`).
 
 ```ts
 test('creates user', () => {
@@ -184,7 +185,7 @@ test('creates user', () => {
 
 **What it catches.** A `function` declaration or class method whose body is empty, or only throws an error with a "not implemented" message.
 
-**Confidence.** `high` only for the explicit `throw new Error("not implemented")` placeholder. An empty body is `medium`: callbacks, dispatch tables and interface implementations legitimately do nothing in JavaScript.
+**Confidence.** `high` only for a standalone or exported function with the explicit `throw new Error("not implemented")` placeholder. An empty body is `medium`, and a class method that throws the placeholder is `medium` too: it is the standard way to declare an interface member for subclasses. Callbacks, dispatch tables and interface implementations legitimately do nothing in JavaScript.
 
 **Not reported.** Constructors, abstract members, overload signatures, ambient declarations, object-literal methods (`{ native() {} }` is a dispatch table), no-op conventions (`noop`, `noOp`, `nop`, `ignore`, `identity`), members documented with `@abstract` / `@noop`, and test files.
 
@@ -210,10 +211,12 @@ try {
 
 ## ts/dead-branch
 
-**What it catches.** `if (false)`, `if (0)`, `while (false)` (high) and `if (true)` / `if (1)` (medium). Test files are skipped.
+**What it catches.** `if (false)`, `if (0)`, `while (false)` (high) and `if (true)` / `if (1)` (medium). Test files are skipped. A nearby comment demotes the finding to `medium`, matching `py/dead-branch`: it is usually a deliberate switch.
 
 ---
 
 ## ts/unreachable
 
 **What it catches.** Statements after `return`, `throw`, `break` or `continue` in the same block. Test files are skipped.
+
+**Not reported.** Hoisted declarations after the exit: `function` declarations (including generators) and bare `var a, b;` statements are usable before the `return`, so they are not dead code. `let`/`const` and initialised `var` statements still execute at their position and are reported.

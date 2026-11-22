@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.1.3  ·  4 files  ·  39ms
+slopgate 0.1.4  ·  4 files  ·  39ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -72,7 +72,7 @@ Measured on **1,115,177 lines** of real code — the CPython standard library (a
 | High-confidence findings | **29** (0.03 per 1,000 lines), in 18 of 1,845 CPython files |
 | Labeled precision of high-confidence findings | **96.6%** (28/29 manually reviewed) |
 | Recall on 14 seeded defects | **14/14** |
-| High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** |
+| High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
 
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
 
@@ -204,7 +204,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.1.3 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.4 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -212,7 +212,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.1.3 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.1.4 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -279,6 +279,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 
 - `.gitignore` is not read. Generated trees are skipped only through the built-in ignore list and your own `exclude` patterns.
 - Symbolic links are skipped, but they are **not** counted in `stats.skipped`. Files larger than 1 MB, empty files, excluded files and unreadable files are counted.
+- Bundled/minified files are only skipped when named `*.min.js` / `*.min.mjs`; exclude hashed chunk directories with your own `exclude` patterns.
 - Modules that only exist on a non-CPython host (Jython's `java.*`, Emscripten's `js` / `pyodide`) are reported unless you add them to `ignoreModules`.
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 
@@ -296,7 +297,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 193 tests; the tests themselves make no network or child-process calls
+npm test            # 228 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

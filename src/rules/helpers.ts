@@ -75,6 +75,7 @@ export function collectCommentRanges(root: AstNode): CommentRange[] {
   return descendantsOfType(root, ['comment', 'line_comment', 'block_comment']).map((node) => ({
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
+    startColumn: node.startPosition.column + 1,
   }));
 }
 
@@ -149,6 +150,14 @@ export function looksLikeTestModule(file: string): boolean {
 export function docstringOf(fn: AstNode): string | undefined {
   const body = fn.childForFieldName('body');
   const first = body?.namedChildren.find((child) => !isComment(child));
+  if (first?.type !== 'expression_statement') return undefined;
+  const value = first.namedChildren[0];
+  return value?.type === 'string' ? value.text : undefined;
+}
+
+/** Text of the module's leading docstring, if it has one. */
+export function moduleDocstring(root: AstNode): string | undefined {
+  const first = root.namedChildren.find((child) => !isComment(child));
   if (first?.type !== 'expression_statement') return undefined;
   const value = first.namedChildren[0];
   return value?.type === 'string' ? value.text : undefined;
