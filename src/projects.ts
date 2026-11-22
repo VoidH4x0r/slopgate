@@ -9,7 +9,7 @@ const PYTHON_FILE = /\.pyi?$/;
 const VALID_MODULE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 async function hasPythonFiles(dir: string, depth = 0): Promise<boolean> {
-  if (depth > 3) return false;
+  if (depth > 5) return false;
   try {
     const entries = await readdir(dir, { withFileTypes: true });
     for (const entry of entries) {

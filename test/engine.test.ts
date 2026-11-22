@@ -185,6 +185,41 @@ test('non-git package scans see namespace packages through lookupRoot', async ()
   }
 });
 
+test('non-git namespace lookup follows deeper valid package segments', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-nongit-deep-namespace-'));
+  try {
+    await mkdir(path.join(dir, 'lib', 'a', 'b', 'c', 'd'), { recursive: true });
+    await mkdir(path.join(dir, 'packages', 'app'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'lib', 'a', 'b', 'c', 'd', 'module.py'),
+      'def f():\n    return 1\n',
+    );
+    await writeFile(
+      path.join(dir, 'packages', 'app', 'pyproject.toml'),
+      '[project]\nname = "app"\nversion = "0.0.0"\ndependencies = []\n',
+    );
+    await writeFile(
+      path.join(dir, 'packages', 'app', 'app.py'),
+      'from lib.a.b.c.d.module import f\n',
+    );
+
+    const result = await scanProject({
+      root: path.join(dir, 'packages', 'app'),
+      projectRoot: path.join(dir, 'packages', 'app'),
+      indexRoot: path.join(dir, 'packages', 'app'),
+      lookupRoot: dir,
+      reportRoot: dir,
+      config: { ...DEFAULT_CONFIG, rules: {} },
+    });
+    assert.deepEqual(
+      result.findings.filter((finding) => finding.ruleId === 'py/phantom-import'),
+      [],
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('non-git ancestor indexing does not treat non-Python workspace names as modules', async () => {
   const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-nongit-nonpython-'));
   try {

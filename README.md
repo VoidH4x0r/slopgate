@@ -157,6 +157,8 @@ The default `.slopgate-baseline.json` also lives at the repository root. `--base
 
 Reported paths (including SARIF and GitHub annotations) are relative to the nearest git repository root. If the target is outside a git repository, paths stay relative to the scan target; manifest lookup still walks up to the current working directory when it contains the target, Python-bearing top-level modules (including namespace packages) of the ancestors between the package and that boundary are indexed, and config lookup stops at the nearest project boundary. Config exclusions apply within the config root; ancestor modules above it are still considered Python-bearing.
 
+Non-git ancestor indexing deliberately favors fewer false positives: a Python-bearing sibling of the project in an ancestor directory (for example `workspace/scripts/` when scanning `workspace/project`) is treated as importable even though it is outside the target project. A hallucinated import with that name may therefore go unreported. Run from the project root, or use a git repository/config boundary, when that precision matters.
+
 `slopgate init` writes a minimal config at the requested directory and a GitHub Actions workflow at the repository root; the workflow targets that directory. Run it at the repository root for a repo-wide config.
 
 ### Adopting it on an existing repository
@@ -321,7 +323,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 307 tests; the tests themselves make no network or child-process calls
+npm test            # 308 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```
