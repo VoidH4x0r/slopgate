@@ -406,7 +406,10 @@ const noopTest: Rule = {
               .join(' ')
           : '';
       if (/pytest\.mark\.(?:skip|skipif|xfail)|unittest\.skip/.test(decoratorText)) continue;
-      if (/\bpytest\.(?:skip|xfail|importorskip)\s*\(/.test(body.text)) continue;
+      const unconditionalSkip = statementsOf(body).some((statement) =>
+        /^pytest\.(?:skip|xfail|importorskip)\s*\(/.test(statement.text.trim()),
+      );
+      if (unconditionalSkip) continue;
       const docstring = docstringOf(fn);
       // Doctest-style tests keep their expectations in the docstring.
       if (docstring?.includes('>>>')) continue;

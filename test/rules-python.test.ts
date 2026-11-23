@@ -537,6 +537,31 @@ test('py/noop-test skips pytest skip markers and pytest.skip calls', async () =>
   }
 });
 
+test('py/noop-test only skips unconditional pytest.skip calls', async () => {
+  const conditional = [
+    'def test_later():',
+    '    if condition:',
+    '        pytest.skip("later")',
+    '',
+  ].join('\n');
+  assert.equal(
+    (
+      await runRuleOnFile(
+        'py/noop-test',
+        conditional,
+        'python',
+        'tests/test_later.py',
+      )
+    ).length,
+    1,
+  );
+  const direct = ['def test_later():', '    pytest.skip("later")', ''].join('\n');
+  assert.deepEqual(
+    await runRuleOnFile('py/noop-test', direct, 'python', 'tests/test_later.py'),
+    [],
+  );
+});
+
 test('py/noop-test does not count assertions inside a nested function', async () => {
   const source = [
     'def test_outer():',

@@ -172,7 +172,16 @@ export function parseUnifiedDiff(stdout: string): DiffSet {
 /** Lines that differ from `ref`, plus every line of untracked files. */
 export async function diffSince(root: string, ref: string): Promise<DiffSet> {
   const safeRef = assertSafeRef(ref);
-  const stdout = await git(root, ['diff', '--unified=0', '--no-color', '--no-ext-diff', safeRef, '--']);
+  let stdout = '';
+  try {
+    stdout = await git(root, ['diff', '--unified=0', '--no-color', '--no-ext-diff', safeRef, '--']);
+  } catch (error) {
+    // An unborn HEAD has no commit to diff against; every tracked/untracked
+    // file is new, which the --others pass below already records.
+    if (safeRef !== 'HEAD' || !/HEAD|bad revision|unknown revision|ambiguous argument/i.test((error as Error).message)) {
+      throw error;
+    }
+  }
   const set = parseUnifiedDiff(stdout);
 
   // `-z` gives NUL-separated raw paths, immune to quoting and newlines in names.
