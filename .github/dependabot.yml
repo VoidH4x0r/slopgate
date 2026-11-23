@@ -9,6 +9,13 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    # Keep the type surface aligned with engines.node (>=20.11), and keep
+    # web-tree-sitter on 0.25 until the bundled WASM grammars are rebuilt.
+    ignore:
+      - dependency-name: "@types/node"
+        versions: [">=21"]
+      - dependency-name: "web-tree-sitter"
+        versions: [">=0.26.0"]
   - package-ecosystem: github-actions
     directory: /
     schedule:

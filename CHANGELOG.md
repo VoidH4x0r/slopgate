@@ -48,6 +48,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 - 478 tests.
 - Dev toolchain: TypeScript 7.0.2 with an explicit `rootDir` in `tsconfig.build.json`; `@types/node` stays on the Node 20 line so the minimum supported runtime and the type surface agree.
+- CI uses `actions/checkout@v7` and `actions/setup-node@v7`; Dependabot ignores `web-tree-sitter >= 0.26` until the bundled WASM grammars are rebuilt, and `@types/node >= 21` while Node 20 remains the minimum runtime.
 - Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.

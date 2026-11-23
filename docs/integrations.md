@@ -14,7 +14,7 @@ jobs:
   slopgate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: VoidH4x0r/slopgate@v1.0.2
         with:
           path: .
@@ -40,8 +40,8 @@ jobs:
   slopgate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: 22 }
       - run: npx --yes @voidh4x0r/slopgate@1.0.2 . --fail-on high --no-color
 ```
@@ -77,8 +77,8 @@ jobs:
   slopgate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: 22 }
       - run: npx --yes @voidh4x0r/slopgate@1.0.2 . --format sarif --fail-on high > slopgate.sarif
       - uses: github/codeql-action/upload-sarif@v3
