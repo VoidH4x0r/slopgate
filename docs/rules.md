@@ -3,7 +3,7 @@
 Every rule runs on a real AST (tree-sitter), reports a **confidence**, and has at least one negative test that proves it does *not* fire on legitimate code.
 
 - **Severity** is what the finding means; **confidence** is how sure we are. Only `high` is shown by default and fails CI.
-- **Test files**: rules about dead code, stubs and swallowed errors skip test files (`test/`, `tests/`, `__tests__/`, `test_*.py`, `*_test.py`, `*.test.ts`, `*.spec.ts`) and test/build infrastructure (`conftest.py`, `noxfile.py`, `docs/conf.py`), because that scaffolding is full of intentional stubs. `noop-test` and `tautological-assert` are the rules that look *at* tests.
+- **Test files**: rules about dead code, stubs and swallowed errors skip test files (`test/`, `tests/`, `__tests__/`, `__mocks__/`, `spec/`, `e2e/`, `test_*.py`, `*_test.py`, `*.test.ts`, `*.spec.ts`, `*.e2e-spec.ts`) and test/build infrastructure (`conftest.py`, `noxfile.py`, `docs/conf.py`), because that scaffolding is full of intentional stubs. `noop-test` and `tautological-assert` are the rules that look *at* tests.
 - **Parse errors**: a file that did not parse cleanly can never produce a `high` finding; its findings are demoted to `medium` with an evidence line explaining why.
 - Rule ids are stable; use them in `slopgate-ignore-*` directives and `.slopgate.json`.
 
@@ -63,7 +63,7 @@ except ImportError:
     ujson = None
 ```
 
-**Precision controls.** Import-name to distribution-name map (`yaml` → `pyyaml`, `PIL` → `pillow`, …, including dotted prefixes such as `google.protobuf`), local-module discovery from the repository layout (every module stem, not just top-level), `try/except ImportError` detection, imports under platform/version guards (`sys.platform`, `sys.version_info`, `six.PY2`, …) ignored, `_`-prefixed C-extension modules (`_socket`, `_winapi`) ignored, `ignoreModules` config, and **medium confidence inside test files**, where `sys.path` monkey-patching is common.
+**Precision controls.** Import-name to distribution-name map (`yaml` -> `pyyaml`, `PIL` -> `pillow`, plus dotted prefixes such as `google.protobuf`), local-module discovery from the repository layout (every module stem, not just top-level), `try/except ImportError` / `except (ImportError, ...)` detection, `if TYPE_CHECKING:` imports ignored, imports under platform/version guards (`sys.platform`, `os.name`, `sys.version_info`, `six.PY2`, ...) ignored, `_`-prefixed C-extension modules (`_socket`, `_winapi`) ignored, `ignoreModules` config, and **medium confidence inside test files**, where `sys.path` monkey-patching is common.
 
 ---
 
@@ -184,7 +184,7 @@ Only the same-block case is reported. Test files are skipped — generators ther
 
 - a Node builtin (`fs`, `node:fs`, …)
 - relative (`./`, `../`, `/`)
-- a path alias from `tsconfig.json`, `tsconfig.app.json`, `tsconfig.base.json`, `tsconfig.node.json` or `jsconfig.json` (including relative `extends` chains and project references)
+- a path alias from `tsconfig.json`, `tsconfig.app.json`, `tsconfig.base.json`, `tsconfig.node.json` or `jsconfig.json` (including relative `extends` chains; `references` do not inherit `paths`)
 - a familiar virtual prefix (`@/`, `~/`, `$lib/`, `$app/`, `$env/`, `npm:`, `jsr:`) even when no config was parsed
 - a workspace package
 - an asset (`.css`, `.svg`, `.json`, …)
@@ -276,7 +276,7 @@ try {
 
 ## go/phantom-import
 
-**What it catches.** An import that is neither a Go standard-library root, inside the current module, nor provided by a `require` path in `go.mod`.
+**What it catches.** An import that is not an exact Go 1.24 standard-library package, not inside the current module, and not provided by a `require` path in `go.mod` or a sibling `go.work` module.
 
 ```go
 import (
@@ -287,7 +287,7 @@ import (
 )
 ```
 
-**Precision controls.** `C` (cgo) is accepted; test files and `// Code generated ... DO NOT EDIT.` files are skipped; no go.mod means the rule stays silent rather than guessing. The reserved `internal/...` root is accepted because the standard library and its modules use it; local package existence inside the module is not checked yet, which intentionally avoids flagging module-internal packages that are resolved by the Go toolchain. The standard-library check uses an exact Go 1.24 package table (plus `internal/` packages), so a fabricated child under a real root such as `crypto/bcrypt` is reported.
+**Precision controls.** `C` (cgo) is accepted; test files and generated files are skipped; no go.mod means the rule stays silent rather than guessing. The reserved `internal/...` root is accepted only for standard-library and known module prefixes; local package existence inside the current module is not checked, which intentionally avoids flagging packages the Go toolchain resolves. The standard-library check uses an exact Go 1.24 package table, so a fabricated child under a real root such as `crypto/bcrypt` is reported. `go.work` modules and their sibling `require` sets are accepted.
 
 ---
 

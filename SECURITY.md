@@ -1,0 +1,44 @@
+# Security policy
+
+## Supported versions
+
+Security fixes are applied to the latest **1.x** release line. The current release candidate is `1.0.2`; `1.0.1` is the latest npm release until `1.0.2` is published.
+
+| Version | Supported |
+| --- | --- |
+| 1.0.x | yes |
+| < 1.0 | no |
+
+## Reporting a vulnerability
+
+Please **do not open a public issue** for a vulnerability. Use GitHub's private vulnerability reporting:
+
+<https://github.com/VoidH4x0r/slopgate/security/advisories/new>
+
+Include, when possible:
+
+- affected version and platform;
+- a minimal repository or input that reproduces the issue;
+- the expected and actual behavior;
+- whether the issue requires a malicious repository, a malicious config, or a malicious MCP client.
+
+You should receive an acknowledgement within a few business days. We will coordinate a fix and a disclosure date with you.
+
+## What counts as a vulnerability
+
+- arbitrary code execution through a scanned file, config, grammar or MCP message;
+- escaping the scan root or reading arbitrary files through path handling;
+- command injection through a path, ref, executable setting or CLI argument;
+- MCP protocol handling that lets an untrusted client corrupt the server or write files;
+- a packaged artifact that does not match the published source.
+
+Ordinary false positives, rule disagreements and performance issues are **not** security vulnerabilities; report them through normal issues.
+
+## Security model
+
+- Scans run locally. There are no API keys, no telemetry and no network calls at scan time.
+- `--diff` and MCP `scan_diff` invoke `git`; the ref is validated before use.
+- The VS Code extension spawns the CLI through `cross-spawn` without a shell.
+- MCP is stdio-only and read-only: `preview_fix` does not write, and there is no MCP write tool.
+- The package ships the grammars and never downloads a grammar at runtime.
+- `--fix` writes only files under the scan target, after a tree-sitter parse validation; keep the target under version control and review the diff.

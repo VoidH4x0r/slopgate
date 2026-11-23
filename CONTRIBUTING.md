@@ -8,7 +8,7 @@ Thanks for taking the time. This project has one rule above all others: **a find
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test           # 477 tests; test:sandbox skips the one git-diff integration test
+npm test           # 478 tests; test:sandbox skips the one git-diff integration test
 npm run typecheck
 npm run verify     # typecheck + links + tests + build + self-scan + package check
 npm run build      # emits dist/ used by the published package
@@ -33,13 +33,14 @@ src/
   parser.ts         tree-sitter runtime + bundled grammars (WASM)
   ast.ts            the non-null AST shape every rule sees
   files.ts          walking, ignore defaults, glob matcher
-  deps.ts           manifest parsing (Python + Node), alias/workspace resolution
+  deps.ts           manifest parsing (Python, Node, Go, Rust), aliases, workspaces, go.work, Cargo
   projects.ts       lazy per-file project registry + local-module index
+  index.ts          stable public API surface (scanProject, config, rule metadata)
   config.ts         .slopgate.json schema and defaults
+  mcp.ts            Model Context Protocol server (stdio, JSON-RPC)
   suppress.ts       slopgate-ignore-* directives
   baseline.ts       stable fingerprints for "new findings only"
   diff.ts           git diff → changed lines
-  mcp.ts            Model Context Protocol server (stdio, JSON-RPC)
   rules/
     python.ts       Python file rules
     typescript.ts   TS/JS file rules
@@ -50,6 +51,7 @@ src/
     helpers.ts      shared AST utilities
   fix.ts            atomic safe-fix writer
   reporters/        pretty, json, sarif, github annotations
+schema/            JSON schema for config and scan output
 grammars/           bundled tree-sitter WASM (python, typescript, tsx, go, rust)
 fixtures/           small repositories used by the integration tests
 ```

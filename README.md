@@ -1,12 +1,16 @@
 # slopgate
 
-[English](README.md) · [Chinese](docs/zh/README.md)
+[English](https://github.com/VoidH4x0r/slopgate/blob/main/README.md) · [Chinese](https://github.com/VoidH4x0r/slopgate/blob/main/docs/zh/README.md)
 
 **The slop gate for AI-written code.**
 
 AI writes code that *looks* right. `slopgate` finds the parts that only look right: imports of packages that do not exist, tests that cannot fail, functions that are stubs, errors that vanish without a trace.
 
+The failure mode is rarely a crash. It is a pull request that looks finished, a green CI run, and a reviewer who has no time to prove the difference. `slopgate` turns that difference into a short list of findings with evidence, a confidence level, and an exact line.
+
 ![slopgate scanning a repository](https://raw.githubusercontent.com/VoidH4x0r/slopgate/main/docs/demo.gif)
+
+<p align="center"><sub>A real <code>fixtures/demo</code> run: 12 high-confidence findings across four scanned files, plus two findings below the default display threshold.</sub></p>
 
 [![npm](https://img.shields.io/npm/v/@voidh4x0r/slopgate.svg)](https://www.npmjs.com/package/@voidh4x0r/slopgate)
 [![CI](https://github.com/VoidH4x0r/slopgate/actions/workflows/ci.yml/badge.svg)](https://github.com/VoidH4x0r/slopgate/actions/workflows/ci.yml)
@@ -42,9 +46,9 @@ tests/test_users.py
             │ def test_get_user():
             ↳ Every test should be able to fail. Add an assertion that depends on the behaviour under test.
 
-  13 findings in 3 files  ·  4 files scanned in 50ms
-  4 error · 9 warning · 0 info   (13 high · 0 medium · 0 low confidence)
-  hidden: 1 below confidence threshold
+  12 findings in 3 files  ·  4 files scanned in 50ms
+  4 error · 8 warning · 0 info   (12 high · 0 medium · 0 low confidence)
+  hidden: 2 below confidence threshold
 ```
 
 No API keys. No telemetry. No network calls at runtime. One command, works offline, exits non-zero in CI.
@@ -65,6 +69,13 @@ Models are good at producing code that compiles, imports cleanly in the editor w
 
 It is built for the people who review AI-generated pull requests: the reviewer who cannot read every line, the maintainer who needs CI to say "this is not finished", and the coding agent that should check itself before declaring done.
 
+## Who it is for
+
+- **Reviewers** who need a short, defensible list of things to inspect instead of a 2,000-line diff.
+- **Maintainers** who want a CI gate that distinguishes "unfinished" from "unfamiliar".
+- **Coding agents** that should run the same check before claiming a task is complete.
+- **Teams adopting AI** who need an objective, offline guardrail rather than a prompt that says "be careful".
+
 ## Does it actually catch anything?
 
 Measured on **1,115,270 lines** of real code — the CPython standard library (an adversarial corpus full of test helpers and intentional no-ops), nine popular JavaScript packages, and a 20-file AI-generated regression corpus:
@@ -74,11 +85,25 @@ Measured on **1,115,270 lines** of real code — the CPython standard library (a
 | High-confidence findings | **42** (29 CPython + 13 AI-generated), in 17 of 1,845 CPython files |
 | Labeled precision of high-confidence findings | **97.6%** (41/42 manually reviewed) |
 | Recall on seeded defects | **30/30** (14 demo + 16 AI-generated) |
-| High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
+| High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
 
-A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings** among parsed files (72 parse errors); a Rust-only run of **Rust 1.83 std source** (1,494 files, 635,245 lines) also reports **0 high** among parsed files (157 parse errors, 10.5%). Tape/TAP (185 files), a held-out AI set (10 files, 8/8 labeled high) and a bundled Electron app (6 files) are separate corpus runs. See [`docs/benchmark.md`](docs/benchmark.md).
+A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings** among parsed files (72 parse errors); a Rust-only run of **Rust 1.83 std source** (1,494 files, 635,245 lines) also reports **0 high** among parsed files (157 parse errors, 10.5%). Tape/TAP (185 files), a held-out AI set (10 files, 8/8 labeled high) and a bundled Electron app (6 files) are separate corpus runs. See [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md).
 
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
+
+## How it works
+
+![slopgate pipeline: source and tests, project context, structural rules, confidence, and the places it runs](https://raw.githubusercontent.com/VoidH4x0r/slopgate/main/docs/how-it-works.png)
+
+Most linters stop at the syntax tree. `slopgate` combines the tree with the facts around it:
+
+1. **Parse** every file with a bundled tree-sitter grammar — Python, TypeScript, JavaScript, Go and Rust. No Python interpreter, `tsc`, Go toolchain or Rust toolchain is needed at scan time.
+2. **Resolve project context** for that file: Python manifests and local modules, `package.json`/`tsconfig` aliases and workspaces, `go.mod`/`go.work`, `Cargo.toml` and local Rust modules.
+3. **Run structural rules** that need both the AST and that context: a phantom import is only phantom relative to a manifest; a test is only a no-op relative to what counts as an assertion; a duplicate is only a duplicate relative to another file.
+4. **Assign confidence from evidence**, not from a model score. High-confidence findings are facts a reviewer can verify by reading the cited line.
+5. **Filter through the workflow**: suppression comments, the baseline, the diff range, `--fail-on`, and the output format you already use.
+
+That is the whole product bet: **less noise, more proof**. A finding you cannot act on is worse than no finding, because it teaches the team to ignore the gate.
 
 ---
 
@@ -219,10 +244,14 @@ npx @voidh4x0r/slopgate . --confidence medium --fail-on medium
 | `scan_diff` | findings on lines changed since a git ref (default `HEAD`) |
 | `scan_path` | findings in a file or directory |
 | `list_rules` | the rule table, so the agent knows what is checked |
+| `explain_rule` | one rule's title, summary, severity, confidence, languages and tags |
+| `preview_fix` | the safe edits `--fix` would apply, without writing any file |
 
 Reports are compact text: `file:line:col severity confidence rule-id message`, evidence included, capped at 50 findings per call. Paths are relative to the MCP server root, and config is resolved per requested path with the same nearest-config rule as the CLI. Point the MCP server at the repository root; use `scan_path` to select subdirectories. The server reads `.slopgate.json` and `.slopgate-baseline.json` like the CLI does, so an agent never re-reports debt you already accepted. It runs locally, makes no network calls, and writes nothing to disk.
 
-Full details: [docs/mcp.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/mcp.md).
+The intended loop is simple: the agent edits, calls `scan_diff`, reads the exact findings, fixes them, and calls `scan_diff` again until it is clean. The MCP layer has no hidden state; restarting it cannot change a finding.
+
+Full details: [docs/mcp.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/mcp.md). A map of every guide is in [docs/README.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/README.md).
 
 ## In CI
 
@@ -255,7 +284,7 @@ Or use the repository's composite action:
           fail-on: high
 ```
 
-Pre-commit and MCP setup are documented in [`docs/integrations.md`](docs/integrations.md).
+Pre-commit and MCP setup are documented in [`docs/integrations.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/integrations.md).
 
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
@@ -288,7 +317,7 @@ try { ... } catch {}
 
 ## VS Code
 
-The independent [`packages/slopgate-vscode`](packages/slopgate-vscode/README.md) extension surfaces CLI JSON findings as diagnostics and offers quick fixes for the safe `py/unreachable` / `ts/unreachable` subset. It never reimplements rules and does not bundle the grammars.
+The independent [`packages/slopgate-vscode`](https://github.com/VoidH4x0r/slopgate/blob/main/packages/slopgate-vscode/README.md) extension surfaces CLI JSON findings as diagnostics and offers quick fixes for the safe `py/unreachable` / `ts/unreachable` subset. It never reimplements rules and does not bundle the grammars.
 
 ## Public API
 
@@ -301,7 +330,7 @@ const result = await scanProject({ root: process.cwd(), config: DEFAULT_CONFIG }
 console.log(CONTRACT_VERSION, result.findings.length);
 ```
 
-Contract: [`docs/contract.md`](docs/contract.md); JSON output schema: [`schema/scan-output.schema.json`](schema/scan-output.schema.json).
+Contract: [`docs/contract.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/contract.md); JSON output schema: [`schema/scan-output.schema.json`](https://github.com/VoidH4x0r/slopgate/blob/main/schema/scan-output.schema.json).
 
 ## Rules
 
@@ -347,8 +376,10 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 
 - 20 files / ~3k lines: **~125 ms** end to end (Windows laptop, cold start)
 - 1,845 files / 991,705 lines (CPython standard library): **~13 s** in the benchmark run
-- 3 grammar files load once in **~35 ms**
+- WASM parsers load once per language in **~35 ms**
 - Python: ~12 ms per 35 KB file
+
+The performance guard in CI treats **20 s** for the CPython corpus as the hard ceiling. The benchmark is run against the built CLI, not a mocked engine, and the repository records the exact digest and duration.
 
 ## Roadmap
 
@@ -371,9 +402,9 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.4.1 — Tape/TAP, held-out AI and bundled-app benchmark coverage
 - [x] v1.0.0 — stable public API/contract, Node 20/22/24 Linux+Windows CI, release automation, docs/zh
 - [x] v1.0.1 — review hardening: safe fix validation, duplicate coverage, concurrency, Go/Rust/VS Code/MCP fixes
-- [x] v1.0.2 — second review hardening: P0 Windows spawn, suppression/requirements/TS/go.work and remaining P2/P3 fixes
+- [x] v1.0.2 — post-review hardening: baseline v2 migration, Python/TS/Go/Rust false positives, exact local tsconfig resolution, MCP/VS Code/CI boundaries, docs and demo refresh
 
-The detailed plan, estimates, release gates, risks and next-14-days actions are in [`docs/roadmap.md`](docs/roadmap.md).
+The detailed plan, estimates, release gates, risks and next-14-days actions are in [`docs/roadmap.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/roadmap.md).
 
 ## Known limitations
 
@@ -387,7 +418,7 @@ The detailed plan, estimates, release gates, risks and next-14-days actions are 
 - `duplicate-block` detects exact normalized bodies only; semantic clones are reported separately at medium confidence in 0.4.0. A file contributes at most one representative per duplicate group.
 - `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off", "go/duplicate-block": "off" }` if you do not need medium findings.
 - `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
-- `go/phantom-import` accepts the reserved `internal/...` root and treats module-internal imports as local; it does not check whether a local package directory exists. `go.work` is not resolved yet.
+- `go/phantom-import` accepts the reserved `internal/...` root and treats any import under the current module prefix as local; it does not check that the local package directory exists. Standard-library resolution uses an exact Go 1.24 package table. `go.work` modules and sibling `require` sets are resolved.
 - `go/noop-test` only reports an empty test body with no nearby comment; a test that delegates assertions to a helper is left alone.
 - `go/unreachable` skips blocks containing `goto`/labels and does not treat `panic`/`os.Exit` as terminators.
 - `rs/phantom-import` is medium confidence: Rust name resolution cannot be reproduced from a single file; uppercase roots and local modules are accepted, and `Cargo.toml` is required. `rs/noop-test` only reports empty tests; `rs/unreachable` skips hoisted items and test contexts.
@@ -398,15 +429,29 @@ The detailed plan, estimates, release gates, risks and next-14-days actions are 
 - You need whole-program data-flow analysis — that is `semgrep` / CodeQL territory.
 - Your code is not generated or reviewed quickly; the rules still apply, but the value is lower.
 
+## Questions reviewers ask
+
+**Does it replace tests or a type checker?** No. It catches a narrower class of defect that tests, type checkers and style linters routinely miss: code that is syntactically valid and behaviorally empty. Keep your existing test suite and type checker.
+
+**Does it need network access?** No. The scan runs locally, the grammars ship in the package, and the MCP server uses stdio. There is no telemetry, no account and no API key. Only `--diff` and `scan_diff` invoke `git`.
+
+**Why is the precision number only 97.6%?** Because 42 high-confidence findings is a small enough sample that one debatable finding matters. We publish that finding — a Jython-only import in CPython's `platform.py` — and label it `fp` instead of removing it from the denominator. The labels are in [`benchmark/labels.json`](https://github.com/VoidH4x0r/slopgate/blob/main/benchmark/labels.json).
+
+**Will it flood a legacy repository?** Use `--write-baseline` once, then gate new findings. Or use `--diff origin/main` to gate only lines a pull request touches. The adoption path is documented above.
+
+**How do I suppress a false positive?** Put the reason in a real comment and use `slopgate-ignore-line` / `slopgate-ignore-next-line`, or disable a file with `slopgate-disable-file`. Mentions inside strings or documentation are deliberately ignored.
+
+**Can I add a rule?** Yes. The contribution guide shows the rule shape, the negative-test policy, and the confidence rationale. A rule that cannot show a legitimate counterexample is not ready.
+
 ## Contributing
 
-Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://github.com/VoidH4x0r/slopgate/blob/main/CONTRIBUTING.md); adding a rule is a ~80 line change plus tests.
+Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://github.com/VoidH4x0r/slopgate/blob/main/CONTRIBUTING.md); adding a rule is a ~80 line change plus tests. Security reports should follow [SECURITY.md](https://github.com/VoidH4x0r/slopgate/blob/main/SECURITY.md).
 
 ```bash
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 477 tests; the sandbox gate skips the one git-diff integration test
+npm test            # 478 tests; the sandbox gate skips the one git-diff integration test
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

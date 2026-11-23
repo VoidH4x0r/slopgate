@@ -68,14 +68,14 @@ export const LINES = [
   { segments: [] },
   {
     segments: [
-      { text: '  13 findings in 3 files', color: COLORS.fg },
+      { text: '  12 findings in 3 files', color: COLORS.fg },
       { text: '  ·  4 files scanned in 50ms', color: COLORS.dim },
     ],
   },
   {
-    segments: [{ text: '  4 error · 9 warning · 0 info   (13 high · 0 medium · 0 low confidence)', color: COLORS.dim }],
+    segments: [{ text: '  4 error · 8 warning · 0 info   (12 high · 0 medium · 0 low confidence)', color: COLORS.dim }],
   },
-  { segments: [{ text: '  hidden: 1 below confidence threshold', color: COLORS.dim }] },
+  { segments: [{ text: '  hidden: 2 below confidence threshold', color: COLORS.dim }] },
 ];
 
 export const COMMAND_TEXT = 'npx @voidh4x0r/slopgate .';

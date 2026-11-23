@@ -14,6 +14,10 @@ These `.wasm` files are tree-sitter parsers compiled for the [web-tree-sitter](h
 
 We use the prebuilt artifacts from [`tree-sitter-wasms`](https://www.npmjs.com/package/tree-sitter-wasms). The TypeScript grammar is also used for plain JavaScript, and the TSX grammar for `.jsx` / `.tsx`.
 
+## Why vendored
+
+Vendoring makes the published package self-contained: `npx @voidh4x0r/slopgate` works on a clean machine with no compiler, no `apt` step and no network fetch during a scan. It also makes the exact parser version auditable in the package contents.
+
 ## Compatibility
 
 `web-tree-sitter` is pinned to `0.25.x` in `package.json`. Newer runtimes (0.26+) load grammars built with a different dynamic-linking convention and currently reject these files — that is why the dependency is pinned rather than ranged. If you upgrade the runtime, re-verify grammar loading before publishing.

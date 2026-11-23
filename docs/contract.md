@@ -13,8 +13,9 @@ Stable exports:
 - `scanProject(options)` (result includes `reportRoot`);
 - `applyFixes(fixes, { write })`;
 - `DEFAULT_CONFIG`, `loadConfig`, `normalizeConfig`;
-- `ALL_RULE_METAS`, `ALL_RULE_BY_ID`, `PROJECT_RULES`;
-- types `Config`, `Finding`, `RuleMeta`, `RuleDraft`, `ScanFix`, `ScanStats`;
+- `ALL_RULE_METAS`, `ALL_RULE_BY_ID`, `PROJECT_RULES`, `createProjectRules`;
+- `loadProjectRegistry` and the `ProjectRegistry` type, for callers that want to reuse the same manifest graph across scans;
+- types `Config`, `Finding`, `RuleMeta`, `RuleDraft`, `ScanFix`, `ScanStats`, `ScanOptions`, `ScanResult`;
 - `CONTRACT_VERSION` (currently `1`).
 
 The CLI (`dist/cli.js`) remains the primary interface.
@@ -51,7 +52,7 @@ Each finding has:
   snippet: string;
   evidence: string[];
   help?: string;
-  fingerprint: string;
+  fingerprint?: string; // populated by scanProject and always present in JSON
 }
 ```
 
@@ -61,7 +62,7 @@ Each finding has:
 { tool: 'slopgate', version: string, reportRoot: string, findings: Finding[], stats: ScanStats, summary: {...} }
 ```
 
-The machine schema is `schema/scan-output.schema.json` (published in the npm package). Positions are 1-based. Paths are relative to the repository/report root.
+The machine schema is `schema/scan-output.schema.json` (published in the npm package). Positions are 1-based. Paths are relative to the repository/report root. `fingerprint` is a stable 16-hex-character SHA-1 prefix of `ruleId + file + normalized snippet + message`; baseline version 2 and later include it. The TypeScript type marks it optional for backwards compatibility with hand-constructed findings, but every finding returned by `scanProject()` has one.
 
 ## SARIF
 
@@ -74,7 +75,7 @@ Stable methods:
 - `initialize`, `tools/list`, `tools/call`;
 - tools: `scan_diff`, `scan_path`, `list_rules`, `explain_rule`, `preview_fix`.
 
-The transport is newline-delimited JSON-RPC 2.0 over stdio; stdout contains protocol messages only.
+The transport is newline-delimited JSON-RPC 2.0 over stdio; stdout contains protocol messages only. Requests must set `jsonrpc: "2.0"`; a missing `id` is a notification, `id: null` is a request, and arrays are treated as batches.
 
 ## Exit codes
 
@@ -82,7 +83,7 @@ The transport is newline-delimited JSON-RPC 2.0 over stdio; stdout contains prot
 | --- | --- |
 | 0 | no findings at or above `--fail-on` |
 | 1 | findings at or above `--fail-on` |
-| 2 | usage/configuration error, git failure, or zero files matched |
+| 2 | usage/configuration error, git failure, rule crash, or zero files matched |
 
 ## Compatibility
 
@@ -91,3 +92,4 @@ The transport is newline-delimited JSON-RPC 2.0 over stdio; stdout contains prot
 - Rule behaviour may improve in a minor version, but a rule id and its meaning do not change without a major version.
 - The `high` confidence gate and default `failOn: high` are part of the contract.
 - Release publishing is tag-driven via `.github/workflows/release.yml`; `npm run release:check` validates the version, changelog and benchmark versions before publish.
+- VS Code extension `0.1.1` is a separate package and follows its own changelog.

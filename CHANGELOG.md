@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [1.0.2] - 2026-11-23
 
+### Documentation
+- Rewrote the English README around the review loop, added a tested "How it works" pipeline image, refreshed the demo GIF/PNG from the current `fixtures/demo` output (12 high findings), and corrected stale Go/`go.work`, MCP tool and demo-count claims.
+- Expanded the Chinese guide into a full task-oriented manual covering installation, baseline/diff adoption, AI-code auditing, configuration, suppression, CI, MCP, VS Code, rules, benchmarks, performance and limitations.
+- Greatly expanded the MCP and integrations guides (tools table, agent loop, batch/error behaviour, GitHub Action/SARIF/annotations, pre-commit, adoption order) and refreshed the VS Code README, settings, multi-root diagnostics and version 0.1.1.
+- Updated `docs/rules.md` test-path and tsconfig/Go resolution details, `docs/contract.md` public exports/fingerprint/MCP batch semantics, and `docs/roadmap.md` to the 32-rule/1.0.2 state.
+
 ### Fixed
 - Python safe fix removes a trailing `;` and validates the rewritten file with tree-sitter before writing; a would-be syntax error is skipped instead of written.
 - Duplicate detection now receives `.js`/`.jsx`/`.tsx` (tsx grammar), compares Node spans instead of wrapper identity, covers assigned arrow/function expressions and generators, keeps literal whitespace exact, and preserves renamed semantic members when others are exact clones.
@@ -40,7 +46,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Root `*` paths and baseUrl-only resolution also use exact local files/index entries instead of directory prefixes.
 
 ### Changed
-- 477 tests.
+- 478 tests.
 - Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.
