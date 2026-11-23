@@ -444,7 +444,9 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
       });
 
       // Respect a baseline if one exists, so agents do not re-report known debt.
-      const baseline = await loadBaseline(path.join(root, '.slopgate-baseline.json'));
+      // A subdirectory MCP root still uses the repository-root baseline.
+      const baselineRoot = (await findGitRoot(root)) ?? root;
+      const baseline = await loadBaseline(path.join(baselineRoot, '.slopgate-baseline.json'));
       if (baseline) {
         return { ...result, findings: partitionByBaseline(result.findings, baseline).fresh };
       }

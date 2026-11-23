@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-## [1.0.1] - 2026-11-23
+## [1.0.2] - 2026-11-23
 
 ### Fixed
 - Python safe fix removes a trailing `;` and validates the rewritten file with tree-sitter before writing; a would-be syntax error is skipped instead of written.
@@ -29,11 +29,29 @@ All notable changes to this project are documented here. The format follows [Kee
 - tsconfig wildcard paths, Python Poetry dependency subtables and optional-import handler typing, MCP root-prefix/`..data`, VS Code multi-root selection, `ScanResult.reportRoot`, TS empty statements and Rust `todo!("...")` are covered.
 
 ### Changed
-- 441 tests.
+- 445 tests.
 - Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.
 - MCP now treats only a missing `id` as a notification, responds to `id: null`, rejects invalid `jsonrpc`, and negotiates only known protocol versions.
+
+## [1.0.1] - 2026-11-23
+
+### Fixed
+- Python safe fix removes a trailing `;` and validates the rewritten file with tree-sitter before writing; a would-be syntax error is skipped instead of written.
+- Duplicate detection now receives `.js`/`.jsx`/`.tsx` (tsx grammar), compares Node spans instead of wrapper identity, covers assigned arrow/function expressions and generators, keeps literal whitespace exact, and preserves renamed semantic members when others are exact clones.
+- `scanProject()` creates fresh project-rule instances per call; concurrent scans no longer share candidate state.
+- Go generated/build-tag detection scans the header before `package` (no 20-line cap); `src/bin` is no longer globally ignored for Rust; `go/unreachable` covers switch/select case bodies; `go/noop-test` excludes methods and `Testhelper`; Go duplicate rules skip platform/generated files.
+- Rust accepts own `crateName`, handles `use ... as`, `{...}` groups and `r#` roots, recognizes `cfg(all(test, ...))` / function-level `cfg(test)`, root `sys/`, `src/bin`, and Cargo hyphen/workspace/target/aliased dependency tables.
+- VS Code receives `reportRoot` in JSON and resolves monorepo/subdirectory findings correctly; Windows `.cmd`, TSX/JSX and the quick-fix target document are handled.
+- MCP `scan_diff` uses the repo-root prefix and `scan_path` forwards requested confidence into collection.
+- Nested fix edits covered by an outer deletion are dropped instead of rejecting the whole file; multi-line decorators are handled by `ignore-next-line`.
+- `test:sandbox` skips the git-backed `--fix --diff` test instead of failing the release gate.
+- Added `@types/emscripten` so clean consumers can typecheck the published declarations with `skipLibCheck: false`.
+
+### Changed
+- 408 tests.
+- Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 
 ## [1.0.0] - 2026-11-23
 

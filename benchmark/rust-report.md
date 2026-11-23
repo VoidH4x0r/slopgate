@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T07:24:31.997Z by `scripts/benchmark.mjs` (slopgate 1.0.1, Node v24.19.0).
+Generated 2026-11-23T07:36:21.205Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
 
 ## Summary
 
@@ -10,14 +10,14 @@ Generated 2026-11-23T07:24:31.997Z by `scripts/benchmark.mjs` (slopgate 1.0.1, N
 
 ## rust-stdlib
 
-Scanned **1494** files (**635245** lines) in 51065 ms.
+Scanned **1494** files (**635245** lines) in 54339 ms.
 
 Corpus digest: `fce4df135e171390`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `rs/duplicate-block` | 0 | 132 | 0 | 0 | — |
-| `rs/phantom-import` | 0 | 90 | 0 | 0 | — |
+| `rs/phantom-import` | 0 | 85 | 0 | 0 | — |
 
 ## Method
 

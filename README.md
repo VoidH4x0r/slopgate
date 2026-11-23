@@ -16,7 +16,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 1.0.1  ·  4 files  ·  50ms
+slopgate 1.0.2  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -240,7 +240,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@1.0.1 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@1.0.2 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -248,7 +248,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 Or use the repository's composite action:
 
 ```yaml
-      - uses: VoidH4x0r/slopgate@v1.0.1
+      - uses: VoidH4x0r/slopgate@v1.0.2
         with:
           path: .
           confidence: high
@@ -260,7 +260,7 @@ Pre-commit and MCP setup are documented in [`docs/integrations.md`](docs/integra
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@1.0.1 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@1.0.2 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -371,6 +371,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.4.1 — Tape/TAP, held-out AI and bundled-app benchmark coverage
 - [x] v1.0.0 — stable public API/contract, Node 20/22/24 Linux+Windows CI, release automation, docs/zh
 - [x] v1.0.1 — review hardening: safe fix validation, duplicate coverage, concurrency, Go/Rust/VS Code/MCP fixes
+- [x] v1.0.2 — second review hardening: P0 Windows spawn, suppression/requirements/TS/go.work and remaining P2/P3 fixes
 
 The detailed plan, estimates, release gates, risks and next-14-days actions are in [`docs/roadmap.md`](docs/roadmap.md).
 
@@ -405,7 +406,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 441 tests; the sandbox gate skips the one git-diff integration test
+npm test            # 445 tests; the sandbox gate skips the one git-diff integration test
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

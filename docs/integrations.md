@@ -7,12 +7,12 @@
 The repository ships a composite action in `action.yml`:
 
 ```yaml
-- uses: VoidH4x0r/slopgate@v1.0.1
+- uses: VoidH4x0r/slopgate@v1.0.2
   with:
     path: .
     confidence: high
     fail-on: high
-    version: "1.0.1"
+    version: "1.0.2"
 ```
 
 `version: latest` uses the published npm package. Pin a version for reproducible CI. The action calls `npx --yes @voidh4x0r/slopgate@<version>`; it does not bundle the CLI.
@@ -24,7 +24,7 @@ Add this to `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/VoidH4x0r/slopgate
-    rev: v1.0.1
+    rev: v1.0.2
     hooks:
       - id: slopgate
 ```

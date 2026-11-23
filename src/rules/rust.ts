@@ -70,7 +70,7 @@ export function isGeneratedRust(ctx: RuleContext): boolean {
     ].includes(node.type),
   );
   const header = firstItem ? ctx.source.slice(0, firstItem.startIndex) : ctx.source;
-  return /^(?:\/\/\s*@generated\b|\/\/ Code generated .* DO NOT EDIT\.)/m.test(header);
+  return /^(?:\/\/.*@generated\b|\/\/ Code generated .* DO NOT EDIT\.)/m.test(header);
 }
 
 function cfgHasPositiveTest(text: string): boolean {
@@ -287,6 +287,13 @@ function rustPhantomImportRule(): Rule {
           .filter((name): name is string => Boolean(name))
           .map((name) => normalizedCrate(name)),
       );
+      for (const declaration of descendantsOfType(ctx.root, ['extern_crate_declaration'])) {
+        const text = declaration.text;
+        const name = /^extern\s+crate\s+([A-Za-z_]\w*)/.exec(text)?.[1];
+        const alias = /\bas\s+([A-Za-z_]\w*)/.exec(text)?.[1];
+        if (name) inlineModules.add(normalizedCrate(name));
+        if (alias) inlineModules.add(normalizedCrate(alias));
+      }
       for (const node of descendantsOfType(ctx.root, ['use_declaration'])) {
         for (const path of pathsOfUse(node)) {
           if (!path || seen.has(path)) continue;

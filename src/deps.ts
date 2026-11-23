@@ -878,11 +878,29 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
     const config = await readTsconfig(file, seen);
     for (const key of Object.keys(config.paths)) {
       if (key === '*') {
-        aliases.add('*');
+        const wildcardTargets = config.paths['*'];
+        const target = Array.isArray(wildcardTargets) ? wildcardTargets[0] : undefined;
+        if (typeof target === 'string' && target.endsWith('/*')) {
+          const base = path.resolve(config.baseDir, target.slice(0, -2));
+          const entries = await readDirSafe(base);
+          for (const entry of entries ?? []) {
+            if (entry.name.startsWith('.')) continue;
+            if (entry.isDirectory()) aliases.add(entry.name);
+            else if (entry.isFile()) {
+              const stem = entry.name.replace(/\.(?:[cm]?[jt]sx?)$/, '');
+              if (stem !== entry.name) aliases.add(stem);
+            }
+          }
+        }
         continue;
       }
-      const cleaned = key.replace(/\/\*$/, '').replace(/\*$/, '');
-      if (cleaned) aliases.add(cleaned);
+      if (key.endsWith('*')) {
+        const cleaned = key.replace(/\/\*$/, '').replace(/\*$/, '');
+        if (cleaned) aliases.add(cleaned);
+      } else {
+        // Exact paths key: TypeScript does not treat it as a prefix.
+        aliases.add(`=${key}`);
+      }
     }
     // With only `baseUrl`, TypeScript resolves bare imports under that
     // directory (`components/button` -> `src/components/button`). The first

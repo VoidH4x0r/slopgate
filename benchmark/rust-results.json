@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:24:31.997Z",
-  "slopgateVersion": "1.0.1",
+  "generatedAt": "2026-11-23T07:36:21.205Z",
+  "slopgateVersion": "1.0.2",
   "nodeVersion": "v24.19.0",
   "corpora": [
     {
@@ -9,8 +9,8 @@
       "digest": "fce4df135e171390",
       "files": 1494,
       "lines": 635245,
-      "durationMs": 51065,
-      "findings": 222,
+      "durationMs": 54339,
+      "findings": 217,
       "high": 0,
       "suppressed": 0,
       "parseErrors": 157,
@@ -22,7 +22,7 @@
         },
         "rs/phantom-import": {
           "high": 0,
-          "medium": 90,
+          "medium": 85,
           "low": 0
         }
       },

@@ -181,15 +181,22 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('slopgate.scanWorkspace', async () => {
-      const root = workspaceRoot();
-      if (!root) {
+      const folders = vscode.workspace.workspaceFolders ?? [];
+      if (folders.length === 0) {
         vscode.window.showWarningMessage('slopgate: open a workspace folder first.');
         return;
       }
-      try {
-        await scan(root, root, true);
-      } catch (error) {
-        vscode.window.showWarningMessage(`slopgate scan failed: ${(error as Error).message}`);
+      // Clear once, then let each folder contribute its own diagnostics.
+      diagnosticsByUri.clear();
+      collection.clear();
+      for (const folder of folders) {
+        try {
+          await scan(folder.uri.fsPath, folder.uri.fsPath, false);
+        } catch (error) {
+          vscode.window.showWarningMessage(
+            `slopgate scan failed for ${folder.name}: ${(error as Error).message}`,
+          );
+        }
       }
     }),
     vscode.commands.registerCommand('slopgate.scanFile', async () => {

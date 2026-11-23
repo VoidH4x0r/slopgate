@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:25:24.917Z",
-  "slopgateVersion": "1.0.1",
+  "generatedAt": "2026-11-23T07:37:17.701Z",
+  "slopgateVersion": "1.0.2",
   "nodeVersion": "v24.19.0",
   "corpora": [
     {
@@ -9,7 +9,7 @@
       "digest": "2404daae29252116",
       "files": 10,
       "lines": 39,
-      "durationMs": 47,
+      "durationMs": 46,
       "findings": 8,
       "high": 8,
       "suppressed": 0,

@@ -91,8 +91,9 @@ function packageRootOf(specifier: string): string {
 }
 
 function matchesAlias(specifier: string, aliases: readonly string[]): boolean {
-  if (aliases.includes('*')) return true;
+  if (aliases.includes(`=${specifier}`)) return true;
   return aliases.some((alias) => {
+    if (alias.startsWith('=')) return false;
     const clean = alias.replace(/\/+$/, '');
     return specifier === clean || specifier.startsWith(`${clean}/`);
   });
