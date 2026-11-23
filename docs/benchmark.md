@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.2.9): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
+> Status (0.2.10): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
 
 ## The claim
 
@@ -51,6 +51,17 @@ node scripts/benchmark.mjs … --max-regression 5
 ```
 
 It compares each corpus’s `durationMs` with the existing `--out` file before overwriting it, prints any corpus that is more than the given percentage slower, and exits 1. Corpora whose baseline is under 1000 ms are ignored because startup/timer noise dominates them; new or missing corpora are ignored too.
+
+### Duplicate collection at high confidence
+
+Duplicate rules are `medium`, but a warm scan still collects signatures when the display threshold is `high`. A local 2026-11 measurement on the CPython corpus (1,845 files) was:
+
+| Duplicate rules | Warm run 1 | Warm run 2 |
+| --- | --- | --- |
+| On | 12.0 s | 12.2 s |
+| Off | 11.0 s | 10.9 s |
+
+The overhead is about 1 second, or roughly 9% of a scan that is already dominated by parsing and project resolution. The rules stay enabled by default because the findings reappear with `--confidence medium` and the hidden count remains honest; very large repositories can still disable them in config.
 
 ## Metrics reported
 

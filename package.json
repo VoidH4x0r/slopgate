@@ -1,6 +1,6 @@
 {
   "name": "@voidh4x0r/slopgate",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "The slop gate for AI-written code. Precision-first structural linting for Python and TypeScript.",
   "type": "module",
   "license": "MIT",
@@ -36,7 +36,8 @@
     "set-repo": "node scripts/set-repo.mjs",
     "verify": "npm run typecheck && npm run check:encoding && node scripts/check-links.mjs && npm run test:sandbox && npm run build && node dist/cli.js . --fail-on high && npm pack --dry-run",
     "prepublishOnly": "npm run build && npm run typecheck",
-    "check:encoding": "node scripts/check-encoding.mjs"
+    "check:encoding": "node scripts/check-encoding.mjs",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "web-tree-sitter": "^0.25.10"
@@ -60,5 +61,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    "./package.json": "./package.json"
   }
 }

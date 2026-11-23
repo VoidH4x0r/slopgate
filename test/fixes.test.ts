@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import test from 'node:test';
@@ -127,6 +127,24 @@ test('fix reports a missing file without writing anything', async () => {
     assert.equal(applied.skippedFindings, 1);
     assert.match(applied.warnings.join('\n'), /could not read/);
   } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('fix refuses to overwrite a read-only file', async () => {
+  const dir = await fixture({
+    'app.py': 'def f():\n    return 1\n    print("dead")\n',
+  });
+  try {
+    const result = await scan(dir);
+    await chmod(path.join(dir, 'app.py'), 0o444);
+    const applied = await applyFixes(result.fixes, { write: true });
+    assert.equal(applied.fixedFindings, 0);
+    assert.equal(applied.skippedFindings, 1);
+    assert.match(applied.warnings.join('\n'), /read-only/);
+    assert.match(await readFile(path.join(dir, 'app.py'), 'utf8'), /dead/);
+  } finally {
+    await chmod(path.join(dir, 'app.py'), 0o644).catch(() => undefined);
     await rm(dir, { recursive: true, force: true });
   }
 });

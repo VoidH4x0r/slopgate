@@ -96,6 +96,11 @@ export async function applyFixes(
     }
 
     const info = await stat(plan.file).catch(() => undefined);
+    if (info && (info.mode & 0o222) === 0) {
+      result.skippedFindings += plan.findings;
+      result.warnings.push(`skipped fixes in ${plan.file}: the file is read-only`);
+      continue;
+    }
     const temp = `${plan.file}.slopgate-fix-${process.pid}-${Date.now()}.tmp`;
     try {
       await writeFile(temp, (hadBom ? '\uFEFF' : '') + updated, 'utf8');

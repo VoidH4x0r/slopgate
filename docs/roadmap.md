@@ -1,6 +1,6 @@
 # Development roadmap
 
-Status: **0.2.9 is published**. The encoding contract in `bbd9401` is merged on `main` and will ship in **0.2.10**. This roadmap is effort-based, not a promise of dates.
+Status: **0.2.10 is the release candidate**. The encoding contract in `bbd9401` is merged on `main` and ships in **0.2.10**. This roadmap is effort-based, not a promise of dates.
 
 ## 1. Product thesis
 

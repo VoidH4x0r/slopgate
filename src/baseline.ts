@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
+import * as path from 'node:path';
 import type { Finding } from './types.ts';
 
 export interface BaselineEntry {
@@ -120,16 +121,30 @@ export async function mergeBaseline(
   findings: readonly Finding[],
   scannedFiles: readonly string[],
   onlyRules?: ReadonlySet<string>,
+  root?: string,
 ): Promise<BaselineFile> {
   const existing = await loadBaseline(file);
   const scanned = new Set(scannedFiles);
   const current = entriesFromFindings(findings);
   const currentFingerprints = new Set(current.map((entry) => entry.fingerprint));
-  const preserved = (existing?.entries ?? []).filter(
-    (entry) =>
-      (!scanned.has(entry.file) || (onlyRules !== undefined && !onlyRules.has(entry.ruleId))) &&
-      !currentFingerprints.has(entry.fingerprint),
-  );
+  const preserved: BaselineEntry[] = [];
+  for (const entry of existing?.entries ?? []) {
+    const outsideScope = !scanned.has(entry.file);
+    const ruleNotSelected = onlyRules !== undefined && !onlyRules.has(entry.ruleId);
+    if (!outsideScope && !ruleNotSelected) continue;
+    if (currentFingerprints.has(entry.fingerprint)) continue;
+    // A baseline kept for a deleted file grows forever. When the caller gives
+    // us the baseline root, prune entries whose file no longer exists; entries
+    // for files outside the scan scope but still present are preserved.
+    if (root) {
+      const exists = await stat(path.resolve(root, entry.file)).then(
+        () => true,
+        () => false,
+      );
+      if (!exists) continue;
+    }
+    preserved.push(entry);
+  }
   return writeBaselineEntries(file, [...preserved, ...current]);
 }
 

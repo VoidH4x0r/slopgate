@@ -234,6 +234,19 @@ test('cli: --fix supports --confidence and --verbose', async () => {
   }
 });
 
+test('cli: --fix with --diff fixes findings on changed lines', async () => {
+  const dir = await mkdtemp(path.join(ROOT, '.tmp-fix-diff-'));
+  try {
+    await writeFile(path.join(dir, 'app.py'), 'def f():\n    return 1\n    print("dead")\n');
+    const result = await run([dir, '--fix', '--diff=HEAD', '--no-color']);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stderr, /fixed 1 finding/);
+    assert.doesNotMatch(await readFile(path.join(dir, 'app.py'), 'utf8'), /dead/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: --fix-dry-run works on a read-only file', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-cli-fix-readonly-'));
   const file = path.join(dir, 'app.py');
@@ -321,6 +334,25 @@ test('cli: a subdirectory --write-baseline preserves the root baseline', async (
     await rm(dir, { recursive: true, force: true });
   }
 });
+test('cli: --write-baseline replaces scanned entries and prunes deleted files', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-baseline-prune-'));
+  try {
+    await writeFile(path.join(dir, 'a.py'), 'def a():\n    pass\n');
+    await writeFile(path.join(dir, 'b.py'), 'def b():\n    pass\n');
+    assert.equal((await run([dir, '--write-baseline', '--no-color'])).status, 0);
+    await rm(path.join(dir, 'b.py'));
+
+    const rewritten = await run([dir, '--write-baseline', '--no-color']);
+    assert.equal(rewritten.status, 0, rewritten.stderr);
+    const baseline = JSON.parse(
+      await readFile(path.join(dir, '.slopgate-baseline.json'), 'utf8'),
+    ) as { entries: Array<{ file: string }> };
+    assert.deepEqual(baseline.entries.map((entry) => entry.file), ['a.py']);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cli: an explicitly requested baseline that does not exist exits 2', async () => {
   const result = await run(['fixtures/demo', '--baseline', 'no-such-baseline.json']);
   assert.equal(result.status, 2);

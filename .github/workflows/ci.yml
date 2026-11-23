@@ -86,3 +86,34 @@ jobs:
           node-version: 24
       - run: node scripts/check-encoding.mjs
 
+  windows:
+    name: windows test (node 24)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check:encoding
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: node dist/cli.js fixtures/demo --fail-on none
+      - run: npm pack --dry-run
+
+  windows-runtime:
+    name: windows runtime (node 20)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: node dist/cli.js --version
+      - run: node dist/cli.js fixtures/demo --format json --fail-on none
+

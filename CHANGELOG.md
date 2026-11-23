@@ -4,12 +4,23 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-11-23
+
 ### Added
+- `docs/encoding.md`, `scripts/encoding-policy.json`, `scripts/check-encoding.mjs` and `.editorconfig`: explicit UTF-8 policy, English-docs non-ASCII whitelist, localized-docs path contract, and a checker enforced by `npm run verify` and CI.
 - `docs/roadmap.md`: release plan through 1.0, priority order, acceptance gates, metrics, risks and next actions.
+- Full Windows test job and Windows Node 20 runtime job, in addition to the Windows encoding job.
+- `prepack` build step and a `./package.json` export; the packed tarball smoke test remains in CI.
+- `--fix` combination coverage for `--diff`, `--confidence`, `--verbose`, `--format`, `--quiet`, `--rule`, and a read-only target.
+
+### Fixed
+- `--fix` now refuses to overwrite a read-only file and reports the skipped finding instead of relying on rename semantics.
+- `--write-baseline` prunes entries for deleted files when rewriting from the baseline root; entries for existing files outside the scan scope are preserved.
 
 ### Changed
-- Added an explicit encoding contract (`docs/encoding.md`, `scripts/encoding-policy.json`, `scripts/check-encoding.mjs`, `.editorconfig`) enforced by `npm run verify` and CI on Linux and Windows.
-- Replaced content-based CJK density/run heuristics with a path-based localization policy and a reviewed non-ASCII whitelist for English docs.
+- 346 tests.
+- Duplicate signature collection at `high` was measured on CPython: about 1 s overhead on a warm 11-12 s scan. It stays enabled because the findings reappear with `--confidence medium`; the measurement is recorded in `docs/benchmark.md`.
+- Benchmark unchanged at **43 high / 97.7% (42/43) / 30/30 seeded**; stale labels and unlabeled high findings remain empty.
 
 ## [0.2.9] - 2026-11-23
 
