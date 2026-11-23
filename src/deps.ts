@@ -878,11 +878,14 @@ async function localWildcardPaths(base: string): Promise<string[]> {
       if (entry.name.startsWith('.')) continue;
       const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
       if (entry.isDirectory()) {
-        out.push(relative);
         await walk(path.join(dir, entry.name), relative, depth + 1);
       } else if (entry.isFile()) {
         const stem = relative.replace(/\.(?:[cm]?[jt]sx?)$/, '');
-        if (stem !== relative) out.push(stem);
+        if (stem !== relative) {
+          // `index.ts` denotes the directory import; every other file is an
+          // exact module path, never a prefix for arbitrary children.
+          out.push(stem.endsWith('/index') ? stem.slice(0, -'/index'.length) : stem);
+        }
       }
       if (out.length >= 2000) return;
     }
@@ -928,7 +931,7 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
           if (!target.endsWith('/*')) continue;
           const base = path.resolve(config.baseUrl ?? config.baseDir, target.slice(0, -2));
           for (const local of await localWildcardPaths(base)) {
-            aliases.add(key.replace('*', local));
+            if (local) aliases.add(`=${key.replace('*', local)}`);
           }
         }
       } else {

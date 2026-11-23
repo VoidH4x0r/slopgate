@@ -323,7 +323,9 @@ const phantomImport: Rule = {
 
       const pkg = packageRootOf(specifier);
       if (NODE_BUILTINS.has(pkg)) continue;
-      if (matchesAlias(pkg, aliases)) continue;
+      // Exact path aliases match one module, not every child of its package
+      // root; only prefix aliases may claim a package subpath.
+      if (matchesAlias(pkg, aliases.filter((alias) => !alias.startsWith('=')))) continue;
       if (declared.has(pkg) || workspaces.has(pkg)) continue;
       if (ctx.deps.ignoredModules.has(pkg)) continue;
 

@@ -157,6 +157,38 @@ test('referenced project paths are not inherited', async () => {
   }
 });
 
+test('@* wildcard accepts a directory index but not a missing child', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-tsconfig-index-'));
+  try {
+    await mkdir(path.join(dir, 'src', 'scope', 'pkg'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'tsconfig.json'),
+      JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@*': ['src/*'] } } }),
+      'utf8',
+    );
+    await writeFile(path.join(dir, 'package.json'), '{"name":"at-index","version":"0.0.0"}\n', 'utf8');
+    await writeFile(
+      path.join(dir, 'src', 'scope', 'pkg', 'index.ts'),
+      'export const pkg = 1;\n',
+      'utf8',
+    );
+    await writeFile(
+      path.join(dir, 'app.ts'),
+      "import { pkg } from '@scope/pkg';\nimport { child } from '@scope/pkg/child';\nvoid pkg; void child;\n",
+      'utf8',
+    );
+    const result = await scanProject({
+      root: dir,
+      config: { ...DEFAULT_CONFIG, include: ['**/*.ts'], exclude: [] },
+    });
+    const phantom = result.findings.filter((finding) => finding.ruleId === 'ts/phantom-import');
+    assert.equal(phantom.length, 1);
+    assert.match(phantom[0]?.message ?? '', /@scope\/pkg/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('tsconfig exact paths keys are not treated as prefixes', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-tsconfig-exact-'));
   try {
