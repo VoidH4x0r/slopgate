@@ -4,23 +4,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-11-23
-
-### Added
-- Stable programmatic API via `src/index.ts`: `scanProject`, `applyFixes`, config helpers, rule metadata, public types and `CONTRACT_VERSION = 1`.
-- `package.json` `main` / `types` / `exports` for `.`, `./package.json`, the config schema and the scan-output schema.
-- `docs/contract.md` and contract snapshot tests for rule ids, JSON fields and SARIF shape.
-- `schema/scan-output.schema.json` for machine consumers.
-- `docs/zh/README.md` Chinese guide under the encoding contract.
-- `THIRD_PARTY_NOTICES.md` for tree-sitter, grammars and runtime licenses.
-- `.github/workflows/release.yml` tag-driven `npm publish --provenance`, with `release:check`.
-- `check:performance` budget (CPython <= 20s) and benchmark-version/label reconciliation.
-- Node 20/22/24 Linux runtime matrix and Node 20/22/24 Windows runtime matrix; Windows Node 24 tests.
-
-### Changed
-- 408 tests.
-- Benchmark remains **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**. Go has 72 parse errors and Rust 157 (10.5%); these are disclosed in `docs/benchmark.md`.
-- `docs/contract.md` makes rule ids, config keys, finding fields, SARIF, MCP methods and exit codes stable for 1.x.
+## [1.0.1] - 2026-11-23
 
 ### Fixed
 - Python safe fix removes a trailing `;` and validates the rewritten file with tree-sitter before writing; a would-be syntax error is skipped instead of written.
@@ -33,6 +17,28 @@ All notable changes to this project are documented here. The format follows [Kee
 - Nested fix edits covered by an outer deletion are dropped instead of rejecting the whole file; multi-line decorators are handled by `ignore-next-line`.
 - `test:sandbox` skips the git-backed `--fix --diff` test instead of failing the release gate.
 - Added `@types/emscripten` so clean consumers can typecheck the published declarations with `skipLibCheck: false`.
+
+### Changed
+- 408 tests.
+- Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
+
+## [1.0.0] - 2026-11-23
+
+### Added
+- Stable programmatic API via `src/index.ts`: `scanProject`, `applyFixes`, config helpers, rule metadata, public types and `CONTRACT_VERSION = 1`.
+- `package.json` `main` / `types` / `exports` for `.`, `./package.json` and `./schema/slopgate.schema.json`.
+- `docs/contract.md` and contract snapshot tests for rule ids, JSON fields and SARIF shape.
+- `schema/scan-output.schema.json` for machine consumers.
+- `docs/zh/README.md` Chinese guide under the encoding contract.
+- `THIRD_PARTY_NOTICES.md` for tree-sitter, grammars and runtime licenses.
+- `.github/workflows/release.yml` tag-driven `npm publish --provenance`, with `release:check`.
+- `check:performance` budget (CPython <= 20s) and benchmark-version/label reconciliation.
+- Node 20/22/24 Linux runtime matrix and Node 20/22/24 Windows runtime matrix; Windows Node 24 tests.
+
+### Changed
+- 388 tests.
+- Benchmark remains **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high**, held-out AI is **8/8 labeled high**.
+- `docs/contract.md` makes rule ids, config keys, finding fields, SARIF, MCP methods and exit codes stable for 1.x.
 
 ## [0.4.1] - 2026-11-23
 

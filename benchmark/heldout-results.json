@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-11-23T03:21:24.486Z",
-  "slopgateVersion": "1.0.0",
+  "slopgateVersion": "1.0.1",
   "nodeVersion": "v24.19.0",
   "corpora": [
     {
