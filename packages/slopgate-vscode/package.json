@@ -85,6 +85,11 @@
           ],
           "default": "none",
           "description": "Passed to the CLI; the extension never fails a build."
+        },
+        "slopgate.scanOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Rescan a supported file when it is saved."
         }
       }
     }
@@ -97,5 +102,11 @@
   },
   "dependencies": {
     "cross-spawn": "^7.0.6"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "slopgate runs a local CLI; open the folder as a trusted workspace."
+    }
   }
 }

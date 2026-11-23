@@ -140,6 +140,17 @@ test('mcp: malformed tools/call notifications return no response', async () => {
   );
 });
 
+test('mcp: fractional maxFindings is rejected', async () => {
+  const server = makeServer();
+  const response = await call(server, {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'scan_path', arguments: { path: '.', maxFindings: 0.5 } },
+  });
+  assert.equal(response.error?.code, -32602);
+});
+
 test('mcp: strict JSON-RPC validation rejects missing jsonrpc and bad id types', async () => {
   const server = makeServer();
   const missing = await call(server, { id: 1, method: 'tools/list' });

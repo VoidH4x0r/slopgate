@@ -24,12 +24,18 @@ const diagnosticsByUri = new Map<string, vscode.Diagnostic[]>();
 let scanEpoch = 0;
 const output = vscode.window.createOutputChannel('slopgate');
 
-function configured(resource?: vscode.Uri): { executable: string; confidence: string; failOn: string } {
+function configured(resource?: vscode.Uri): {
+  executable: string;
+  confidence: string;
+  failOn: string;
+  scanOnSave: boolean;
+} {
   const config = vscode.workspace.getConfiguration('slopgate', resource);
   return {
     executable: config.get<string>('path', 'slopgate') || 'slopgate',
     confidence: config.get<string>('confidence', 'high'),
     failOn: config.get<string>('failOn', 'none'),
+    scanOnSave: config.get<boolean>('scanOnSave', true),
   };
 }
 
@@ -187,6 +193,7 @@ export function activate(context: vscode.ExtensionContext): void {
       void scanActiveDocument(document).catch((error) => output.appendLine(String(error)));
     }),
     vscode.workspace.onDidSaveTextDocument((document) => {
+      if (!configured(document.uri).scanOnSave) return;
       void scanActiveDocument(document).catch((error) => output.appendLine(String(error)));
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {

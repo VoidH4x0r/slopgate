@@ -392,6 +392,16 @@ export function createMcpServer(deps: McpDeps) {
               params.arguments !== null && typeof params.arguments === 'object'
                 ? (params.arguments as Record<string, unknown>)
                 : {};
+            if (
+              args.maxFindings !== undefined &&
+              (typeof args.maxFindings !== 'number' ||
+                !Number.isInteger(args.maxFindings) ||
+                args.maxFindings < 1)
+            ) {
+              return isNotification
+                ? null
+                : fail(id, -32602, 'maxFindings must be a positive integer');
+            }
             const result = await callTool(params.name, args);
             return reply(ok(id, result));
           }
