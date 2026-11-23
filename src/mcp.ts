@@ -56,6 +56,7 @@ export interface McpDeps {
 }
 
 const PROTOCOL_FALLBACK = '2024-11-05';
+const PROTOCOL_VERSIONS = new Set(['2024-11-05', '2025-03-26', '2025-06-18']);
 const MAX_FINDINGS = 50;
 
 const TOOLS = [
@@ -310,29 +311,38 @@ export function createMcpServer(deps: McpDeps) {
       } catch {
         return fail(null, -32700, 'Parse error');
       }
-      if (request === null || typeof request !== 'object' || typeof request.method !== 'string') {
+      if (
+        request === null ||
+        typeof request !== 'object' ||
+        typeof request.method !== 'string' ||
+        (request.jsonrpc !== undefined && request.jsonrpc !== '2.0')
+      ) {
         return fail(null, -32600, 'Invalid request');
       }
 
-      const isNotification = request.id === undefined || request.id === null;
+      const isNotification = request.id === undefined;
       const id = request.id ?? null;
+      const reply = (response: JsonRpcResponse): JsonRpcResponse | null =>
+        isNotification ? null : response;
 
       try {
         switch (request.method) {
           case 'initialize': {
             const requested = (request.params as { protocolVersion?: unknown } | undefined)?.protocolVersion;
-            return ok(id, {
-              protocolVersion: typeof requested === 'string' ? requested : PROTOCOL_FALLBACK,
+            return reply(ok(id, {
+              protocolVersion: typeof requested === 'string' && PROTOCOL_VERSIONS.has(requested)
+                ? requested
+                : PROTOCOL_FALLBACK,
               capabilities: { tools: {} },
               serverInfo: { name: 'slopgate', version: deps.version },
-            });
+            }));
           }
           case 'notifications/initialized':
             return null;
           case 'ping':
-            return ok(id, {});
+            return reply(ok(id, {}));
           case 'tools/list':
-            return ok(id, { tools: TOOLS });
+            return reply(ok(id, { tools: TOOLS }));
           case 'tools/call': {
             const params = (request.params ?? {}) as { name?: unknown; arguments?: unknown };
             if (typeof params.name !== 'string') return fail(id, -32602, 'tools/call requires a tool name');
@@ -341,7 +351,7 @@ export function createMcpServer(deps: McpDeps) {
                 ? (params.arguments as Record<string, unknown>)
                 : {};
             const result = await callTool(params.name, args);
-            return ok(id, result);
+            return reply(ok(id, result));
           }
           default:
             return isNotification ? null : fail(id, -32601, `Method not found: ${request.method}`);
@@ -349,9 +359,9 @@ export function createMcpServer(deps: McpDeps) {
       } catch (error) {
         const message = (error as Error).message;
         if (request.method === 'tools/call') {
-          return ok(id, textResult(`slopgate error: ${message}`, true));
+          return reply(ok(id, textResult(`slopgate error: ${message}`, true)));
         }
-        return fail(id, -32603, message);
+        return isNotification ? null : fail(id, -32603, message);
       }
     },
   };

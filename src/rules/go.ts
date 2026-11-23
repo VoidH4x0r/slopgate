@@ -48,7 +48,7 @@ export function hasBuildConstraint(ctx: RuleContext): boolean {
 }
 
 function isStubPanic(call: AstNode): boolean {
-  return /^panic\(\s*"(?:not implemented|unimplemented|todo)"\s*\)$/i.test(call.text.trim());
+  return /^panic\(\s*["`](?:not implemented|unimplemented|todo)["`]\s*\)$/i.test(call.text.trim());
 }
 
 function importPath(node: AstNode): string {
@@ -154,6 +154,7 @@ function goUnreachableRule(): Rule {
         let dead = false;
         for (const statement of statements) {
           if (dead) {
+            if (statement.type === 'empty_statement') continue;
             drafts.push({
               message: 'code after a terminating statement is unreachable',
               start: startOf(statement),
@@ -284,7 +285,13 @@ function goSwallowedErrorRule(): Rule {
         const condition = node.childForFieldName('condition');
         const consequence = node.childForFieldName('consequence');
         if (!condition || !consequence) continue;
-        const match = /^\s*([A-Za-z_]\w*)\s*!=\s*nil\s*$/.exec(condition.text);
+        const cleaned = condition.text
+          .trim()
+          .replace(/^\(+/, '')
+          .replace(/\)+$/, '')
+          .trim();
+        const checked = cleaned.split(';').at(-1)?.trim() ?? cleaned;
+        const match = /^\s*([A-Za-z_]\w*)\s*!=\s*nil\s*$/.exec(checked);
         if (!match?.[1] || !/^(?:err|.*Err)$/.test(match[1])) continue;
         if (statementsOf(consequence).length > 0) continue;
         if (hasCommentBetween(ctx, startOf(consequence).line, endOf(consequence).line)) continue;

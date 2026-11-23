@@ -101,6 +101,37 @@ test('mcp: initialized notification returns no response', async () => {
   assert.equal(await server.handle(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })), null);
 });
 
+test('mcp: notifications return no response and null ids are requests', async () => {
+  const server = makeServer();
+  assert.equal(
+    await server.handle(JSON.stringify({ jsonrpc: '2.0', method: 'tools/list' })),
+    null,
+  );
+  const response = await server.handle(
+    JSON.stringify({ jsonrpc: '2.0', id: null, method: 'tools/list' }),
+  );
+  assert.equal(response?.id, null);
+  assert.ok(response?.result);
+});
+
+test('mcp: invalid jsonrpc and unknown protocol versions are rejected/fallback', async () => {
+  const server = makeServer();
+  const invalid = await server.handle(
+    JSON.stringify({ jsonrpc: '1.0', id: 1, method: 'tools/list' }),
+  );
+  assert.equal(invalid?.error?.code, -32600);
+  const init = await call(server, {
+    jsonrpc: '2.0',
+    id: 2,
+    method: 'initialize',
+    params: { protocolVersion: '9999-01-01' },
+  });
+  assert.equal(
+    (init.result as { protocolVersion: string }).protocolVersion,
+    '2024-11-05',
+  );
+});
+
 test('mcp: tools/list exposes scan_diff, scan_path, list_rules, explain_rule and preview_fix', async () => {
   const server = makeServer();
   const response = await call(server, { jsonrpc: '2.0', id: 2, method: 'tools/list' });

@@ -121,9 +121,24 @@ test('go/stub-body reports a not-implemented panic', async () => {
   assert.equal(drafts.length, 1);
 });
 
+test('go/stub-body reports a not-implemented panic with a raw string', async () => {
+  const source = 'package main\n\nfunc f() {\n  panic(`not implemented`)\n}\n';
+  assert.equal((await runRule('go/stub-body', source, 'go')).length, 1);
+});
+
 test('go/stub-body accepts an empty method body', async () => {
   const source = 'package main\n\ntype T struct{}\n\nfunc (t T) M() {}\n';
   assert.deepEqual(await runRule('go/stub-body', source, 'go'), []);
+});
+
+test('go/swallowed-error accepts parenthesized conditions and initializers', async () => {
+  for (const source of [
+    'package main\n\nfunc f(err error) {\n  if (err != nil) {\n  }\n}\n',
+    'package main\n\nfunc f() {\n  if err := run(); err != nil {\n  }\n}\n',
+  ]) {
+    const drafts = await runRule('go/swallowed-error', source, 'go');
+    assert.equal(drafts.length, 1, source);
+  }
 });
 
 test('go/swallowed-error reports an empty error branch', async () => {
