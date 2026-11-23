@@ -37,9 +37,10 @@ All notable changes to this project are documented here. The format follows [Kee
 - Baseline v1 entries preserved by a v2 rewrite are marked legacy and still match; tsconfig `@*`/`~*` wildcards match their prefix; a child `paths` table replaces inherited entries instead of merging them.
 - tsconfig `@*`/`~*` only accept paths that exist under the target directory; `references` projects no longer contribute `paths` to the referencing project.
 - Wildcard aliases now match exact modules (or a directory `index.*`), not arbitrary children; exact aliases no longer claim a package root's subpaths.
+- Root `*` paths and baseUrl-only resolution also use exact local files/index entries instead of directory prefixes.
 
 ### Changed
-- 475 tests.
+- 477 tests.
 - Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.

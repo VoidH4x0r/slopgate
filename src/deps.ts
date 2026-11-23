@@ -909,14 +909,8 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
         for (const target of targets) {
           if (!target.endsWith('/*')) continue;
           const base = path.resolve(config.baseUrl ?? config.baseDir, target.slice(0, -2));
-          const entries = await readDirSafe(base);
-          for (const entry of entries ?? []) {
-            if (entry.name.startsWith('.')) continue;
-            if (entry.isDirectory()) aliases.add(entry.name);
-            else if (entry.isFile()) {
-              const stem = entry.name.replace(/\.(?:[cm]?[jt]sx?)$/, '');
-              if (stem !== entry.name) aliases.add(stem);
-            }
+          for (const local of await localWildcardPaths(base)) {
+            if (local) aliases.add(`=${local}`);
           }
         }
         continue;
@@ -943,14 +937,8 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
     // directory (`components/button` -> `src/components/button`). The first
     // path segment is the alias prefix this checker can match.
     if (config.baseUrl) {
-      const entries = await readDirSafe(config.baseUrl);
-      for (const entry of entries ?? []) {
-        if (entry.name.startsWith('.')) continue;
-        if (entry.isDirectory()) aliases.add(entry.name);
-        else if (entry.isFile()) {
-          const stem = entry.name.replace(/\.(?:[cm]?[jt]sx?)$/, '');
-          if (stem !== entry.name) aliases.add(stem);
-        }
+      for (const local of await localWildcardPaths(config.baseUrl)) {
+        if (local) aliases.add(`=${local}`);
       }
     }
   }

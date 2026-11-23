@@ -189,6 +189,62 @@ test('@* wildcard accepts a directory index but not a missing child', async () =
   }
 });
 
+test('root * and baseUrl aliases do not accept missing children', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-root-wildcard-'));
+  try {
+    await mkdir(path.join(dir, 'src', 'utils'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'tsconfig.json'),
+      JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '*': ['src/*'] } } }),
+      'utf8',
+    );
+    await writeFile(path.join(dir, 'package.json'), '{"name":"root-wildcard","version":"0.0.0"}\n', 'utf8');
+    await writeFile(path.join(dir, 'src', 'utils', 'foo.ts'), 'export const foo = 1;\n', 'utf8');
+    await writeFile(
+      path.join(dir, 'app.ts'),
+      "import { foo } from 'utils/foo';\nimport { missing } from 'utils/missing';\nvoid foo; void missing;\n",
+      'utf8',
+    );
+    const result = await scanProject({
+      root: dir,
+      config: { ...DEFAULT_CONFIG, include: ['**/*.ts'], exclude: [] },
+    });
+    const phantom = result.findings.filter((finding) => finding.ruleId === 'ts/phantom-import');
+    assert.equal(phantom.length, 1);
+    assert.match(phantom[0]?.message ?? '', /utils/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('baseUrl only aliases real files, not missing children', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-baseurl-exact-'));
+  try {
+    await mkdir(path.join(dir, 'src', 'components'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'tsconfig.json'),
+      JSON.stringify({ compilerOptions: { baseUrl: './src' } }),
+      'utf8',
+    );
+    await writeFile(path.join(dir, 'package.json'), '{"name":"baseurl-exact","version":"0.0.0"}\n', 'utf8');
+    await writeFile(path.join(dir, 'src', 'components', 'button.ts'), 'export const button = 1;\n', 'utf8');
+    await writeFile(
+      path.join(dir, 'app.ts'),
+      "import { button } from 'components/button';\nimport { missing } from 'components/missing';\nvoid button; void missing;\n",
+      'utf8',
+    );
+    const result = await scanProject({
+      root: dir,
+      config: { ...DEFAULT_CONFIG, include: ['**/*.ts'], exclude: [] },
+    });
+    const phantom = result.findings.filter((finding) => finding.ruleId === 'ts/phantom-import');
+    assert.equal(phantom.length, 1);
+    assert.match(phantom[0]?.message ?? '', /components/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('tsconfig exact paths keys are not treated as prefixes', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-tsconfig-exact-'));
   try {

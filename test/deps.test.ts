@@ -274,7 +274,7 @@ test('loadProjectDeps expands a tsconfig baseUrl into import aliases', async () 
       'export const button = 1;\n',
     );
     const deps = await loadProjectDeps(dir);
-    assert.ok(deps.node.aliases.includes('components'));
+    assert.ok(deps.node.aliases.includes('=components/button'));
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
