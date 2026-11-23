@@ -1,5 +1,7 @@
 # slopgate
 
+[English](README.md) · [Chinese](docs/zh/README.md)
+
 **The slop gate for AI-written code.**
 
 AI writes code that *looks* right. `slopgate` finds the parts that only look right: imports of packages that do not exist, tests that cannot fail, functions that are stubs, errors that vanish without a trace.
@@ -14,7 +16,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.4.1  ·  4 files  ·  50ms
+slopgate 1.0.0  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -238,7 +240,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.4.1 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@1.0.0 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -246,7 +248,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 Or use the repository's composite action:
 
 ```yaml
-      - uses: VoidH4x0r/slopgate@v0.4.1
+      - uses: VoidH4x0r/slopgate@v1.0.0
         with:
           path: .
           confidence: high
@@ -258,7 +260,7 @@ Pre-commit and MCP setup are documented in [`docs/integrations.md`](docs/integra
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.4.1 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@1.0.0 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -287,6 +289,19 @@ try { ... } catch {}
 ## VS Code
 
 The independent [`packages/slopgate-vscode`](packages/slopgate-vscode/README.md) extension surfaces CLI JSON findings as diagnostics and offers quick fixes for the safe `py/unreachable` / `ts/unreachable` subset. It never reimplements rules and does not bundle the grammars.
+
+## Public API
+
+The CLI is the primary interface, but 1.0 also exports a stable programmatic surface:
+
+```ts
+import { scanProject, CONTRACT_VERSION } from '@voidh4x0r/slopgate';
+
+const result = await scanProject({ root: process.cwd() });
+console.log(CONTRACT_VERSION, result.findings.length);
+```
+
+Contract: [`docs/contract.md`](docs/contract.md); JSON output schema: [`schema/scan-output.schema.json`](schema/scan-output.schema.json).
 
 ## Rules
 
@@ -353,7 +368,8 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.3.1 — Rust support: parser, Cargo.toml resolution, 6 rules, 20 fixtures, 635k-line clean corpus
 - [x] v0.3.2 — VS Code extension: CLI-backed diagnostics, safe quick fix, config
 - [x] v0.4.0 — semantic duplicates, MCP explain/preview, JSON schema, GitHub Action, pre-commit
-- [ ] v1.0 — stable public API and release gate
+- [x] v0.4.1 — Tape/TAP, held-out AI and bundled-app benchmark coverage
+- [x] v1.0.0 — stable public API/contract, Node 20/22/24 Linux+Windows CI, release automation, docs/zh
 
 The detailed plan, estimates, release gates, risks and next-14-days actions are in [`docs/roadmap.md`](docs/roadmap.md).
 
@@ -388,7 +404,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 384 tests; the tests themselves make no network or child-process calls
+npm test            # 388 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

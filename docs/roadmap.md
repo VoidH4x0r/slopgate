@@ -1,6 +1,6 @@
 # Development roadmap
 
-Status: **0.4.1 is the benchmark-completion release candidate**. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code; 0.4.0 added semantic duplicates and integrations. This roadmap is effort-based, not a promise of dates.
+Status: **1.0.0 is the stable-contract release candidate**. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code; 0.4.x added semantic duplicates, integrations and complete benchmark coverage. This roadmap is effort-based, not a promise of dates.
 
 ## 1. Product thesis
 
@@ -27,7 +27,7 @@ Every roadmap decision should protect those advantages.
 | Autofix | Safe deletion of unreachable statements after `return` / `raise` / `break` / `continue` |
 | Benchmark | 1,115,270 Python/JS/AI lines: 42 high, 97.6% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 635,245 lines, 0 high |
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
-| Release | npm `@voidh4x0r/slopgate`; latest published 0.4.0, 0.4.1 release candidate; VS Code extension 0.1.0 |
+| Release | npm `@voidh4x0r/slopgate`; latest published 0.4.0, 1.0.0 release candidate; VS Code extension 0.1.0 |
 
 The current limitations are documented in `README.md`. The biggest product gaps are language coverage, editor integration, semantic duplicate detection, and a benchmark that still under-represents JavaScript test theatre and bundled output.
 
@@ -186,7 +186,7 @@ Exit criteria:
 
 ### 1.0.0 - stable public contract
 
-Goal: a release that can be depended on without reading the changelog. Target: 4 to 6 weeks after 0.4.
+Goal: a release that can be depended on without reading the changelog. **Status: implemented in 1.0.0.**
 
 Required:
 

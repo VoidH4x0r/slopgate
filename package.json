@@ -1,6 +1,6 @@
 {
   "name": "@voidh4x0r/slopgate",
-  "version": "0.4.1",
+  "version": "1.0.0",
   "description": "The slop gate for AI-written code. Precision-first structural linting for Python, TypeScript, Go and Rust.",
   "type": "module",
   "license": "MIT",
@@ -22,7 +22,8 @@
     "schema",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "engines": {
     "node": ">=20.11"
@@ -35,10 +36,12 @@
     "bench": "node scripts/benchmark.mjs",
     "demo:gif": "node scripts/make-demo-gif.mjs",
     "set-repo": "node scripts/set-repo.mjs",
-    "verify": "npm run typecheck && npm run check:encoding && node scripts/check-links.mjs && npm run test:sandbox && npm run build && node dist/cli.js . --fail-on high && npm pack --dry-run",
+    "verify": "npm run typecheck && npm run check:encoding && npm run check:performance && node scripts/check-links.mjs && npm run test:sandbox && npm run build && node dist/cli.js . --fail-on high && npm pack --dry-run",
     "prepublishOnly": "npm run build && npm run typecheck",
     "check:encoding": "node scripts/check-encoding.mjs",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "check:performance": "node scripts/check-performance.mjs",
+    "release:check": "node scripts/check-release.mjs"
   },
   "dependencies": {
     "web-tree-sitter": "^0.25.10"
@@ -66,6 +69,14 @@
     "access": "public"
   },
   "exports": {
-    "./package.json": "./package.json"
-  }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./schema/slopgate.schema.json": "./schema/slopgate.schema.json",
+    "./schema/scan-output.schema.json": "./schema/scan-output.schema.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
 }

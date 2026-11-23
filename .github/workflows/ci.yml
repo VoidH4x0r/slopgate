@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22]
+        node: [20, 22, 24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,6 +45,7 @@ jobs:
       - run: npm run build
       - run: node dist/cli.js --version
       - run: node dist/cli.js fixtures/demo --format json --fail-on none
+      - run: node -e "import('./dist/index.js').then((m) => { if (typeof m.scanProject !== 'function' || m.CONTRACT_VERSION !== 1) process.exit(1); })"
 
   package:
     name: package contents
@@ -140,16 +141,21 @@ jobs:
       - run: npm pack --dry-run
 
   windows-runtime:
-    name: windows runtime (node 20)
+    name: windows runtime (node ${{ matrix.node }})
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
       - run: npm run build
       - run: node dist/cli.js --version
       - run: node dist/cli.js fixtures/demo --format json --fail-on none
+      - run: node -e "import('./dist/index.js').then((m) => { if (typeof m.scanProject !== 'function' || m.CONTRACT_VERSION !== 1) process.exit(1); })"
 

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/VoidH4x0r/slopgate/main/schema/scan-output.schema.json",
+  "title": "slopgate JSON output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool", "version", "stats", "summary", "findings"],
+  "properties": {
+    "tool": { "const": "slopgate" },
+    "version": { "type": "string" },
+    "stats": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["files", "byLanguage", "skipped", "parseErrors", "durationMs"],
+      "properties": {
+        "files": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 },
+        "parseErrors": { "type": "integer", "minimum": 0 },
+        "durationMs": { "type": "number", "minimum": 0 }
+      }
+    },
+    "summary": { "type": "object", "additionalProperties": true },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ruleId",
+          "severity",
+          "confidence",
+          "file",
+          "start",
+          "end",
+          "message",
+          "snippet",
+          "evidence",
+          "fingerprint"
+        ],
+        "properties": {
+          "ruleId": { "type": "string" },
+          "severity": { "enum": ["error", "warning", "info"] },
+          "confidence": { "enum": ["high", "medium", "low"] },
+          "file": { "type": "string" },
+          "start": { "$ref": "#/$defs/position" },
+          "end": { "$ref": "#/$defs/position" },
+          "message": { "type": "string" },
+          "snippet": { "type": "string" },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "help": { "type": "string" },
+          "fingerprint": { "type": "string", "pattern": "^[a-f0-9]{16}$" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["line", "column"],
+      "properties": {
+        "line": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

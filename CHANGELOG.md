@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-23
+
+### Added
+- Stable programmatic API via `src/index.ts`: `scanProject`, `applyFixes`, config helpers, rule metadata, public types and `CONTRACT_VERSION = 1`.
+- `package.json` `main` / `types` / `exports` for `.`, `./package.json` and `./schema/slopgate.schema.json`.
+- `docs/contract.md` and contract snapshot tests for rule ids, JSON fields and SARIF shape.
+- `schema/scan-output.schema.json` for machine consumers.
+- `docs/zh/README.md` Chinese guide under the encoding contract.
+- `THIRD_PARTY_NOTICES.md` for tree-sitter, grammars and runtime licenses.
+- `.github/workflows/release.yml` tag-driven `npm publish --provenance`, with `release:check`.
+- `check:performance` budget (CPython <= 20s) and benchmark-version/label reconciliation.
+- Node 20/22/24 Linux runtime matrix and Node 20/22/24 Windows runtime matrix; Windows Node 24 tests.
+
+### Changed
+- 388 tests.
+- Benchmark remains **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high**, held-out AI is **8/8 labeled high**.
+- `docs/contract.md` makes rule ids, config keys, finding fields, SARIF, MCP methods and exit codes stable for 1.x.
+
 ## [0.4.1] - 2026-11-23
 
 ### Fixed
