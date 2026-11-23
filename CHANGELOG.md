@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-11-23
+
+### Added
+- `packages/slopgate-vscode` 0.1.0: independent VS Code extension backed by the installed CLI.
+- Diagnostics from CLI JSON, workspace/file scan commands, `slopgate.path`/`confidence`/`failOn` settings, an output channel, and quick fixes for the safe `py/unreachable` / `ts/unreachable` subset.
+- Five adapter tests and a Linux CI job for the extension.
+
+### Changed
+- Root CLI 0.3.2; 28 rules and 378 root tests unchanged.
+- The extension does not bundle grammars, reimplement rules, or start a language server; it invokes the CLI with `--format json` and `--no-color`.
+
 ## [0.3.1] - 2026-11-23
 
 ### Added

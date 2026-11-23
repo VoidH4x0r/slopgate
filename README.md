@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.3.1  ·  4 files  ·  50ms
+slopgate 0.3.2  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -237,7 +237,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.3.1 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.3.2 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -245,7 +245,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.3.1 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.3.2 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -270,6 +270,10 @@ try { ... } catch {}
 ### Safe autofix
 
 `slopgate --fix` only removes code that can never execute: statements after `return`, `raise`, `break` or `continue` in the same block. It re-scans after writing, respects `--baseline`, `--diff`, `--confidence` and `--rule`, preserves BOM/CRLF, and writes each file atomically. `--fix-dry-run` validates the same edits without touching disk. All other findings remain report-only; `--fix` is not a general formatter or import rewriter. It does not create `.bak` backups; keep the target under version control and review the diff before committing.
+
+## VS Code
+
+The independent [`packages/slopgate-vscode`](packages/slopgate-vscode/README.md) extension surfaces CLI JSON findings as diagnostics and offers quick fixes for the safe `py/unreachable` / `ts/unreachable` subset. It never reimplements rules and does not bundle the grammars.
 
 ## Rules
 
@@ -333,7 +337,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.2.10 — maintenance: encoding contract release, autofix matrix, Windows CI, packaging hygiene
 - [x] v0.3.0 — Go support: parser, go.mod resolution, 6 rules, 20 fixtures, 2.45M-line clean corpus
 - [x] v0.3.1 — Rust support: parser, Cargo.toml resolution, 6 rules, 20 fixtures, 635k-line clean corpus
-- [ ] v0.3.2 — VS Code extension
+- [x] v0.3.2 — VS Code extension: CLI-backed diagnostics, safe quick fix, config
 - [ ] v0.4 — semantic duplicates, expanded benchmark, integrations
 - [ ] v1.0 — stable public API and release gate
 
@@ -348,7 +352,7 @@ The detailed plan, estimates, release gates, risks and next-14-days actions are 
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 - Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
 - The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
-- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.3.1. A file contributes at most one representative per duplicate group.
+- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.3.2. A file contributes at most one representative per duplicate group.
 - `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off", "go/duplicate-block": "off" }` if you do not need medium findings.
 - `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
 - `go/phantom-import` accepts the reserved `internal/...` root and treats module-internal imports as local; it does not check whether a local package directory exists. `go.work` is not resolved yet.

@@ -1,0 +1,97 @@
+{
+  "name": "slopgate-vscode",
+  "displayName": "slopgate",
+  "description": "Precision-first structural diagnostics for AI-written Python, TypeScript, Go and Rust.",
+  "version": "0.1.0",
+  "publisher": "voidh4x0r",
+  "type": "commonjs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VoidH4x0r/slopgate.git",
+    "directory": "packages/slopgate-vscode"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "slopgate",
+    "linter",
+    "ai-generated-code",
+    "python",
+    "typescript",
+    "go",
+    "rust"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test \"test/**/*.test.mts\"",
+    "vscode:prepublish": "npm run build"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "slopgate.scanWorkspace",
+        "title": "slopgate: Scan workspace"
+      },
+      {
+        "command": "slopgate.scanFile",
+        "title": "slopgate: Scan current file"
+      },
+      {
+        "command": "slopgate.fixFile",
+        "title": "slopgate: Fix safe findings in current file"
+      }
+    ],
+    "configuration": {
+      "title": "slopgate",
+      "properties": {
+        "slopgate.path": {
+          "type": "string",
+          "default": "slopgate",
+          "description": "Path to the slopgate executable. Defaults to PATH."
+        },
+        "slopgate.confidence": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "default": "high",
+          "description": "Minimum confidence to show as diagnostics."
+        },
+        "slopgate.failOn": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "none"
+          ],
+          "default": "none",
+          "description": "Passed to the CLI; the extension never fails a build."
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.9.0"
+  }
+}

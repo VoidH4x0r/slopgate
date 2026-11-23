@@ -98,6 +98,20 @@ jobs:
           set -e
           test "$status" -eq 1
 
+  extension:
+    name: vs code extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: packages/slopgate-vscode/package-lock.json
+      - run: npm ci --prefix packages/slopgate-vscode
+      - run: npm run typecheck --prefix packages/slopgate-vscode
+      - run: npm test --prefix packages/slopgate-vscode
+
   encoding-windows:
     name: encoding (windows)
     runs-on: windows-latest
