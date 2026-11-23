@@ -126,6 +126,7 @@ function hasAssertion(body: AstNode): boolean {
   let found = false;
   walk(body, (node) => {
     if (found) return false;
+    if (node !== body && (node.type === 'function_definition' || node.type === 'lambda')) return false;
     if (node.type === 'assert_statement') {
       found = true;
       return false;
@@ -432,7 +433,11 @@ const noopTest: Rule = {
         const delegatedTo = delegatesToLocalHelper(statements, definitions, helperAssertions);
         const parameters = fn.childForFieldName('parameters');
         const parameterCount = parameters
-          ? parameters.namedChildren.filter((child) => child.type !== 'comment').length
+          ? parameters.namedChildren.filter(
+              (child) =>
+                child.type !== 'comment' &&
+                !['*', '/'].includes(child.text.trim()),
+            ).length
           : 0;
         const decorated = fn.parent?.type === 'decorated_definition';
         const decoratorText = decorated

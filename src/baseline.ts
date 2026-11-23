@@ -45,6 +45,9 @@ export async function loadBaseline(file: string): Promise<BaselineFile | undefin
     text = (await readFile(file, 'utf8')).replace(/^\uFEFF/, '');
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    if ((error as NodeJS.ErrnoException).code === 'EISDIR') {
+      throw new Error(`${file} is a directory, not a baseline file`);
+    }
     throw error;
   }
   try {

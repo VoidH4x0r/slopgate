@@ -885,9 +885,12 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
     for (const key of Object.keys(config.paths)) {
       if (key === '*') {
         const wildcardTargets = config.paths['*'];
-        const target = Array.isArray(wildcardTargets) ? wildcardTargets[0] : undefined;
-        if (typeof target === 'string' && target.endsWith('/*')) {
-          const base = path.resolve(config.baseDir, target.slice(0, -2));
+        const targets = Array.isArray(wildcardTargets)
+          ? wildcardTargets.filter((target): target is string => typeof target === 'string')
+          : [];
+        for (const target of targets) {
+          if (!target.endsWith('/*')) continue;
+          const base = path.resolve(config.baseUrl ?? config.baseDir, target.slice(0, -2));
           const entries = await readDirSafe(base);
           for (const entry of entries ?? []) {
             if (entry.name.startsWith('.')) continue;

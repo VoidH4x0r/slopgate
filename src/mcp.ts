@@ -229,6 +229,9 @@ export function createMcpServer(deps: McpDeps) {
     const configFor = deps.configFor ?? (async () => deps.config);
 
     if (name === 'scan_path') {
+      if (params.path !== undefined && typeof params.path !== 'string') {
+        return textResult('scan_path requires a string path', true);
+      }
       const target = path.resolve(deps.root, typeof params.path === 'string' ? params.path : '.');
       if (!isInsideRoot(deps.root, target)) {
         return textResult(`Refusing to scan outside the repository root: ${target}`, true);
@@ -270,6 +273,9 @@ export function createMcpServer(deps: McpDeps) {
     }
 
     if (name === 'preview_fix') {
+      if (params.path !== undefined && typeof params.path !== 'string') {
+        return textResult('preview_fix requires a string path', true);
+      }
       const target = path.resolve(deps.root, typeof params.path === 'string' ? params.path : '.');
       if (!isInsideRoot(deps.root, target)) {
         return textResult(`Refusing to scan outside the repository root: ${target}`, true);
@@ -308,13 +314,24 @@ export function createMcpServer(deps: McpDeps) {
   }
 
   return {
-    async handle(line: string): Promise<JsonRpcResponse | null> {
-      let request: JsonRpcRequest;
+    async handle(line: string): Promise<JsonRpcResponse | JsonRpcResponse[] | null> {
+      let parsed: unknown;
       try {
-        request = JSON.parse(line) as JsonRpcRequest;
+        parsed = JSON.parse(line) as unknown;
       } catch {
         return fail(null, -32700, 'Parse error');
       }
+      if (Array.isArray(parsed)) {
+        if (parsed.length === 0) return fail(null, -32600, 'Invalid request');
+        const responses: JsonRpcResponse[] = [];
+        for (const item of parsed) {
+          const response = await this.handle(JSON.stringify(item));
+          if (Array.isArray(response)) responses.push(...response);
+          else if (response) responses.push(response);
+        }
+        return responses.length > 0 ? responses : null;
+      }
+      const request = parsed as JsonRpcRequest;
       if (
         request === null ||
         typeof request !== 'object' ||
@@ -350,7 +367,7 @@ export function createMcpServer(deps: McpDeps) {
             }));
           }
           case 'notifications/initialized':
-            return null;
+            return isNotification ? null : reply(ok(id, {}));
           case 'ping':
             return reply(ok(id, {}));
           case 'tools/list':
@@ -359,6 +376,9 @@ export function createMcpServer(deps: McpDeps) {
             const params = (request.params ?? {}) as { name?: unknown; arguments?: unknown };
             if (typeof params.name !== 'string') {
               return isNotification ? null : fail(id, -32602, 'tools/call requires a tool name');
+            }
+            if (!TOOLS.some((tool) => tool.name === params.name)) {
+              return isNotification ? null : fail(id, -32602, `Unknown tool: ${params.name}`);
             }
             if (
               params.arguments !== undefined &&

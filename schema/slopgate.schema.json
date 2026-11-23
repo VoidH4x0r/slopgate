@@ -12,31 +12,88 @@
     },
     "include": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Glob patterns to include; replaces the default pattern set."
     },
     "exclude": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Glob patterns to exclude."
     },
     "ignoreModules": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Import names to always treat as declared."
     },
     "rules": {
       "type": "object",
       "description": "Per-rule severity overrides.",
-      "propertyNames": { "pattern": "^(py|ts|go|rs)/" },
-      "additionalProperties": { "enum": ["off", "error", "warning", "info"] }
+      "propertyNames": {
+        "enum": [
+          "py/phantom-import",
+          "py/noop-test",
+          "py/tautological-assert",
+          "py/stub-body",
+          "py/swallowed-exception",
+          "py/dead-branch",
+          "py/unreachable",
+          "ts/phantom-import",
+          "ts/noop-test",
+          "ts/tautological-assert",
+          "ts/stub-function",
+          "ts/swallowed-exception",
+          "ts/dead-branch",
+          "ts/unreachable",
+          "go/phantom-import",
+          "go/noop-test",
+          "go/unreachable",
+          "go/stub-body",
+          "go/swallowed-error",
+          "rs/phantom-import",
+          "rs/noop-test",
+          "rs/unreachable",
+          "rs/stub-body",
+          "rs/swallowed-error",
+          "py/duplicate-block",
+          "ts/duplicate-block",
+          "go/duplicate-block",
+          "rs/duplicate-block",
+          "py/semantic-duplicate",
+          "ts/semantic-duplicate",
+          "go/semantic-duplicate",
+          "rs/semantic-duplicate"
+        ]
+      },
+      "additionalProperties": {
+        "enum": [
+          "off",
+          "error",
+          "warning",
+          "info"
+        ]
+      }
     },
     "confidence": {
-      "enum": ["high", "medium", "low"],
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
       "description": "Minimum confidence to display."
     },
     "failOn": {
-      "enum": ["high", "medium", "low", "none"],
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "none"
+      ],
       "description": "Minimum confidence that fails the run."
     }
   }

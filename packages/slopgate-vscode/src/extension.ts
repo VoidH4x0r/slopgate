@@ -21,6 +21,7 @@ const SUPPORTED = new Set([
 const COLLECTION = 'slopgate';
 let collection: vscode.DiagnosticCollection;
 const diagnosticsByUri = new Map<string, vscode.Diagnostic[]>();
+let scanEpoch = 0;
 const output = vscode.window.createOutputChannel('slopgate');
 
 function configured(): { executable: string; confidence: string; failOn: string } {
@@ -102,6 +103,7 @@ async function scan(
   replaceAll: boolean,
   targetFile?: string,
 ): Promise<void> {
+  const epoch = ++scanEpoch;
   const settings = configured();
   output.appendLine(`scan ${target} (${settings.confidence})`);
   const payload = await runSlopgate(
@@ -109,6 +111,7 @@ async function scan(
     buildScanArgs(target, settings),
     root,
   );
+  if (epoch !== scanEpoch) return;
   // The CLI reports paths relative to the git/report root, which can be above
   // the workspace folder (monorepo) or above a single-file scan.
   publish(payload.reportRoot ?? root, payload.findings, replaceAll, targetFile);
@@ -123,10 +126,10 @@ async function scanActiveDocument(document?: vscode.TextDocument): Promise<void>
 
 async function fixActiveDocument(document?: vscode.TextDocument): Promise<void> {
   if (!document || document.isUntitled || !SUPPORTED.has(document.languageId)) return;
-  if (document.isDirty && !(await document.save())) return;
-  const root = workspaceRoot(document) ?? path.dirname(document.uri.fsPath);
-  const settings = configured();
   try {
+    if (document.isDirty && !(await document.save())) return;
+    const root = workspaceRoot(document) ?? path.dirname(document.uri.fsPath);
+    const settings = configured();
     const payload = await runSlopgate(
       settings.executable,
       buildScanArgs(document.uri.fsPath, settings, 'fix'),
@@ -135,7 +138,11 @@ async function fixActiveDocument(document?: vscode.TextDocument): Promise<void> 
     vscode.window.showInformationMessage(
       `slopgate fix completed; ${payload.findings.length} finding(s) remain.`,
     );
-    await scanActiveDocument(document);
+    try {
+      await scanActiveDocument(document);
+    } catch (error) {
+      output.appendLine(`refresh after fix failed: ${(error as Error).message}`);
+    }
   } catch (error) {
     vscode.window.showWarningMessage(`slopgate fix failed: ${(error as Error).message}`);
   }

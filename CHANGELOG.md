@@ -35,7 +35,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - RuleContext carries an absolute classification path so scanning a `tests/` directory still treats its files as tests; public `scanProject()` resolves ancestor manifests; parser init retries after failure; unknown `onlyRules` ids fail fast; rule crashes make the CLI exit 2; schema output defines `byLanguage` and `summary`.
 
 ### Changed
-- 462 tests.
+- 464 tests.
 - Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.

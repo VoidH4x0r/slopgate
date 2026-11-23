@@ -28,6 +28,8 @@ export interface CommentRange {
 }
 
 export interface Finding {
+  /** Stable JSON-output fingerprint; typed API consumers can use it too. */
+  fingerprint?: string;
   ruleId: string;
   message: string;
   severity: Severity;

@@ -457,6 +457,9 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   if (options.paths.length > 1) {
     throw new Error('only one path is supported; run slopgate once per path');
   }
+  if (options.writeBaseline && options.diff) {
+    throw new Error('--write-baseline cannot be combined with --diff');
+  }
   const target = path.resolve(io.cwd, options.paths[0] ?? '.');
   const targetInfo = await stat(target).catch(() => undefined);
   if (!targetInfo) {

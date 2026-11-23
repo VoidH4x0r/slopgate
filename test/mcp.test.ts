@@ -75,6 +75,7 @@ function makeServer(overrides: Partial<McpDeps> = {}) {
 async function call(server: ReturnType<typeof makeServer>, request: unknown) {
   const response = await server.handle(JSON.stringify(request));
   assert.ok(response, 'expected a response');
+  assert.ok(!Array.isArray(response), 'expected a single response');
   return response;
 }
 
@@ -108,19 +109,15 @@ test('mcp: notifications return no response and null ids are requests', async ()
     await server.handle(JSON.stringify({ jsonrpc: '2.0', method: 'tools/list' })),
     null,
   );
-  const response = await server.handle(
-    JSON.stringify({ jsonrpc: '2.0', id: null, method: 'tools/list' }),
-  );
-  assert.equal(response?.id, null);
-  assert.ok(response?.result);
+  const response = await call(server, { jsonrpc: '2.0', id: null, method: 'tools/list' });
+  assert.equal(response.id, null);
+  assert.ok(response.result);
 });
 
 test('mcp: invalid jsonrpc and unknown protocol versions are rejected/fallback', async () => {
   const server = makeServer();
-  const invalid = await server.handle(
-    JSON.stringify({ jsonrpc: '1.0', id: 1, method: 'tools/list' }),
-  );
-  assert.equal(invalid?.error?.code, -32600);
+  const invalid = await call(server, { jsonrpc: '1.0', id: 1, method: 'tools/list' });
+  assert.equal(invalid.error?.code, -32600);
   const init = await call(server, {
     jsonrpc: '2.0',
     id: 2,
@@ -341,13 +338,26 @@ test('mcp: list_rules returns the rule table', async () => {
   assert.match(content, /ts\/stub-function/);
 });
 
+test('mcp: batch requests return an array and omit notifications', async () => {
+  const server = makeServer();
+  const response = await server.handle(
+    JSON.stringify([
+      { jsonrpc: '2.0', id: 1, method: 'tools/list' },
+      { jsonrpc: '2.0', method: 'notifications/initialized' },
+    ]),
+  );
+  assert.ok(Array.isArray(response));
+  assert.equal(response.length, 1);
+  assert.equal(response[0]?.id, 1);
+});
+
 test('mcp: unknown methods and malformed input produce JSON-RPC errors', async () => {
   const server = makeServer();
   const unknown = await call(server, { jsonrpc: '2.0', id: 8, method: 'resources/list' });
   assert.equal(unknown.error?.code, -32601);
 
-  const parseError = await server.handle('{not json');
-  assert.equal(parseError?.error?.code, -32700);
+  const parseError = await call(server, { id: 7, method: 'tools/list' });
+  assert.equal(parseError.error?.code, -32600);
 
   const noName = await call(server, {
     jsonrpc: '2.0',

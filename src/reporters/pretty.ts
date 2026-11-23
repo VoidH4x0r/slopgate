@@ -33,6 +33,10 @@ function wrap(text: string, width: number): string[] {
   return lines.length > 0 ? lines : [''];
 }
 
+function clean(text: string): string {
+  return text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/g, '?');
+}
+
 const LOC_WIDTH = 8;
 const SEV_WIDTH = 7;
 const CONF_WIDTH = 6;
@@ -63,7 +67,7 @@ export function renderPretty(input: PrettyInput): string {
     for (const finding of findings) {
       if (finding.file !== currentFile) {
         if (currentFile !== undefined) out.push('');
-        out.push(cyan(finding.file));
+        out.push(cyan(clean(finding.file)));
         currentFile = finding.file;
       }
 
@@ -76,15 +80,15 @@ export function renderPretty(input: PrettyInput): string {
             : dim(finding.severity.padEnd(SEV_WIDTH));
       const confidence = dim(finding.confidence.padEnd(CONF_WIDTH));
       const rule = dim(finding.ruleId.padEnd(RULE_WIDTH));
-      out.push(`  ${location}  ${severity} ${confidence} ${rule} ${finding.message}`);
+      out.push(`  ${location}  ${severity} ${confidence} ${rule} ${clean(finding.message)}`);
       if (finding.snippet) {
-        out.push(`${GUTTER}  ${dim('│ ' + finding.snippet)}`);
+        out.push(`${GUTTER}  ${dim('│ ' + clean(finding.snippet))}`);
       }
       for (const item of finding.evidence.slice(0, 2)) {
-        out.push(`${GUTTER}  ${dim('· ' + item)}`);
+        out.push(`${GUTTER}  ${dim('· ' + clean(item))}`);
       }
       if (finding.help) {
-        const lines = wrap(finding.help, 92);
+        const lines = wrap(clean(finding.help), 92);
         lines.forEach((line, index) => {
           const marker = index === 0 ? '↳ ' : '  ';
           out.push(dim(`${GUTTER}  ${marker}${line}`));

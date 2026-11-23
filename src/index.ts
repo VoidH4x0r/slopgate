@@ -16,6 +16,8 @@ export {
   type Config,
 } from './config.ts';
 export { ALL_RULE_METAS, ALL_RULE_BY_ID, PROJECT_RULES, createProjectRules } from './rules/index.ts';
+export { loadProjectRegistry } from './projects.ts';
+export type { ProjectRegistry } from './projects.ts';
 export type {
   Confidence,
   Finding,

@@ -8,6 +8,7 @@ import { loadProjectRegistry, type ProjectRegistry } from './projects.ts';
 import { resolveProjectRoot } from './deps.ts';
 import { ALL_RULE_BY_ID, ALL_RULE_METAS, FILE_RULES, createProjectRules } from './rules/index.ts';
 import { confidenceRank, findGitRoot } from './config.ts';
+import { findingFingerprint } from './baseline.ts';
 import { collectCommentRanges } from './rules/helpers.ts';
 import { isSuppressed, readSuppressions, type Suppressions } from './suppress.ts';
 import type { Config } from './config.ts';
@@ -55,7 +56,7 @@ export interface ScanResult {
 }
 
 function toFinding(ruleId: string, draft: RuleDraft, defaults: { severity: Finding['severity']; confidence: Finding['confidence'] }, file: string): Finding {
-  return {
+  const finding: Finding = {
     ruleId,
     message: draft.message,
     severity: draft.severity ?? defaults.severity,
@@ -67,6 +68,8 @@ function toFinding(ruleId: string, draft: RuleDraft, defaults: { severity: Findi
     evidence: draft.evidence ?? [],
     ...(draft.help ? { help: draft.help } : {}),
   };
+  finding.fingerprint = findingFingerprint(finding);
+  return finding;
 }
 
 export async function scanProject(options: ScanOptions): Promise<ScanResult> {

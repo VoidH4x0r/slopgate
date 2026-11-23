@@ -537,6 +537,19 @@ test('py/noop-test skips pytest skip markers and pytest.skip calls', async () =>
   }
 });
 
+test('py/noop-test does not count assertions inside a nested function', async () => {
+  const source = [
+    'def test_outer():',
+    '    def helper():',
+    '        assert True',
+    '    helper()',
+    '',
+  ].join('\n');
+  const drafts = await runRuleOnFile('py/noop-test', source, 'python', 'tests/test_outer.py');
+  assert.equal(drafts.length, 1);
+  assert.equal(drafts[0]?.confidence, 'medium');
+});
+
 test('py/dead-branch handles elif and parenthesized constants', async () => {
   assert.equal(
     (await runRule('py/dead-branch', 'if True:\n    pass\nelif False:\n    pass\n', 'python')).some(
