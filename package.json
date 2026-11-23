@@ -48,8 +48,8 @@
     "web-tree-sitter": "^0.25.10"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43",
-    "typescript": "^5.9.0"
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
   },
   "keywords": [
     "linter",
