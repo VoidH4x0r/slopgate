@@ -19,6 +19,7 @@ interface Candidate {
   end: ReturnType<typeof endOf>;
   snippet: string;
   hash: string;
+  exactHash: string;
   lines: number;
   tokens: number;
   kind: 'function' | 'method';
@@ -82,26 +83,29 @@ function nearestCandidateAncestor(
   return undefined;
 }
 
-/**
- * A normalized structural signature. Comments are ignored; whitespace is
- * collapsed; identifiers, literals **and anonymous operators** are preserved.
- * This deliberately reports exact normalized copies, not renamed semantic
- * clones.
- */
-function signatureOf(body: AstNode): { hash: string; tokens: number } {
-  const hash = createHash('sha256');
+function signaturePair(body: AstNode): {
+  exactHash: string;
+  semanticHash: string;
+  tokens: number;
+} {
+  const exact = createHash('sha256');
+  const semantic = createHash('sha256');
   let tokens = 0;
   const stack: AstNode[] = [body];
   while (stack.length > 0) {
     const node = stack.pop();
     if (!node || isComment(node)) continue;
-    hash.update(node.type);
-    hash.update('\u0000');
+    exact.update(node.type);
+    exact.update('\u0000');
+    semantic.update(node.type);
+    semantic.update('\u0000');
     if (node.children.length === 0) {
       const text = collapseWhitespace(node.text);
       if (text.length > 0) {
-        hash.update(text);
-        hash.update('\u0000');
+        exact.update(text);
+        exact.update('\u0000');
+        semantic.update(semanticLeaf(node, text));
+        semantic.update('\u0000');
         tokens += 1;
       }
       continue;
@@ -111,22 +115,32 @@ function signatureOf(body: AstNode): { hash: string; tokens: number } {
       if (child) stack.push(child);
     }
   }
-  return { hash: hash.digest('hex'), tokens };
+  return { exactHash: exact.digest('hex'), semanticHash: semantic.digest('hex'), tokens };
 }
 
-function collectRule(kind: 'function' | 'method', language: LanguageId): ProjectRule {
+function semanticLeaf(node: AstNode, text: string): string {
+  if (/identifier$/i.test(node.type)) return '<id>';
+  if (/literal|string|number|float|integer|boolean|^true$|^false$|^nil$|^none$|^null$/i.test(node.type)) {
+    return '<literal>';
+  }
+  return text;
+}
+
+function collectRule(
+  kind: 'function' | 'method',
+  language: LanguageId,
+  mode: 'exact' | 'semantic' = 'exact',
+): ProjectRule {
   const candidates: Candidate[] = [];
+  const prefix =
+    language === 'python' ? 'py' : language === 'go' ? 'go' : language === 'rust' ? 'rs' : 'ts';
   const meta: RuleMeta = {
-    id:
-      language === 'python'
-        ? 'py/duplicate-block'
-        : language === 'go'
-          ? 'go/duplicate-block'
-          : language === 'rust'
-            ? 'rs/duplicate-block'
-            : 'ts/duplicate-block',
-    title: 'Duplicated function body',
-    summary: 'Finds the same normalized function or method body in more than one file.',
+    id: mode === 'semantic' ? `${prefix}/semantic-duplicate` : `${prefix}/duplicate-block`,
+    title: mode === 'semantic' ? 'Semantically duplicated function body' : 'Duplicated function body',
+    summary:
+      mode === 'semantic'
+        ? 'Finds the same normalized structure after replacing identifiers and literals, in more than one file.'
+        : 'Finds the same normalized function or method body in more than one file.',
     severity: 'warning',
     confidence: 'medium',
     languages:
@@ -168,8 +182,8 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
         if (!body || body.type === 'expression') continue;
         const lines = body.endPosition.row - body.startPosition.row + 1;
         if (lines < MIN_DUPLICATE_LINES) continue;
-        const normalized = signatureOf(body);
-        if (normalized.tokens < MIN_DUPLICATE_TOKENS) continue;
+        const signatures = signaturePair(body);
+        if (signatures.tokens < MIN_DUPLICATE_TOKENS) continue;
         const candidate: Candidate = {
           language,
           file: ctx.file,
@@ -177,9 +191,10 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
           start: startOf(node),
           end: endOf(node),
           snippet: snippetOf(ctx, node),
-          hash: normalized.hash,
+          hash: mode === 'semantic' ? signatures.semanticHash : signatures.exactHash,
+          exactHash: signatures.exactHash,
           lines,
-          tokens: normalized.tokens,
+          tokens: signatures.tokens,
           kind: node.type === 'method_definition' || node.type === 'method_declaration' ? 'method' : kind,
         };
         const ancestor = nearestCandidateAncestor(node, byNode);
@@ -204,9 +219,23 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
         }
       }
 
+      const exactGroups = new Map<string, Candidate[]>();
+      for (const candidate of candidates) {
+        const group = exactGroups.get(candidate.exactHash);
+        if (group) group.push(candidate);
+        else exactGroups.set(candidate.exactHash, [candidate]);
+      }
+      const exactDuplicated = new Set<Candidate>();
+      for (const group of exactGroups.values()) {
+        if (new Set(group.map((candidate) => candidate.file)).size >= 2) {
+          for (const candidate of group) exactDuplicated.add(candidate);
+        }
+      }
+
       const drafts: ProjectFindingDraft[] = [];
       for (const group of groups.values()) {
         const eligible = group.filter((candidate) => {
+          if (mode === 'semantic' && exactDuplicated.has(candidate)) return false;
           let ancestor = candidate.ancestor;
           while (ancestor) {
             if (duplicated.has(ancestor)) return false;
@@ -231,12 +260,17 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
           if (!firstOther) continue;
           drafts.push({
             file: candidate.file,
-            message: `duplicates a ${candidate.lines}-line ${candidate.kind} body in \`${firstOther.file}:${firstOther.line}\``,
+            message:
+              mode === 'semantic'
+                ? `semantically duplicates a ${candidate.lines}-line ${candidate.kind} body in \`${firstOther.file}:${firstOther.line}\``
+                : `duplicates a ${candidate.lines}-line ${candidate.kind} body in \`${firstOther.file}:${firstOther.line}\``,
             start: candidate.start,
             end: candidate.end,
             snippet: candidate.snippet,
             evidence: [
-              `identical normalized body (${candidate.tokens} tokens, ${candidate.lines} lines)`,
+              mode === 'semantic'
+                ? `same structure after normalizing identifiers and literals (${candidate.tokens} tokens, ${candidate.lines} lines)`
+                : `identical normalized body (${candidate.tokens} tokens, ${candidate.lines} lines)`,
               `also at: ${others.map((other) => `${other.file}:${other.line}`).slice(0, 3).join(', ')}`,
             ],
             help: 'Extract the shared implementation, or add a comment explaining why the duplication is intentional.',
@@ -269,4 +303,11 @@ export const duplicateRules: ProjectRule[] = [
   collectRule('function', 'typescript'),
   collectRule('function', 'go'),
   collectRule('function', 'rust'),
+];
+
+export const semanticDuplicateRules: ProjectRule[] = [
+  collectRule('function', 'python', 'semantic'),
+  collectRule('function', 'typescript', 'semantic'),
+  collectRule('function', 'go', 'semantic'),
+  collectRule('function', 'rust', 'semantic'),
 ];

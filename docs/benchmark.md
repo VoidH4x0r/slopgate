@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.3.2): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
+> Status (0.4.0): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
 
 ## The claim
 
@@ -59,6 +59,10 @@ node scripts/benchmark.mjs \
 ```
 
 The source tree is identified by digest rather than committed. There are no Rust labels because the run has no high findings; the label file is intentionally empty.
+
+### Bundled-app corpus
+
+A local Electron `app.asar` (ASUS ArmouryDevice, `.webpack` bundle) is scanned as a packaged-JavaScript corpus with `--include '**/*.{js,mjs,cjs}'`: 6 files, 332 lines, **0 high findings**. The result is recorded in `benchmark/bundled-results.json`. The asar is not committed; the digest identifies the extracted tree.
 
 ## Reproducing
 

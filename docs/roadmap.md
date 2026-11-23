@@ -1,6 +1,6 @@
 # Development roadmap
 
-Status: **0.3.2 is the VS Code release candidate**. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust. This roadmap is effort-based, not a promise of dates.
+Status: **0.4.0 is the integrations/semantic-duplicate release candidate**. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code. This roadmap is effort-based, not a promise of dates.
 
 ## 1. Product thesis
 
@@ -155,7 +155,7 @@ Exit criteria:
 
 ### 0.4.0 - semantic duplicates, benchmark expansion, integrations
 
-Goal: deepen the product where AST plus project context creates a defensible moat. Target: 6 to 8 weeks after 0.3.
+Goal: deepen the product where AST plus project context creates a defensible moat. **Status: semantic duplicates, MCP, JSON schema, GitHub Action, pre-commit and a bundled-app corpus implemented in 0.4.0; Tape/TAP and held-out-AI corpora remain follow-up work.**
 
 Workstreams:
 

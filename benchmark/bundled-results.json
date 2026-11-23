@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T02:32:54.630Z",
+  "slopgateVersion": "0.4.0",
+  "nodeVersion": "v24.19.0",
+  "corpora": [
+    {
+      "name": "bundled-app",
+      "package": {
+        "name": "asus_framework",
+        "version": "4.2.5.4"
+      },
+      "digest": "c4478600ed4e4f39",
+      "files": 6,
+      "lines": 332,
+      "durationMs": 654,
+      "findings": 48,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 2,
+      "byRule": {
+        "ts/swallowed-exception": {
+          "high": 0,
+          "medium": 39,
+          "low": 0
+        },
+        "ts/stub-function": {
+          "high": 0,
+          "medium": 9,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    }
+  ],
+  "staleLabels": [],
+  "unlabeledHigh": []
+}

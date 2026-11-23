@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.3.2  ·  4 files  ·  50ms
+slopgate 0.4.0  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -136,6 +136,7 @@ slopgate [path] [options]
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/VoidH4x0r/slopgate/main/schema/slopgate.schema.json",
   "include": ["src/**", "tests/**"],
   "exclude": ["vendor/**", "migrations/**"],
   "ignoreModules": ["my_private_pkg"],
@@ -237,15 +238,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.3.2 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.4.0 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
 
+Or use the repository's composite action:
+
+```yaml
+      - uses: VoidH4x0r/slopgate@v0.4.0
+        with:
+          path: .
+          confidence: high
+          fail-on: high
+```
+
+Pre-commit and MCP setup are documented in [`docs/integrations.md`](docs/integrations.md).
+
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.3.2 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.4.0 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -277,7 +290,7 @@ The independent [`packages/slopgate-vscode`](packages/slopgate-vscode/README.md)
 
 ## Rules
 
-28 rules across Python, TypeScript/JavaScript, Go and Rust. Full reference with examples: [docs/rules.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/rules.md).
+32 rules across Python, TypeScript/JavaScript, Go and Rust. Full reference with examples: [docs/rules.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/rules.md).
 
 | Rule | Catches |
 | --- | --- |
@@ -299,6 +312,7 @@ The independent [`packages/slopgate-vscode`](packages/slopgate-vscode/README.md)
 | `rs/unreachable` | statements after `return` / `break` / `continue` in a Rust block |
 | `rs/stub-body` | functions whose body is only `todo!()` / `unimplemented!()` |
 | `rs/swallowed-error` | empty `if let Err(_) = ...` blocks |
+| `*/semantic-duplicate` | renamed identifier/literal clones at medium confidence |
 
 ## Precision is the product
 
@@ -338,7 +352,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.3.0 — Go support: parser, go.mod resolution, 6 rules, 20 fixtures, 2.45M-line clean corpus
 - [x] v0.3.1 — Rust support: parser, Cargo.toml resolution, 6 rules, 20 fixtures, 635k-line clean corpus
 - [x] v0.3.2 — VS Code extension: CLI-backed diagnostics, safe quick fix, config
-- [ ] v0.4 — semantic duplicates, expanded benchmark, integrations
+- [x] v0.4.0 — semantic duplicates, MCP explain/preview, JSON schema, GitHub Action, pre-commit
 - [ ] v1.0 — stable public API and release gate
 
 The detailed plan, estimates, release gates, risks and next-14-days actions are in [`docs/roadmap.md`](docs/roadmap.md).
@@ -352,7 +366,7 @@ The detailed plan, estimates, release gates, risks and next-14-days actions are 
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 - Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
 - The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
-- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.3.2. A file contributes at most one representative per duplicate group.
+- `duplicate-block` detects exact normalized bodies only; semantic clones are reported separately at medium confidence in 0.4.0. A file contributes at most one representative per duplicate group.
 - `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off", "go/duplicate-block": "off" }` if you do not need medium findings.
 - `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
 - `go/phantom-import` accepts the reserved `internal/...` root and treats module-internal imports as local; it does not check whether a local package directory exists. `go.work` is not resolved yet.
@@ -374,7 +388,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 378 tests; the tests themselves make no network or child-process calls
+npm test            # 383 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

@@ -16,7 +16,7 @@ Claude Code (`~/.claude.json` or project `.mcp.json`):
 
 Codex and other MCP clients use the same `command` + `args` pair. The optional argument after `mcp` is the repository root; it defaults to the current working directory.
 
-The server prints a single line to stderr on startup (`slopgate mcp 0.3.2 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
+The server prints a single line to stderr on startup (`slopgate mcp 0.4.0 ready (root: …)`). Nothing else is written except JSON-RPC messages on stdout.
 
 ## Tools
 
@@ -42,13 +42,29 @@ Scans a file or directory relative to the repository root. Paths that escape the
 
 Returns the rule table (id, severity, default confidence, languages, title) so the agent can reason about what was checked.
 
+### `explain_rule`
+
+```json
+{ "name": "explain_rule", "arguments": { "ruleId": "go/noop-test" } }
+```
+
+Returns one rule's title, summary, severity, default confidence, languages and tags. Unknown ids are returned as a tool error.
+
+### `preview_fix`
+
+```json
+{ "name": "preview_fix", "arguments": { "path": "src/", "confidence": "high" } }
+```
+
+Shows the safe fixes that `--fix` would apply under the path, **without writing any file**. The safe subset is unreachable code after `return` / `raise` / `break` / `continue`. This tool reads files only; it does not spawn a process.
+
 ## Response format
 
 `tools/call` returns a standard MCP text result:
 
 ```text
 Diff since origin/main: 2 finding(s) on changed lines.
-slopgate 0.3.2 · 2 finding(s) (1 error) · 38 files scanned in 214ms
+slopgate 0.4.0 · 2 finding(s) (1 error) · 38 files scanned in 214ms
 src/users.py:12:5  error  high  py/phantom-import  `requests_v2` is imported but not declared…
     import requests_v2
     - no Python dependency manifest found

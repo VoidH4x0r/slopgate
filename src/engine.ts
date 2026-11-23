@@ -6,6 +6,7 @@ import { discoverFiles, toPosix } from './files.ts';
 import { getParser } from './parser.ts';
 import { loadProjectRegistry, type ProjectRegistry } from './projects.ts';
 import { ALL_RULE_BY_ID, ALL_RULE_METAS, FILE_RULES, PROJECT_RULES } from './rules/index.ts';
+import { confidenceRank } from './config.ts';
 import { collectCommentRanges } from './rules/helpers.ts';
 import { isSuppressed, readSuppressions, type Suppressions } from './suppress.ts';
 import type { Config } from './config.ts';
@@ -115,6 +116,15 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     const setting = config.rules[rule.meta.id];
     if (setting === 'off') return false;
     if (options.onlyRules && !options.onlyRules.has(rule.meta.id)) return false;
+    // Semantic clones are medium-only and expensive; do not collect them when
+    // the run cannot display medium findings.
+    if (rule.meta.id.endsWith('/semantic-duplicate')) {
+      const display =
+        config.failOn === 'none' || confidenceRank(config.confidence) <= confidenceRank(config.failOn)
+          ? config.confidence
+          : config.failOn;
+      if (confidenceRank(rule.meta.confidence) < confidenceRank(display)) return false;
+    }
     return true;
   });
   for (const projectRule of enabledProject) projectRule.reset();

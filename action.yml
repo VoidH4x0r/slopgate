@@ -1,0 +1,39 @@
+name: slopgate
+description: Run slopgate on a path and fail when high-confidence structural findings are present.
+branding:
+  icon: shield
+  color: purple
+inputs:
+  path:
+    description: File or directory to scan.
+    required: false
+    default: .
+  confidence:
+    description: Minimum confidence to display.
+    required: false
+    default: high
+  fail-on:
+    description: Minimum confidence that fails the step.
+    required: false
+    default: high
+  version:
+    description: slopgate version, tag, or "latest".
+    required: false
+    default: latest
+runs:
+  using: composite
+  steps:
+    - name: Run slopgate
+      shell: bash
+      run: |
+        set -euo pipefail
+        version="${{ inputs.version }}"
+        if [ "$version" = "latest" ]; then
+          spec="@voidh4x0r/slopgate@latest"
+        else
+          spec="@voidh4x0r/slopgate@${version#v}"
+        fi
+        npx --yes "$spec" "${{ inputs.path }}" \
+          --confidence "${{ inputs.confidence }}" \
+          --fail-on "${{ inputs.fail-on }}" \
+          --no-color

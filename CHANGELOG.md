@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-23
+
+### Added
+- Four `*/semantic-duplicate` rules (Python, TypeScript, Go, Rust): identifier/literal-normalized structural clones at `medium` confidence. Exact clones stay on the trusted `*/duplicate-block` path.
+- MCP tools `explain_rule` and `preview_fix`; `preview_fix` runs the safe fixer in dry-run mode and never writes.
+- `schema/slopgate.schema.json` and a `$schema` reference in the config example.
+- Composite GitHub Action (`action.yml`), `.pre-commit-hooks.yaml`, and `docs/integrations.md`.
+- `*` semantic duplicate rule metadata in the rule reference and README.
+
+### Changed
+- 32 rules and 383 tests.
+- Benchmark scale is now 4.19M lines across three languages: 1.1M Python/JS/AI, 2.45M Go and 635k Rust. A bundled Electron corpus adds 6 files / 332 lines with **0 high**. The published Python/JS precision remains **43 high / 97.7% / 30/30 seeded**; Go and Rust have **0 high** findings.
+- Tape/TAP and held-out-AI corpora are tracked as follow-up work; they are not claimed as published measurements in 0.4.0.
+
 ## [0.3.2] - 2026-11-23
 
 ### Added

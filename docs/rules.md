@@ -37,6 +37,10 @@ Every rule runs on a real AST (tree-sitter), reports a **confidence**, and has a
 | [`rs/stub-body`](#rsstub-body) | Rust | warning | high |
 | [`rs/swallowed-error`](#rsswallowed-error) | Rust | warning | high |
 | [`rs/duplicate-block`](#rsduplicate-block) | Rust | warning | medium |
+| [`py/semantic-duplicate`](#pysemantic-duplicate) | Python | warning | medium |
+| [`ts/semantic-duplicate`](#tssemantic-duplicate) | TS/JS | warning | medium |
+| [`go/semantic-duplicate`](#gosemantic-duplicate) | Go | warning | medium |
+| [`rs/semantic-duplicate`](#rssemantic-duplicate) | Rust | warning | medium |
 
 ---
 
@@ -154,7 +158,7 @@ if False:
 
 **Not reported.** Copies only inside a single file (a file contributes at most one representative to a cross-file duplicate group), test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers. This is deliberately exact normalization, not a clone detector.
 
-**Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations. Nested helpers are suppressed when an enclosing function is itself in a duplicate group; otherwise they are reported independently.
+**Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations.
 
 ---
 
@@ -254,7 +258,7 @@ try {
 
 **Not reported.** Callbacks passed to other calls, copies only inside a single file (a file contributes at most one representative to a cross-file duplicate group), test files, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
 
-**Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations. Nested helpers are suppressed when an enclosing function is itself in a duplicate group; otherwise they are reported independently.
+**Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations.
 
 ---
 
@@ -376,3 +380,13 @@ import (
 **Not reported.** Test files, generated files, single-file copies, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
 
 **Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations.
+
+---
+
+## py/semantic-duplicate, ts/semantic-duplicate, go/semantic-duplicate, rs/semantic-duplicate
+
+**What it catches.** The same normalized function/method structure after replacing identifiers and literals with typed placeholders, in two or more files. Operators, punctuation, statement structure and language syntax are preserved.
+
+**Not reported.** Exact clones already reported by `duplicate-block`, bodies below the same 6-line / 15-token threshold, single-file copies, test/generated files, and structures that differ in operators or control flow.
+
+**Confidence.** `medium`: identifier/literal normalization can match functions that are structurally similar but not true clones. Keep `duplicate-block` as the trusted exact path; treat semantic duplicates as review leads. Semantic rules are not collected when the display threshold is `high`; use `--confidence medium` to see them.

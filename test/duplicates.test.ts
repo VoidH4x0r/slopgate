@@ -22,7 +22,7 @@ const BODY = [
 async function scanTwoFiles(
   left: string,
   right: string,
-  options: { names?: [string, string]; onlyRules?: string[]; rules?: Record<string, string> } = {},
+  options: { names?: [string, string]; onlyRules?: string[]; rules?: Record<string, string>; confidence?: 'high' | 'medium' | 'low' } = {},
 ) {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-duplicates-'));
   try {
@@ -38,6 +38,7 @@ async function scanTwoFiles(
         ...DEFAULT_CONFIG,
         include: ['**/*.py'],
         exclude: [],
+        confidence: options.confidence ?? 'high',
         rules: (options.rules ?? {}) as never,
       },
       ...(options.onlyRules ? { onlyRules: new Set(options.onlyRules) } : {}),
@@ -53,6 +54,38 @@ test('duplicate-block reports both sides of a cross-file normalized clone', asyn
   assert.equal(duplicates.length, 2);
   assert.ok(duplicates.every((finding) => finding.confidence === 'medium'));
   assert.ok(duplicates.every((finding) => finding.evidence.some((item) => item.startsWith('also at:'))));
+});
+
+test('semantic-duplicate reports renamed clones but not exact clones', async () => {
+  const renamed = [
+    'def compute(items):',
+    '    acc = 0',
+    '    for item in items:',
+    '        acc += item',
+    '    acc = acc * 2',
+    '    acc = acc + 1',
+    '    if acc < 0:',
+    '        raise ValueError("negative")',
+    '    return acc',
+    '',
+  ].join('\n');
+  const semantic = await scanTwoFiles(BODY, renamed, {
+    onlyRules: ['py/semantic-duplicate'],
+    confidence: 'medium',
+  });
+  assert.equal(
+    semantic.findings.filter((finding) => finding.ruleId === 'py/semantic-duplicate').length,
+    2,
+  );
+
+  const exact = await scanTwoFiles(BODY, BODY, {
+    onlyRules: ['py/semantic-duplicate'],
+    confidence: 'medium',
+  });
+  assert.equal(
+    exact.findings.filter((finding) => finding.ruleId === 'py/semantic-duplicate').length,
+    0,
+  );
 });
 
 test('duplicate-block ignores short bodies, same-file copies and test paths', async () => {

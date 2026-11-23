@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/VoidH4x0r/slopgate/main/schema/slopgate.schema.json",
+  "title": "slopgate configuration",
+  "description": "Configuration for .slopgate.json / slopgate.config.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional JSON Schema reference; accepted and ignored by the CLI."
+    },
+    "include": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Glob patterns to include; replaces the default pattern set."
+    },
+    "exclude": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Glob patterns to exclude."
+    },
+    "ignoreModules": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Import names to always treat as declared."
+    },
+    "rules": {
+      "type": "object",
+      "description": "Per-rule severity overrides.",
+      "propertyNames": { "pattern": "^(py|ts|go|rs)/" },
+      "additionalProperties": { "enum": ["off", "error", "warning", "info"] }
+    },
+    "confidence": {
+      "enum": ["high", "medium", "low"],
+      "description": "Minimum confidence to display."
+    },
+    "failOn": {
+      "enum": ["high", "medium", "low", "none"],
+      "description": "Minimum confidence that fails the run."
+    }
+  }
+}

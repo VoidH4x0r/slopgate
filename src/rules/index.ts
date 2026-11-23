@@ -1,5 +1,5 @@
 import type { ProjectRule, Rule, RuleMeta } from '../types.ts';
-import { duplicateRules } from './duplicates.ts';
+import { duplicateRules, semanticDuplicateRules } from './duplicates.ts';
 import { goRules } from './go.ts';
 import { pythonRules } from './python.ts';
 import { rustRules } from './rust.ts';
@@ -9,7 +9,7 @@ import { typescriptRules } from './typescript.ts';
 export const FILE_RULES: readonly Rule[] = [...pythonRules, ...typescriptRules, ...goRules, ...rustRules];
 
 /** Rules that need the whole scan before they can report. */
-export const PROJECT_RULES: readonly ProjectRule[] = duplicateRules;
+export const PROJECT_RULES: readonly ProjectRule[] = [...duplicateRules, ...semanticDuplicateRules];
 
 /** Everything the CLI/config must know about, including project rules. */
 export const ALL_RULE_METAS: readonly RuleMeta[] = [

@@ -1,0 +1,8 @@
+- id: slopgate
+  name: slopgate
+  description: Precision-first structural linting for AI-written code.
+  entry: npx --yes @voidh4x0r/slopgate@latest
+  language: system
+  pass_filenames: false
+  args: [".", "--fail-on", "high", "--no-color"]
+  types_or: [python, ts, tsx, js, jsx, go, rust]

@@ -14,6 +14,7 @@ import {
 import { diffSince, isInDiff, type DiffSet } from './diff.ts';
 import { resolveProjectRoot } from './deps.ts';
 import { scanProject, type ScanResult } from './engine.ts';
+import { applyFixes } from './fix.ts';
 import { ALL_RULE_METAS } from './rules/index.ts';
 import type { Confidence, Finding } from './types.ts';
 
@@ -99,6 +100,33 @@ const TOOLS = [
     description: 'List the rules slopgate can report, with their default severity and confidence.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
   },
+  {
+    name: 'explain_rule',
+    description: 'Return the title, summary, severity, confidence and languages for one rule id.',
+    inputSchema: {
+      type: 'object',
+      properties: { ruleId: { type: 'string', description: 'Rule id such as py/noop-test' } },
+      required: ['ruleId'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'preview_fix',
+    description:
+      'Show the safe fixes that --fix would apply under a path, without writing any file. The safe subset is unreachable code after return/raise/break/continue.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'File or directory, relative to the repository root' },
+        confidence: {
+          type: 'string',
+          enum: ['high', 'medium', 'low'],
+          description: 'Minimum confidence to consider (default: high)',
+        },
+      },
+      additionalProperties: false,
+    },
+  },
 ];
 
 function ok(id: string | number | null, result: unknown): JsonRpcResponse {
@@ -175,6 +203,23 @@ export function createMcpServer(deps: McpDeps) {
       return textResult(lines.join('\n'));
     }
 
+    if (name === 'explain_rule') {
+      const ruleId = typeof params.ruleId === 'string' ? params.ruleId : '';
+      const meta = ALL_RULE_METAS.find((candidate) => candidate.id === ruleId);
+      if (!meta) return textResult(`Unknown rule: ${ruleId || '(missing ruleId)'}`, true);
+      return textResult(
+        [
+          `id: ${meta.id}`,
+          `title: ${meta.title}`,
+          `summary: ${meta.summary}`,
+          `severity: ${meta.severity}`,
+          `confidence: ${meta.confidence}`,
+          `languages: ${meta.languages.join(', ')}`,
+          `tags: ${meta.tags.join(', ')}`,
+        ].join('\n'),
+      );
+    }
+
     const max = coerceNumber(params.maxFindings, MAX_FINDINGS);
     const configFor = deps.configFor ?? (async () => deps.config);
 
@@ -214,6 +259,41 @@ export function createMcpServer(deps: McpDeps) {
       );
       const preamble = `Diff since ${base}: ${inDiff.length} finding(s) on changed lines.`;
       return textResult(formatFindings(inDiff, result, deps.version, max, preamble));
+    }
+
+    if (name === 'preview_fix') {
+      const target = path.resolve(deps.root, typeof params.path === 'string' ? params.path : '.');
+      if (!isInsideRoot(deps.root, target)) {
+        return textResult(`Refusing to scan outside the repository root: ${target}`, true);
+      }
+      const realRoot = await realpath(deps.root).catch(() => deps.root);
+      const realTarget = await realpath(target).catch(() => target);
+      if (!isInsideRoot(realRoot, realTarget)) {
+        return textResult(`Refusing to scan outside the repository root: ${target}`, true);
+      }
+      const targetConfig = await configFor(target);
+      const confidence = coerceConfidence(params.confidence, targetConfig.confidence);
+      const result = await deps.scan(target);
+      if (result.stats.files === 0) {
+        return textResult(`No files matched under ${target} (check include/exclude patterns)`, true);
+      }
+      const visible = result.findings.filter((finding) =>
+        meetsConfidence(finding.confidence, confidence),
+      );
+      const visibleSet = new Set(visible);
+      const candidates = result.fixes.filter((fix) => visibleSet.has(fix.finding));
+      if (candidates.length === 0) {
+        return textResult('No safe fixes available for the selected findings.');
+      }
+      const applied = await applyFixes(candidates, { write: false });
+      const files = applied.fixedFiles.map((file) => path.relative(deps.root, file)).sort();
+      return textResult(
+        [
+          `would fix ${applied.fixedFindings} finding(s) in ${files.length} file(s)`,
+          ...files.map((file) => `  ${file}`),
+          ...applied.warnings.map((warning) => `warning: ${warning}`),
+        ].join('\n'),
+      );
     }
 
     return textResult(`Unknown tool: ${name}`, true);

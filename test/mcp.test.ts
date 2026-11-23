@@ -101,12 +101,12 @@ test('mcp: initialized notification returns no response', async () => {
   assert.equal(await server.handle(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })), null);
 });
 
-test('mcp: tools/list exposes scan_diff, scan_path and list_rules', async () => {
+test('mcp: tools/list exposes scan_diff, scan_path, list_rules, explain_rule and preview_fix', async () => {
   const server = makeServer();
   const response = await call(server, { jsonrpc: '2.0', id: 2, method: 'tools/list' });
   const result = response.result as { tools: Array<{ name: string; inputSchema: unknown }> };
   const names = result.tools.map((tool) => tool.name).sort();
-  assert.deepEqual(names, ['list_rules', 'scan_diff', 'scan_path']);
+  assert.deepEqual(names, ['explain_rule', 'list_rules', 'preview_fix', 'scan_diff', 'scan_path']);
   for (const tool of result.tools) assert.equal(typeof tool.inputSchema, 'object');
 });
 
@@ -214,6 +214,44 @@ test('mcp: scan_diff only reports findings on changed lines', async () => {
   assert.match(content, /Diff since origin\/main/);
   assert.match(content, /py\/phantom-import/);
   assert.doesNotMatch(content, /py\/unreachable/);
+});
+
+test('mcp: explain_rule returns rule metadata', async () => {
+  const server = makeServer();
+  const response = await call(server, {
+    jsonrpc: '2.0',
+    id: 9,
+    method: 'tools/call',
+    params: { name: 'explain_rule', arguments: { ruleId: 'go/noop-test' } },
+  });
+  const content = (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+  assert.match(content, /go\/noop-test/);
+  assert.match(content, /confidence: high/);
+});
+
+test('mcp: explain_rule rejects an unknown rule', async () => {
+  const server = makeServer();
+  const response = await call(server, {
+    jsonrpc: '2.0',
+    id: 10,
+    method: 'tools/call',
+    params: { name: 'explain_rule', arguments: { ruleId: 'py/nope' } },
+  });
+  const result = response.result as { isError?: boolean; content: Array<{ text: string }> };
+  assert.equal(result.isError, true);
+  assert.match(result.content[0]?.text ?? '', /Unknown rule/);
+});
+
+test('mcp: preview_fix reports no safe fixes without writing', async () => {
+  const server = makeServer();
+  const response = await call(server, {
+    jsonrpc: '2.0',
+    id: 11,
+    method: 'tools/call',
+    params: { name: 'preview_fix', arguments: { path: '.' } },
+  });
+  const content = (response.result as { content: Array<{ text: string }> }).content[0]?.text ?? '';
+  assert.match(content, /No safe fixes available/);
 });
 
 test('mcp: list_rules returns the rule table', async () => {
