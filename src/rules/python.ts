@@ -66,7 +66,12 @@ function pythonImports(root: AstNode): Array<{ node: AstNode; module: string; ro
 function isOptionalImport(node: AstNode): boolean {
   const tryNode = ancestorOfType(node, ['try_statement']);
   if (!tryNode) return false;
-  return /ImportError|ModuleNotFoundError/.test(tryNode.text);
+  return descendantsOfType(tryNode, ['except_clause']).some((clause) => {
+    const head = (clause.text.split(':')[0] ?? '').trim();
+    return /^except\s+(?:\(\s*)?(?:[A-Za-z_]\w*\.)?(?:ImportError|ModuleNotFoundError)\b/.test(
+      head,
+    );
+  });
 }
 
 const DISTRIBUTION_PREFIXES = Object.keys(IMPORT_TO_DISTRIBUTION).sort(

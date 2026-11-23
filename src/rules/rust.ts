@@ -252,7 +252,7 @@ function isDeclaredRustPath(
 function isStubMacro(node: AstNode): boolean {
   const text = node.text.trim();
   return (
-    /^(?:todo|unimplemented)!\(\)$/i.test(text) ||
+    /^(?:todo|unimplemented)!\(/.test(text) ||
     /^panic!\(\s*"(?:not implemented|unimplemented|todo)"\s*\)$/i.test(text)
   );
 }

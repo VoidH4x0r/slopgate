@@ -91,6 +91,7 @@ function packageRootOf(specifier: string): string {
 }
 
 function matchesAlias(specifier: string, aliases: readonly string[]): boolean {
+  if (aliases.includes('*')) return true;
   return aliases.some((alias) => {
     const clean = alias.replace(/\/+$/, '');
     return specifier === clean || specifier.startsWith(`${clean}/`);
@@ -855,7 +856,9 @@ const unreachable: Rule = {
       if (index === -1) continue;
       const terminator = statements[index];
       if (!terminator) continue;
-      const trailing = statements.slice(index + 1).filter((statement) => !isErasedOrHoisted(statement));
+      const trailing = statements
+        .slice(index + 1)
+        .filter((statement) => !isErasedOrHoisted(statement) && statement.type !== 'empty_statement');
       const firstUnreachable = trailing[0];
       if (!firstUnreachable) continue;
       const count = trailing.length;

@@ -177,8 +177,10 @@ export async function diffSince(root: string, ref: string): Promise<DiffSet> {
 
   // `-z` gives NUL-separated raw paths, immune to quoting and newlines in names.
   const untracked = await git(root, ['ls-files', '--others', '--exclude-standard', '-z']).catch(() => '');
+  const repoRoot = await findRepoRoot(root).catch(() => root);
+  const prefix = path.relative(repoRoot, root).replace(/\\/g, '/').replace(/\/+$/, '');
   for (const file of untracked.split('\u0000')) {
-    if (file.length > 0) set.full.add(file);
+    if (file.length > 0) set.full.add(prefix ? `${prefix}/${file}` : file);
   }
   return set;
 }

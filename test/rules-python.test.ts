@@ -554,6 +554,30 @@ test('py/dead-branch handles elif and parenthesized constants', async () => {
   );
 });
 
+test('py/phantom-import ignores ImportError text outside the handler type', async () => {
+  const source = [
+    'try:',
+    '    import missing_dependency',
+    'except Exception:',
+    '    print("do not raise ImportError here")',
+    '',
+  ].join('\n');
+  const drafts = await runRule('py/phantom-import', source, 'python', makeDeps({ pythonManifests: ['pyproject.toml'] }));
+  assert.equal(drafts.length, 1);
+});
+
+test('py/phantom-import accepts a real ImportError optional import', async () => {
+  const source = [
+    'try:',
+    '    import optional_dependency',
+    'except ImportError:',
+    '    optional_dependency = None',
+    '',
+  ].join('\n');
+  const drafts = await runRule('py/phantom-import', source, 'python', makeDeps({ pythonManifests: ['pyproject.toml'] }));
+  assert.deepEqual(drafts, []);
+});
+
 test('py/unreachable flags statements after exits', async () => {
   assert.equal((await runRule('py/unreachable', 'def f():\n    return 1\n    x = 2\n', 'python')).length, 1);
   assert.equal((await runRule('py/unreachable', 'def f():\n    raise RuntimeError()\n    x = 2\n', 'python')).length, 1);

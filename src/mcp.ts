@@ -141,7 +141,11 @@ function fail(id: string | number | null, code: number, message: string): JsonRp
 /** True when `candidate` is `root` itself or lives below it. */
 export function isInsideRoot(realRoot: string, candidate: string): boolean {
   const relative = path.relative(realRoot, candidate);
-  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+  const escapes =
+    relative === '..' ||
+    relative.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relative);
+  return relative === '' || !escapes;
 }
 
 function textResult(text: string, isError = false): unknown {

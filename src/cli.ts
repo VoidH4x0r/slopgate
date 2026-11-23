@@ -521,11 +521,18 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const explicitWrite = options.writeBaseline;
   if (explicitWrite) {
     const writeTarget = path.resolve(baselineRoot, explicitWrite);
+    const baselineDisplay: Confidence =
+      merged.failOn === 'none' || confidenceRank(merged.confidence) <= confidenceRank(merged.failOn)
+        ? merged.confidence
+        : merged.failOn;
+    const baselineFindings = result.findings.filter((finding) =>
+      meetsConfidence(finding.confidence, baselineDisplay),
+    );
     // Only replace entries covered by this scan; a subdirectory or --rule run
     // must not discard the rest of the root baseline.
     const baseline = await mergeBaseline(
       writeTarget,
-      result.findings,
+      baselineFindings,
       result.files,
       options.rules.length > 0 ? new Set(options.rules) : undefined,
       baselineRoot,
@@ -537,7 +544,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     );
     writeOut(
       io,
-      `wrote ${result.findings.length} findings to ${path.relative(io.cwd, writeTarget)} (baseline now ${baseline.entries.length})`,
+      `wrote ${baselineFindings.length} findings to ${path.relative(io.cwd, writeTarget)} (baseline now ${baseline.entries.length})`,
     );
     return 0;
   }

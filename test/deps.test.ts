@@ -243,6 +243,24 @@ test('parseCargoTomlText handles inline package aliases and [lib] names', () => 
   assert.deepEqual(parsed.dependencies.sort(), ['serde', 'serde1']);
 });
 
+test('parsePythonManifestText parses Poetry dependency subtables', () => {
+  const names = parsePythonManifestText(
+    'pyproject.toml',
+    [
+      '[tool.poetry.dependencies]',
+      'requests = "^2"',
+      '',
+      '[tool.poetry.dependencies.uvicorn]',
+      'version = "^0.30"',
+      '',
+      '[tool.poetry.group.dev.dependencies.pytest-cov]',
+      'version = "^5"',
+      '',
+    ].join('\n'),
+  );
+  assert.deepEqual(names.sort(), ['pytest-cov', 'requests', 'uvicorn']);
+});
+
 test('loadProjectDeps expands a tsconfig baseUrl into import aliases', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-baseurl-'));
   try {

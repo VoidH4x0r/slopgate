@@ -41,6 +41,7 @@ const config: Config = {
 
 function scanResult(findings: Finding[], files = 3): ScanResult {
   return {
+    reportRoot: process.cwd(),
     findings,
     files: [],
     fixes: [],
@@ -346,6 +347,7 @@ test('mcp: isInsideRoot accepts the root and its children, rejects siblings', ()
   const root = path.resolve('repo-root');
   assert.equal(isInsideRoot(root, root), true);
   assert.equal(isInsideRoot(root, path.join(root, 'src', 'app.py')), true);
+  assert.equal(isInsideRoot(root, path.join(root, '..data', 'x.py')), true);
   assert.equal(isInsideRoot(root, path.resolve('repo-root-sibling', 'x.py')), false);
   assert.equal(isInsideRoot(root, path.resolve('..', 'outside.py')), false);
 });

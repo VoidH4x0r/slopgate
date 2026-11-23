@@ -42,6 +42,8 @@ export interface ScanOptions {
 
 export interface ScanResult {
   findings: Finding[];
+  /** Absolute path used as the base for reported finding paths. */
+  reportRoot: string;
   /** Report-root-relative files that were scanned (including parse failures). */
   files: string[];
   /** Safe edits attached to findings; consumed by the CLI fixer. */
@@ -302,5 +304,5 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     durationMs: Math.round(performance.now() - started),
   };
 
-  return { findings, files: scannedFiles, fixes, suppressedCount, stats, warnings };
+  return { findings, files: scannedFiles, fixes, suppressedCount, stats, warnings, reportRoot };
 }

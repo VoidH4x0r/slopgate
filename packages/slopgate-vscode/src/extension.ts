@@ -32,7 +32,11 @@ function configured(): { executable: string; confidence: string; failOn: string 
   };
 }
 
-function workspaceRoot(): string | undefined {
+function workspaceRoot(document?: vscode.TextDocument): string | undefined {
+  if (document) {
+    const folder = vscode.workspace.getWorkspaceFolder(document.uri);
+    if (folder) return folder.uri.fsPath;
+  }
   return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 }
 
@@ -106,14 +110,14 @@ async function scan(
 
 async function scanActiveDocument(document?: vscode.TextDocument): Promise<void> {
   if (!document || document.isUntitled || !SUPPORTED.has(document.languageId)) return;
-  const root = workspaceRoot() ?? path.dirname(document.uri.fsPath);
+  const root = workspaceRoot(document) ?? path.dirname(document.uri.fsPath);
   await scan(root, document.uri.fsPath, false, document.uri.fsPath);
 }
 
 async function fixActiveDocument(document?: vscode.TextDocument): Promise<void> {
   if (!document || document.isUntitled || !SUPPORTED.has(document.languageId)) return;
   if (document.isDirty && !(await document.save())) return;
-  const root = workspaceRoot() ?? path.dirname(document.uri.fsPath);
+  const root = workspaceRoot(document) ?? path.dirname(document.uri.fsPath);
   const settings = configured();
   try {
     await runSlopgate(
@@ -121,7 +125,7 @@ async function fixActiveDocument(document?: vscode.TextDocument): Promise<void> 
       buildScanArgs(document.uri.fsPath, settings, 'fix'),
       root,
     );
-    vscode.window.showInformationMessage('slopgate applied safe fixes.');
+    vscode.window.showInformationMessage('slopgate fix completed; remaining diagnostics were refreshed.');
     await scanActiveDocument(document);
   } catch (error) {
     vscode.window.showWarningMessage(`slopgate fix failed: ${(error as Error).message}`);

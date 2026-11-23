@@ -42,7 +42,7 @@ export function isGeneratedGo(ctx: RuleContext): boolean {
 export function hasBuildConstraint(ctx: RuleContext): boolean {
   const header = goHeader(ctx);
   if (/^\/\/go:build\s/m.test(header) || /^\/\/ \+build\s/m.test(header)) return true;
-  return /_(?:aix|android|darwin|dragonfly|freebsd|illumos|ios|js|linux|netbsd|openbsd|plan9|solaris|wasip1|windows|amd64|386|arm|arm64|loong64|mips|mips64|mips64le|mipsle|ppc64|ppc64le|riscv64|s390x|wasm|unix)\.go$/.test(
+  return /_(?:aix|android|darwin|dragonfly|freebsd|illumos|ios|js|linux|netbsd|openbsd|plan9|solaris|wasip1|windows|amd64|386|arm|arm64|loong64|mips|mips64|mips64le|mipsle|ppc64|ppc64le|riscv64|s390x|wasm)\.go$/.test(
     ctx.file,
   );
 }

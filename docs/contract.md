@@ -10,7 +10,7 @@ import { scanProject, CONTRACT_VERSION } from '@voidh4x0r/slopgate';
 
 Stable exports:
 
-- `scanProject(options)`;
+- `scanProject(options)` (result includes `reportRoot`);
 - `applyFixes(fixes, { write })`;
 - `DEFAULT_CONFIG`, `loadConfig`, `normalizeConfig`;
 - `ALL_RULE_METAS`, `ALL_RULE_BY_ID`, `PROJECT_RULES`;

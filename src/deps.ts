@@ -212,6 +212,16 @@ export function parsePythonManifestText(fileName: string, text: string): string[
         }
         continue;
       }
+      const poetrySubtable =
+        /^tool\.poetry\.(?:dependencies|dev-dependencies|group\.[^.]+\.dependencies)\.([^.]+)$/.exec(
+          section,
+        );
+      if (poetrySubtable?.[1]) {
+        if (poetrySubtable[1].toLowerCase() !== 'python') {
+          collected.push(normalizePythonName(poetrySubtable[1]));
+        }
+        continue;
+      }
       if (
         section === 'tool.poetry.dependencies' ||
         section === 'tool.poetry.dev-dependencies' ||
@@ -867,6 +877,10 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
     const file = path.join(root, name);
     const config = await readTsconfig(file, seen);
     for (const key of Object.keys(config.paths)) {
+      if (key === '*') {
+        aliases.add('*');
+        continue;
+      }
       const cleaned = key.replace(/\/\*$/, '').replace(/\*$/, '');
       if (cleaned) aliases.add(cleaned);
     }
