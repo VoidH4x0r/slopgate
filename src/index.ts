@@ -15,7 +15,7 @@ export {
   normalizeConfig,
   type Config,
 } from './config.ts';
-export { ALL_RULE_METAS, ALL_RULE_BY_ID, PROJECT_RULES } from './rules/index.ts';
+export { ALL_RULE_METAS, ALL_RULE_BY_ID, PROJECT_RULES, createProjectRules } from './rules/index.ts';
 export type {
   Confidence,
   Finding,

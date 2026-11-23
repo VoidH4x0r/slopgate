@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T02:47:36.168Z by `scripts/benchmark.mjs` (slopgate 1.0.0, Node v24.19.0).
+Generated 2026-11-23T03:21:23.174Z by `scripts/benchmark.mjs` (slopgate 1.0.0, Node v24.19.0).
 
 ## Summary
 
@@ -10,7 +10,7 @@ Generated 2026-11-23T02:47:36.168Z by `scripts/benchmark.mjs` (slopgate 1.0.0, N
 
 ## tape
 
-Scanned **185** files (**11958** lines) in 254 ms.
+Scanned **185** files (**11958** lines) in 213 ms.
 
 Package: `tape@5.11.0`.
 

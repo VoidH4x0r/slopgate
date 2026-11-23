@@ -7,6 +7,7 @@ import type {
   RuleMeta,
 } from '../types.ts';
 import { collapseWhitespace, endOf, isComment, isTestPath, snippetOf, startOf, walk } from './helpers.ts';
+import { hasBuildConstraint, isGeneratedGo } from './go.ts';
 
 const MIN_DUPLICATE_LINES = 6;
 const MIN_DUPLICATE_TOKENS = 15;
@@ -34,7 +35,9 @@ function bodyOf(node: AstNode): AstNode | undefined {
     node.type === 'function_item' ||
     node.type === 'method_definition' ||
     node.type === 'function_expression' ||
-    node.type === 'arrow_function'
+    node.type === 'arrow_function' ||
+    node.type === 'generator_function_declaration' ||
+    node.type === 'generator_function'
   ) {
     return node.childForFieldName('body') ?? undefined;
   }
@@ -48,10 +51,20 @@ function isCandidate(node: AstNode, language: LanguageId): boolean {
   }
   if (language === 'rust') return node.type === 'function_item';
   if (node.type === 'function_declaration' || node.type === 'method_definition') return true;
-  if (node.type !== 'function_expression' && node.type !== 'arrow_function') return false;
+  if (node.type === 'generator_function_declaration') return true;
+  if (
+    node.type !== 'function_expression' &&
+    node.type !== 'arrow_function' &&
+    node.type !== 'generator_function'
+  ) {
+    return false;
+  }
   // A callback passed to map/filter is not a reusable duplicated function.
   const parent = node.parent;
-  return parent?.type === 'variable_declarator' && parent.childForFieldName('value') === node;
+  const value = parent?.type === 'variable_declarator' ? parent.childForFieldName('value') : undefined;
+  return Boolean(
+    value && value.startIndex === node.startIndex && value.endIndex === node.endIndex,
+  );
 }
 
 const FUNCTION_NODE_TYPES = new Set([
@@ -62,6 +75,8 @@ const FUNCTION_NODE_TYPES = new Set([
   'method_definition',
   'function_expression',
   'arrow_function',
+  'generator_function_declaration',
+  'generator_function',
 ]);
 
 function nodeKey(node: AstNode): string {
@@ -100,11 +115,14 @@ function signaturePair(body: AstNode): {
     semantic.update(node.type);
     semantic.update('\u0000');
     if (node.children.length === 0) {
-      const text = collapseWhitespace(node.text);
-      if (text.length > 0) {
-        exact.update(text);
+      const raw = node.text;
+      const exactText = /(?:string_content|string_fragment|regex_pattern|comment)$/.test(node.type)
+        ? raw
+        : collapseWhitespace(raw);
+      if (exactText.length > 0) {
+        exact.update(exactText);
         exact.update('\u0000');
-        semantic.update(semanticLeaf(node, text));
+        semantic.update(semanticLeaf(node, collapseWhitespace(raw)));
         semantic.update('\u0000');
         tokens += 1;
       }
@@ -160,18 +178,20 @@ function collectRule(
       candidates.length = 0;
     },
     collect(ctx) {
-      if (ctx.language !== language || isTestPath(ctx.file)) return;
+      const matchesLanguage =
+        language === 'typescript'
+          ? ctx.language === 'typescript' || ctx.language === 'tsx'
+          : ctx.language === language;
+      if (!matchesLanguage || isTestPath(ctx.file)) return;
       if (
         language === 'go' &&
-        /^\/\/ Code generated .* DO NOT EDIT\.$/m.test(ctx.lines.slice(0, 20).join('\n'))
+        (isGeneratedGo(ctx) || hasBuildConstraint(ctx))
       ) {
         return;
       }
       if (
         language === 'rust' &&
-        /^(?:\/\/\s*@generated|\/\/ Code generated .* DO NOT EDIT\.)$/m.test(
-          ctx.lines.slice(0, 20).join('\n'),
-        )
+        /^(?:\/\/\s*@generated|\/\/ Code generated .* DO NOT EDIT\.)$/m.test(ctx.source)
       ) {
         return;
       }
@@ -221,9 +241,10 @@ function collectRule(
 
       const exactGroups = new Map<string, Candidate[]>();
       for (const candidate of candidates) {
-        const group = exactGroups.get(candidate.exactHash);
+        const key = `${candidate.language}\u0000${candidate.exactHash}`;
+        const group = exactGroups.get(key);
         if (group) group.push(candidate);
-        else exactGroups.set(candidate.exactHash, [candidate]);
+        else exactGroups.set(key, [candidate]);
       }
       const exactDuplicated = new Set<Candidate>();
       for (const group of exactGroups.values()) {
@@ -235,7 +256,6 @@ function collectRule(
       const drafts: ProjectFindingDraft[] = [];
       for (const group of groups.values()) {
         const eligible = group.filter((candidate) => {
-          if (mode === 'semantic' && exactDuplicated.has(candidate)) return false;
           let ancestor = candidate.ancestor;
           while (ancestor) {
             if (duplicated.has(ancestor)) return false;
@@ -248,14 +268,21 @@ function collectRule(
           if (!byFile.has(candidate.file)) byFile.set(candidate.file, candidate);
         }
         if (byFile.size < 2) continue;
-        const representatives = [...byFile.values()].sort(
+        const allRepresentatives = [...byFile.values()].sort(
           (a, b) =>
             a.file.localeCompare(b.file) ||
             a.start.line - b.start.line ||
             a.start.column - b.start.column,
         );
+        // Exact duplicates are already reported by duplicate-block. Semantic
+        // still reports the renamed member of the group but uses an exact
+        // member as the "also at" location, so the semantic group is not lost.
+        const representatives =
+          mode === 'semantic'
+            ? allRepresentatives.filter((candidate) => !exactDuplicated.has(candidate))
+            : allRepresentatives;
         for (const candidate of representatives) {
-          const others = representatives.filter((other) => other.file !== candidate.file);
+          const others = allRepresentatives.filter((other) => other.file !== candidate.file);
           const firstOther = others[0];
           if (!firstOther) continue;
           drafts.push({
@@ -290,7 +317,14 @@ function collectCandidates(root: AstNode, language: LanguageId): AstNode[] {
         ? new Set(['function_declaration', 'method_declaration'])
         : language === 'rust'
           ? new Set(['function_item'])
-          : new Set(['function_declaration', 'method_definition', 'function_expression', 'arrow_function']);
+          : new Set([
+              'function_declaration',
+              'method_definition',
+              'function_expression',
+              'arrow_function',
+              'generator_function_declaration',
+              'generator_function',
+            ]);
   const found: AstNode[] = [];
   walk(root, (node) => {
     if (wanted.has(node.type)) found.push(node);
@@ -298,16 +332,23 @@ function collectCandidates(root: AstNode, language: LanguageId): AstNode[] {
   return found;
 }
 
-export const duplicateRules: ProjectRule[] = [
-  collectRule('function', 'python'),
-  collectRule('function', 'typescript'),
-  collectRule('function', 'go'),
-  collectRule('function', 'rust'),
-];
+export function createDuplicateRules(): ProjectRule[] {
+  return [
+    collectRule('function', 'python'),
+    collectRule('function', 'typescript'),
+    collectRule('function', 'go'),
+    collectRule('function', 'rust'),
+  ];
+}
 
-export const semanticDuplicateRules: ProjectRule[] = [
-  collectRule('function', 'python', 'semantic'),
-  collectRule('function', 'typescript', 'semantic'),
-  collectRule('function', 'go', 'semantic'),
-  collectRule('function', 'rust', 'semantic'),
-];
+export function createSemanticDuplicateRules(): ProjectRule[] {
+  return [
+    collectRule('function', 'python', 'semantic'),
+    collectRule('function', 'typescript', 'semantic'),
+    collectRule('function', 'go', 'semantic'),
+    collectRule('function', 'rust', 'semantic'),
+  ];
+}
+
+export const duplicateRules: ProjectRule[] = createDuplicateRules();
+export const semanticDuplicateRules: ProjectRule[] = createSemanticDuplicateRules();

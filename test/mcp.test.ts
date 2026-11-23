@@ -110,6 +110,23 @@ test('mcp: tools/list exposes scan_diff, scan_path, list_rules, explain_rule and
   for (const tool of result.tools) assert.equal(typeof tool.inputSchema, 'object');
 });
 
+test('mcp: scan_path forwards the requested confidence into collection', async () => {
+  let seen: string | undefined;
+  const server = makeServer({
+    scan: async (_root, confidence) => {
+      seen = confidence;
+      return scanResult([finding()]);
+    },
+  });
+  await call(server, {
+    jsonrpc: '2.0',
+    id: 12,
+    method: 'tools/call',
+    params: { name: 'scan_path', arguments: { path: '.', confidence: 'medium' } },
+  });
+  assert.equal(seen, 'medium');
+});
+
 test('mcp: scan_path returns a text summary and respects confidence', async () => {
   const server = makeServer({
     scan: async () =>

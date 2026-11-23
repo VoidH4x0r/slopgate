@@ -9,6 +9,7 @@ import {
 
 const payload = {
   tool: 'slopgate',
+  reportRoot: '/repo',
   findings: [
     {
       ruleId: 'py/unreachable',
@@ -29,6 +30,7 @@ test('parseScanPayload accepts the CLI JSON envelope', () => {
   const parsed = parseScanPayload(JSON.stringify(payload));
   assert.equal(parsed.findings.length, 1);
   assert.equal(parsed.findings[0]?.ruleId, 'py/unreachable');
+  assert.equal(parsed.reportRoot, '/repo');
 });
 
 test('parseScanPayload rejects an empty or non-JSON payload', () => {

@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import process from 'node:process';
 import { promisify } from 'node:util';
 
 const exec = promisify(execFile);
@@ -19,6 +20,7 @@ export interface ScanFinding {
 export interface ScanPayload {
   tool: string;
   version?: string;
+  reportRoot?: string;
   findings: ScanFinding[];
   stats?: { files: number };
 }
@@ -96,6 +98,9 @@ export async function runSlopgate(
       cwd,
       maxBuffer: 64 * 1024 * 1024,
       windowsHide: true,
+      // npm exposes `slopgate.cmd` on Windows; execFile cannot launch a .cmd
+      // shim without a shell.
+      shell: process.platform === 'win32',
     });
     return parseScanPayload(stdout);
   } catch (error) {

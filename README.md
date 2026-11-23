@@ -76,7 +76,7 @@ Measured on **1,115,270 lines** of real code — the CPython standard library (a
 | Recall on seeded defects | **30/30** (14 demo + 16 AI-generated) |
 | High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
 
-A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings**; a Rust-only run of **Rust 1.83 std source** (1,494 files, 635,245 lines) also reports **0 high**. Tape/TAP (185 files), a held-out AI set (10 files, 8/8 labeled high) and a bundled Electron app (6 files) are separate corpus runs. See [`docs/benchmark.md`](docs/benchmark.md).
+A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings** among parsed files (72 parse errors); a Rust-only run of **Rust 1.83 std source** (1,494 files, 635,245 lines) also reports **0 high** among parsed files (157 parse errors, 10.5%). Tape/TAP (185 files), a held-out AI set (10 files, 8/8 labeled high) and a bundled Electron app (6 files) are separate corpus runs. See [`docs/benchmark.md`](docs/benchmark.md).
 
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
 
@@ -151,13 +151,13 @@ slopgate [path] [options]
 }
 ```
 
-- `include` / `exclude` — globs relative to the **config file's directory** (or the project root when no config file exists). **A config `include` replaces the default pattern set** (the default Python/TS/JS/Go globs); list every extension you still want. The CLI `--include` **appends** to the effective set, so `--include "src/**"` keeps the defaults.
+- `include` / `exclude` — globs relative to the **config file's directory** (or the project root when no config file exists). **A config `include` replaces the default pattern set** (the default Python/TS/JS/Go/Rust globs); list every extension you still want. The CLI `--include` **appends** to the effective set, so `--include "src/**"` keeps the defaults.
 - `ignoreModules` — top-level modules to always treat as declared (dynamic imports, private packages).
 - `rules` — `"off"` or an explicit severity (`"error"`, `"warning"`, `"info"`). Severity changes display and annotation level only; **CI failure is controlled by confidence and `--fail-on`**. A rule set to `"info"` stays visible and still fails when its confidence meets `--fail-on`; use `"off"` or a baseline to exempt it.
 - `confidence` / `failOn` — same meaning as the CLI flags; CLI flags win.
 - Unknown config keys are rejected (exit 2) instead of being silently ignored; the standard `$schema` meta key is accepted and ignored.
 
-For example, `{"include": ["src/**"]}` scans only files under `src/`; it does **not** keep the default Python/TS/JS/Go coverage. Add the patterns you need, or use the CLI flag to append one pattern to the defaults.
+For example, `{"include": ["src/**"]}` scans only files under `src/`; it does **not** keep the default Python/TS/JS/Go/Rust coverage. Add the patterns you need, or use the CLI flag to append one pattern to the defaults.
 
 In a monorepo, dependencies are resolved per file from the nearest manifest **for that language** (a nested `package.json` does not hide a parent Python `pyproject.toml`). The `.slopgate.json` closest to the scan target applies to the whole run; scan an individual package when you need that package's config to govern its own files.
 
@@ -295,9 +295,9 @@ The independent [`packages/slopgate-vscode`](packages/slopgate-vscode/README.md)
 The CLI is the primary interface, but 1.0 also exports a stable programmatic surface:
 
 ```ts
-import { scanProject, CONTRACT_VERSION } from '@voidh4x0r/slopgate';
+import { scanProject, CONTRACT_VERSION, DEFAULT_CONFIG } from '@voidh4x0r/slopgate';
 
-const result = await scanProject({ root: process.cwd() });
+const result = await scanProject({ root: process.cwd(), config: DEFAULT_CONFIG });
 console.log(CONTRACT_VERSION, result.findings.length);
 ```
 
@@ -316,7 +316,7 @@ Contract: [`docs/contract.md`](docs/contract.md); JSON output schema: [`schema/s
 | `py/swallowed-exception` · `ts/swallowed-exception` | `except: pass`, `catch {}` (JS empty catch is medium by design) |
 | `py/dead-branch` · `ts/dead-branch` | `if False:` / `if (false)`, and their always-true twins |
 | `py/unreachable` · `ts/unreachable` | statements after `return` / `raise` / `throw` / `continue` |
-| `py/duplicate-block` · `ts/duplicate-block` · `go/duplicate-block` | the same normalized function/method body in two or more files |
+| `py/duplicate-block` · `ts/duplicate-block` · `go/duplicate-block` · `rs/duplicate-block` | the same normalized function/method body in two or more files |
 | `go/phantom-import` | Go import not in the standard library, current module, or go.mod |
 | `go/noop-test` | `Test*` functions in `_test.go` with an empty body and no explanatory comment |
 | `go/unreachable` | statements after `return` / `break` / `continue` in a Go block |
@@ -404,7 +404,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 388 tests; the tests themselves make no network or child-process calls
+npm test            # 408 tests; the sandbox gate skips the one git-diff integration test
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

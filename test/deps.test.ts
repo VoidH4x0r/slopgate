@@ -203,6 +203,30 @@ test('parseCargoTomlText handles dependency tables and package-name aliases', ()
   assert.deepEqual(parsed.dependencies.sort(), ['libc', 'serde', 'tempfile', 'tokio']);
 });
 
+test('parseCargoTomlText handles hyphen, workspace, target and aliased dependencies', () => {
+  const parsed = parseCargoTomlText([
+    "[package]",
+    "name = 'hy-phen'",
+    "",
+    "[dependencies]",
+    'async-trait = "0.1"',
+    "serde.workspace = true",
+    'tokio = { version = "1", features = ["rt"] }',
+    "",
+    "[dependencies.serde]",
+    'package = "serde"',
+    "",
+    "[target.'cfg(unix)'.dev-dependencies]",
+    'libc = "0.2"',
+    "",
+    "[[bin]]",
+    'name = "not-a-crate"',
+    "",
+  ].join('\n'));
+  assert.equal(parsed.crateName, 'hy-phen');
+  assert.deepEqual(parsed.dependencies.sort(), ['async_trait', 'libc', 'serde', 'tokio']);
+});
+
 test('loadProjectDeps expands a tsconfig baseUrl into import aliases', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-baseurl-'));
   try {

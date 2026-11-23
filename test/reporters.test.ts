@@ -30,7 +30,7 @@ const findings: Finding[] = [
 
 test('renderJson produces a stable machine-readable document', () => {
   const parsed = JSON.parse(
-    renderJson({ findings, stats, version: '0.1.0', suppressedByComment: 0, baselined: 0, hiddenByConfidence: 0 }),
+    renderJson({ findings, stats, version: '0.1.0', reportRoot: '.', suppressedByComment: 0, baselined: 0, hiddenByConfidence: 0 }),
   ) as {
     tool: string;
     findings: Array<{ fingerprint: string; ruleId: string }>;

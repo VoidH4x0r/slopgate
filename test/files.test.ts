@@ -103,6 +103,20 @@ test('discoverFiles accepts a single file path', async () => {
   assert.deepEqual(ignored.files, []);
 });
 
+test('discoverFiles includes Rust src/bin but ignores build bin directories', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-bin-'));
+  try {
+    await mkdir(path.join(dir, 'src', 'bin'), { recursive: true });
+    await mkdir(path.join(dir, 'bin'), { recursive: true });
+    await writeFile(path.join(dir, 'src', 'bin', 'tool.rs'), 'fn main() {}\n', 'utf8');
+    await writeFile(path.join(dir, 'bin', 'generated.rs'), 'fn main() {}\n', 'utf8');
+    const { files } = await discoverFiles({ root: dir });
+    assert.deepEqual(files.map((file) => file.rel), ['src/bin/tool.rs']);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('discoverFiles does not count ignored directories as skipped files', async () => {
   const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-skip-'));
   try {

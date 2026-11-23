@@ -1,5 +1,7 @@
 import { chmod, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { languageFor } from './files.ts';
+import { getParser } from './parser.ts';
 import type { ScanFix } from './types.ts';
 
 export interface FixApplyResult {
@@ -67,15 +69,24 @@ export async function applyFixes(
       const key = `${edit.start}:${edit.end}:${edit.replacement}`;
       if (!unique.has(key)) unique.set(key, edit);
     }
-    const edits = [...unique.values()].sort((a, b) => b.start - a.start || b.end - a.end);
-    let lastStart = source.length;
+    const sorted = [...unique.values()].sort((a, b) => a.start - b.start || b.end - a.end);
+    const edits: Array<{ start: number; end: number; replacement: string }> = [];
     let invalid = false;
-    for (const edit of edits) {
-      if (edit.start < 0 || edit.end < edit.start || edit.end > source.length || edit.end > lastStart) {
+    for (const edit of sorted) {
+      if (edit.start < 0 || edit.end < edit.start || edit.end > source.length) {
         invalid = true;
         break;
       }
-      lastStart = edit.start;
+      const previous = edits[edits.length - 1];
+      if (previous && edit.start < previous.end) {
+        // A nested edit is already covered by its outer deletion. Keep the
+        // outer edit instead of failing the whole file; a partial overlap is
+        // still unsafe and rejects the plan.
+        if (edit.end <= previous.end && previous.replacement === '') continue;
+        invalid = true;
+        break;
+      }
+      edits.push(edit);
     }
     if (invalid) {
       result.skippedFindings += plan.findings;
@@ -84,7 +95,7 @@ export async function applyFixes(
     }
 
     let updated = source;
-    for (const edit of edits) {
+    for (const edit of [...edits].reverse()) {
       updated = updated.slice(0, edit.start) + edit.replacement + updated.slice(edit.end);
     }
     if (updated === source) continue;
@@ -93,6 +104,19 @@ export async function applyFixes(
       result.fixedFindings += plan.findings;
       result.fixedFiles.push(plan.file);
       continue;
+    }
+
+    const language = languageFor(plan.file);
+    if (language) {
+      const parser = await getParser(language);
+      const tree = parser.parse(updated);
+      if (!tree || tree.rootNode.hasError) {
+        tree?.delete();
+        result.skippedFindings += plan.findings;
+        result.warnings.push(`skipped fixes in ${plan.file}: the result would not parse`);
+        continue;
+      }
+      tree.delete();
     }
 
     const info = await stat(plan.file).catch(() => undefined);

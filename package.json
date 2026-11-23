@@ -31,7 +31,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "test": "node --test \"test/**/*.test.ts\"",
-    "test:sandbox": "node --test --test-isolation=none \"test/**/*.test.ts\"",
+    "test:sandbox": "node --import ./test/sandbox-env.mjs --test --test-isolation=none \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "bench": "node scripts/benchmark.mjs",
     "demo:gif": "node scripts/make-demo-gif.mjs",
@@ -44,6 +44,7 @@
     "release:check": "node scripts/check-release.mjs"
   },
   "dependencies": {
+    "@types/emscripten": "^1.41.6",
     "web-tree-sitter": "^0.25.10"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T02:46:18.869Z",
+  "generatedAt": "2026-11-23T03:20:06.759Z",
   "slopgateVersion": "1.0.0",
   "nodeVersion": "v24.19.0",
   "corpora": [
@@ -9,8 +9,8 @@
       "digest": "027f952580cd6622",
       "files": 1845,
       "lines": 991705,
-      "durationMs": 13129,
-      "findings": 6836,
+      "durationMs": 11106,
+      "findings": 6834,
       "high": 29,
       "suppressed": 0,
       "parseErrors": 9,
@@ -32,7 +32,7 @@
         },
         "py/duplicate-block": {
           "high": 0,
-          "medium": 22,
+          "medium": 20,
           "low": 0
         },
         "py/noop-test": {
@@ -319,7 +319,7 @@
       "digest": "d2b720bf4294881f",
       "files": 7,
       "lines": 2783,
-      "durationMs": 62,
+      "durationMs": 38,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -344,7 +344,7 @@
       "digest": "7e4d9210a0fc613d",
       "files": 2,
       "lines": 799,
-      "durationMs": 11,
+      "durationMs": 8,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -369,8 +369,8 @@
       "digest": "4c7472ad58bd8a01",
       "files": 111,
       "lines": 8363,
-      "durationMs": 149,
-      "findings": 11,
+      "durationMs": 174,
+      "findings": 13,
       "high": 0,
       "suppressed": 0,
       "parseErrors": 0,
@@ -378,6 +378,11 @@
         "ts/swallowed-exception": {
           "high": 0,
           "medium": 11,
+          "low": 0
+        },
+        "ts/duplicate-block": {
+          "high": 0,
+          "medium": 2,
           "low": 0
         }
       },
@@ -400,7 +405,7 @@
       "digest": "2035d82b564fe0fd",
       "files": 49,
       "lines": 3166,
-      "durationMs": 52,
+      "durationMs": 59,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -425,12 +430,18 @@
       "digest": "a1904525101c27be",
       "files": 7,
       "lines": 4225,
-      "durationMs": 42,
-      "findings": 0,
+      "durationMs": 67,
+      "findings": 4,
       "high": 0,
       "suppressed": 0,
       "parseErrors": 0,
-      "byRule": {},
+      "byRule": {
+        "ts/duplicate-block": {
+          "high": 0,
+          "medium": 4,
+          "low": 0
+        }
+      },
       "precision": {
         "overall": {
           "tp": 0,
@@ -450,7 +461,7 @@
       "digest": "423d0332532c2e32",
       "files": 4,
       "lines": 841,
-      "durationMs": 10,
+      "durationMs": 15,
       "findings": 4,
       "high": 0,
       "suppressed": 0,
@@ -481,8 +492,8 @@
       "digest": "8d19ccdb8205985c",
       "files": 409,
       "lines": 100880,
-      "durationMs": 824,
-      "findings": 3,
+      "durationMs": 1393,
+      "findings": 63,
       "high": 0,
       "suppressed": 0,
       "parseErrors": 0,
@@ -490,6 +501,11 @@
         "ts/swallowed-exception": {
           "high": 0,
           "medium": 2,
+          "low": 0
+        },
+        "ts/duplicate-block": {
+          "high": 0,
+          "medium": 60,
           "low": 0
         },
         "ts/stub-function": {
@@ -517,7 +533,7 @@
       "digest": "dc4dc56c06b64fb8",
       "files": 7,
       "lines": 2217,
-      "durationMs": 51,
+      "durationMs": 45,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -542,7 +558,7 @@
       "digest": "53ba47a2d90b26ae",
       "files": 5,
       "lines": 198,
-      "durationMs": 8,
+      "durationMs": 7,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -567,7 +583,7 @@
       "digest": "95d85ff450c21ede",
       "files": 20,
       "lines": 93,
-      "durationMs": 11,
+      "durationMs": 10,
       "findings": 16,
       "high": 13,
       "suppressed": 0,

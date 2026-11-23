@@ -234,7 +234,7 @@ test('cli: --fix supports --confidence and --verbose', async () => {
   }
 });
 
-test('cli: --fix with --diff fixes findings on changed lines', async () => {
+test('cli: --fix with --diff fixes findings on changed lines', { skip: process.env.SLOPGATE_SANDBOX === '1' }, async () => {
   const dir = await mkdtemp(path.join(ROOT, '.tmp-fix-diff-'));
   try {
     await writeFile(path.join(dir, 'app.py'), 'def f():\n    return 1\n    print("dead")\n');

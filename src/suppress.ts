@@ -23,16 +23,26 @@ function ruleList(raw: string): Set<string> | 'all' {
 
 /** First real code line after a comment block, skipping decorators. */
 function nextCodeLine(lines: readonly string[], startIndex: number): number | undefined {
+  let decoratorDepth = 0;
   for (let index = startIndex; index < lines.length; index += 1) {
     const text = (lines[index] ?? '').trim();
+    if (decoratorDepth > 0) {
+      decoratorDepth += (text.match(/\(/g) ?? []).length - (text.match(/\)/g) ?? []).length;
+      continue;
+    }
     if (
       text.length === 0 ||
       text.startsWith('#') ||
       text.startsWith('//') ||
       text.startsWith('/*') ||
-      text.startsWith('*') ||
-      text.startsWith('@')
+      text.startsWith('*')
     ) {
+      continue;
+    }
+    if (text.startsWith('@')) {
+      decoratorDepth = (text.match(/\(/g) ?? []).length - (text.match(/\)/g) ?? []).length;
+      if (decoratorDepth > 0) continue;
+      // A decorator without parentheses still applies to the next line.
       continue;
     }
     return index + 1;

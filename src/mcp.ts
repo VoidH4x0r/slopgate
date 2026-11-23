@@ -11,7 +11,7 @@ import {
   meetsConfidence,
   type Config,
 } from './config.ts';
-import { diffSince, isInDiff, type DiffSet } from './diff.ts';
+import { diffSince, findRepoRoot, isInDiffWithPrefix, type DiffSet } from './diff.ts';
 import { resolveProjectRoot } from './deps.ts';
 import { scanProject, type ScanResult } from './engine.ts';
 import { applyFixes } from './fix.ts';
@@ -51,7 +51,7 @@ export interface McpDeps {
   config: Config;
   /** Resolve the nearest config for a scan target; falls back to `config`. */
   configFor?: (root: string) => Promise<Config>;
-  scan: (root: string) => Promise<ScanResult>;
+  scan: (root: string, confidence?: Confidence) => Promise<ScanResult>;
   diff: (root: string, base: string) => Promise<DiffSet>;
 }
 
@@ -237,7 +237,7 @@ export function createMcpServer(deps: McpDeps) {
       }
       const targetConfig = await configFor(target);
       const confidence = coerceConfidence(params.confidence, targetConfig.confidence);
-      const result = await deps.scan(target);
+      const result = await deps.scan(target, confidence);
       if (result.stats.files === 0) {
         return textResult(`No files matched under ${target} (check include/exclude patterns)`, true);
       }
@@ -249,13 +249,16 @@ export function createMcpServer(deps: McpDeps) {
       const base = typeof params.base === 'string' && params.base.length > 0 ? params.base : 'HEAD';
       const rootConfig = await configFor(deps.root);
       const confidence = coerceConfidence(params.confidence, rootConfig.confidence);
-      const result = await deps.scan(deps.root);
+      const result = await deps.scan(deps.root, confidence);
       if (result.stats.files === 0) {
         return textResult('No files matched in the repository (check include/exclude patterns)', true);
       }
       const set = await deps.diff(deps.root, base);
+      const repoRoot = await findRepoRoot(deps.root).catch(() => deps.root);
+      const prefix = path.relative(repoRoot, deps.root);
       const inDiff = result.findings.filter(
-        (finding) => isInDiff(finding, set) && meetsConfidence(finding.confidence, confidence),
+        (finding) =>
+          isInDiffWithPrefix(finding, set, prefix) && meetsConfidence(finding.confidence, confidence),
       );
       const preamble = `Diff since ${base}: ${inDiff.length} finding(s) on changed lines.`;
       return textResult(formatFindings(inDiff, result, deps.version, max, preamble));
@@ -273,7 +276,7 @@ export function createMcpServer(deps: McpDeps) {
       }
       const targetConfig = await configFor(target);
       const confidence = coerceConfidence(params.confidence, targetConfig.confidence);
-      const result = await deps.scan(target);
+      const result = await deps.scan(target, confidence);
       if (result.stats.files === 0) {
         return textResult(`No files matched under ${target} (check include/exclude patterns)`, true);
       }
@@ -399,9 +402,11 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
     root,
     version,
     configFor,
-    async scan(scanRoot: string) {
+    async scan(scanRoot: string, minConfidence?: Confidence) {
       const configInfo = await configInfoFor(scanRoot);
-      const config = configInfo.config;
+      const config = minConfidence
+        ? { ...configInfo.config, confidence: minConfidence, failOn: minConfidence }
+        : configInfo.config;
 
       const target = path.resolve(scanRoot);
       const info = await stat(target).catch(() => undefined);

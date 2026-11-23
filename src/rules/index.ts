@@ -1,5 +1,5 @@
 import type { ProjectRule, Rule, RuleMeta } from '../types.ts';
-import { duplicateRules, semanticDuplicateRules } from './duplicates.ts';
+import { createDuplicateRules, createSemanticDuplicateRules } from './duplicates.ts';
 import { goRules } from './go.ts';
 import { pythonRules } from './python.ts';
 import { rustRules } from './rust.ts';
@@ -8,8 +8,16 @@ import { typescriptRules } from './typescript.ts';
 /** Per-file rules. */
 export const FILE_RULES: readonly Rule[] = [...pythonRules, ...typescriptRules, ...goRules, ...rustRules];
 
-/** Rules that need the whole scan before they can report. */
-export const PROJECT_RULES: readonly ProjectRule[] = [...duplicateRules, ...semanticDuplicateRules];
+/** Rules that need the whole scan before they can report. Metadata only; scans get fresh instances. */
+export const PROJECT_RULES: readonly ProjectRule[] = [
+  ...createDuplicateRules(),
+  ...createSemanticDuplicateRules(),
+];
+
+/** Fresh project-rule instances so concurrent scans never share candidate state. */
+export function createProjectRules(): ProjectRule[] {
+  return [...createDuplicateRules(), ...createSemanticDuplicateRules()];
+}
 
 /** Everything the CLI/config must know about, including project rules. */
 export const ALL_RULE_METAS: readonly RuleMeta[] = [

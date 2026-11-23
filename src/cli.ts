@@ -603,6 +603,7 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
         findings: visible,
         stats: run.stats,
         version,
+        reportRoot,
         suppressedByComment: run.suppressed,
         baselined: run.baselined,
         hiddenByConfidence: run.hidden,

@@ -149,6 +149,37 @@ test('fix refuses to overwrite a read-only file', async () => {
   }
 });
 
+test('fix removes a Python statement semicolon without corrupting the file', async () => {
+  const dir = await fixture({ 'app.py': 'def f():\n    return 1\n    print("dead");\n' });
+  try {
+    const result = await scanProject({
+      root: dir,
+      config: { ...DEFAULT_CONFIG, include: ['**/*.py'], exclude: [] },
+    });
+    const applied = await applyFixes(result.fixes, { write: true });
+    assert.equal(applied.fixedFindings, 1);
+    const updated = await readFile(path.join(dir, 'app.py'), 'utf8');
+    assert.doesNotMatch(updated, /dead|;/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('fix drops a nested edit covered by an outer deletion', async () => {
+  const dir = await fixture({
+    'app.py': 'def f(x):\n    return 1\n    if x:\n        return 2\n        print("dead")\n',
+  });
+  try {
+    const result = await scan(dir);
+    const applied = await applyFixes(result.fixes, { write: true });
+    assert.equal(applied.fixedFindings, result.fixes.length);
+    const updated = await readFile(path.join(dir, 'app.py'), 'utf8');
+    assert.doesNotMatch(updated, /dead|if x/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('fix skips overlapping edits instead of corrupting the file', async () => {
   const dir = await fixture({ 'app.py': '1234567890\n' });
   try {

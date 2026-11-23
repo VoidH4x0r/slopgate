@@ -19,24 +19,22 @@ const BODY = [
   '',
 ].join('\n');
 
-async function scanTwoFiles(
-  left: string,
-  right: string,
-  options: { names?: [string, string]; onlyRules?: string[]; rules?: Record<string, string>; confidence?: 'high' | 'medium' | 'low' } = {},
+async function scanFiles(
+  files: Array<{ name: string; source: string }>,
+  options: { onlyRules?: string[]; rules?: Record<string, string>; confidence?: 'high' | 'medium' | 'low' } = {},
 ) {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-duplicates-'));
   try {
-    await mkdir(path.join(dir, 'pkg'));
-    const [leftName, rightName] = options.names ?? ['pkg/a.py', 'pkg/b.py'];
-    await mkdir(path.dirname(path.join(dir, leftName)), { recursive: true });
-    await mkdir(path.dirname(path.join(dir, rightName)), { recursive: true });
-    await writeFile(path.join(dir, leftName), left, 'utf8');
-    await writeFile(path.join(dir, rightName), right, 'utf8');
+    for (const file of files) {
+      const target = path.join(dir, file.name);
+      await mkdir(path.dirname(target), { recursive: true });
+      await writeFile(target, file.source, 'utf8');
+    }
     return await scanProject({
       root: dir,
       config: {
         ...DEFAULT_CONFIG,
-        include: ['**/*.py'],
+        include: ['**/*.py', '**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx', '**/*.go'],
         exclude: [],
         confidence: options.confidence ?? 'high',
         rules: (options.rules ?? {}) as never,
@@ -46,6 +44,21 @@ async function scanTwoFiles(
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+}
+
+async function scanTwoFiles(
+  left: string,
+  right: string,
+  options: { names?: [string, string]; onlyRules?: string[]; rules?: Record<string, string>; confidence?: 'high' | 'medium' | 'low' } = {},
+) {
+  const [leftName, rightName] = options.names ?? ['pkg/a.py', 'pkg/b.py'];
+  return await scanFiles(
+    [
+      { name: leftName, source: left },
+      { name: rightName, source: right },
+    ],
+    options,
+  );
 }
 
 test('duplicate-block reports both sides of a cross-file normalized clone', async () => {
@@ -84,6 +97,197 @@ test('semantic-duplicate reports renamed clones but not exact clones', async () 
   });
   assert.equal(
     exact.findings.filter((finding) => finding.ruleId === 'py/semantic-duplicate').length,
+    0,
+  );
+});
+
+test('duplicate-block covers JavaScript, JSX and TSX files', async () => {
+  const jsBody = [
+    'const compute = (values) => {',
+    '  let total = 0;',
+    '  for (const value of values) {',
+    '    total += value;',
+    '  }',
+    '  total = total * 2;',
+    '  total = total + 1;',
+    '  if (total < 0) throw new Error("negative");',
+    '  return total;',
+    '};',
+    '',
+  ].join('\n');
+  for (const names of [
+    ['pkg/a.js', 'pkg/b.js'],
+    ['pkg/a.jsx', 'pkg/b.jsx'],
+    ['pkg/a.tsx', 'pkg/b.tsx'],
+  ] as Array<[string, string]>) {
+    const result = await scanTwoFiles(jsBody, jsBody, {
+      names,
+      onlyRules: ['ts/duplicate-block'],
+    });
+    assert.equal(
+      result.findings.filter((finding) => finding.ruleId === 'ts/duplicate-block').length,
+      2,
+      names.join(' / '),
+    );
+  }
+});
+
+test('duplicate-block detects assigned arrow functions and function expressions', async () => {
+  const arrow = [
+    'const compute = (values) => {',
+    '  let total = 0;',
+    '  for (const value of values) total += value;',
+    '  total *= 2;',
+    '  total += 1;',
+    '  if (total < 0) throw new Error("negative");',
+    '  return total;',
+    '};',
+    '',
+  ].join('\n');
+  const expression = [
+    'const compute = function (values) {',
+    '  let total = 0;',
+    '  for (const value of values) total += value;',
+    '  total *= 2;',
+    '  total += 1;',
+    '  if (total < 0) throw new Error("negative");',
+    '  return total;',
+    '};',
+    '',
+  ].join('\n');
+  for (const body of [arrow, expression]) {
+    const result = await scanTwoFiles(body, body, {
+      names: ['pkg/a.ts', 'pkg/b.ts'],
+      onlyRules: ['ts/duplicate-block'],
+    });
+    assert.equal(
+      result.findings.filter((finding) => finding.ruleId === 'ts/duplicate-block').length,
+      2,
+    );
+  }
+});
+
+test('duplicate-block detects generator function declarations', async () => {
+  const generator = [
+    'function* sequence(values: number[]) {',
+    '  let total = 0;',
+    '  for (const value of values) {',
+    '    total += value;',
+    '    yield total;',
+    '  }',
+    '  total *= 2;',
+    '  total += 1;',
+    '  return total;',
+    '}',
+    '',
+  ].join('\n');
+  const result = await scanTwoFiles(generator, generator, {
+    names: ['pkg/a.ts', 'pkg/b.ts'],
+    onlyRules: ['ts/duplicate-block'],
+  });
+  assert.equal(
+    result.findings.filter((finding) => finding.ruleId === 'ts/duplicate-block').length,
+    2,
+  );
+});
+
+test('duplicate-block preserves whitespace inside strings', async () => {
+  const left = BODY.replace('raise ValueError("negative")', 'raise ValueError("hello   world")');
+  const right = BODY.replace('raise ValueError("negative")', 'raise ValueError("hello world")');
+  const result = await scanTwoFiles(left, right, { onlyRules: ['py/duplicate-block'] });
+  assert.equal(
+    result.findings.filter((finding) => finding.ruleId === 'py/duplicate-block').length,
+    0,
+  );
+});
+
+test('semantic-duplicate keeps a renamed member when others are exact clones', async () => {
+  const renamed = BODY.replaceAll('total', 'acc').replace('compute', 'compute_renamed');
+  const result = await scanFiles(
+    [
+      { name: 'pkg/a.py', source: BODY },
+      { name: 'pkg/b.py', source: BODY },
+      { name: 'pkg/c.py', source: renamed },
+    ],
+    {
+      onlyRules: ['py/semantic-duplicate'],
+      confidence: 'medium',
+    },
+  );
+  const semantic = result.findings.filter((finding) => finding.ruleId === 'py/semantic-duplicate');
+  assert.equal(semantic.length, 1);
+  assert.equal(semantic[0]?.file, 'pkg/c.py');
+});
+
+test('concurrent scans do not share project-rule state', async () => {
+  const make = async (prefix: string) => {
+    const dir = await mkdtemp(path.join(tmpdir(), `slopgate-concurrent-${prefix}-`));
+    await writeFile(path.join(dir, `${prefix}1.py`), BODY, 'utf8');
+    await writeFile(path.join(dir, `${prefix}2.py`), BODY, 'utf8');
+    return dir;
+  };
+  const left = await make('left');
+  const right = await make('right');
+  const config = {
+    ...DEFAULT_CONFIG,
+    include: ['**/*.py'],
+    exclude: [],
+    confidence: 'medium' as const,
+  };
+  try {
+    const [a, b] = await Promise.all([
+      scanProject({ root: left, config, onlyRules: new Set(['py/duplicate-block']) }),
+      scanProject({ root: right, config, onlyRules: new Set(['py/duplicate-block']) }),
+    ]);
+    assert.deepEqual(a.findings.map((finding) => finding.file).sort(), ['left1.py', 'left2.py']);
+    assert.deepEqual(b.findings.map((finding) => finding.file).sort(), ['right1.py', 'right2.py']);
+  } finally {
+    await rm(left, { recursive: true, force: true });
+    await rm(right, { recursive: true, force: true });
+  }
+});
+
+test('Go duplicate-block skips platform and generated files', async () => {
+  const body = [
+    'package main',
+    '',
+    'func alpha() {',
+    '  x := 1',
+    '  x += 2',
+    '  x += 3',
+    '  x += 4',
+    '  println(x)',
+    '}',
+    '',
+  ].join('\n');
+  for (const names of [
+    ['pkg/a_linux.go', 'pkg/b_linux.go'],
+    ['pkg/a_windows.go', 'pkg/b_windows.go'],
+  ] as Array<[string, string]>) {
+    const result = await scanTwoFiles(body, body, {
+      names,
+      onlyRules: ['go/duplicate-block'],
+      confidence: 'medium',
+    });
+    assert.equal(
+      result.findings.filter((finding) => finding.ruleId === 'go/duplicate-block').length,
+      0,
+      names.join(' / '),
+    );
+  }
+  const generated = [
+    ...Array.from({ length: 21 }, (_, index) => `// license ${index + 1}`),
+    '// Code generated by fixturegen. DO NOT EDIT.',
+    '',
+    body,
+  ].join('\n');
+  const result = await scanTwoFiles(generated, generated, {
+    names: ['pkg/a.go', 'pkg/b.go'],
+    onlyRules: ['go/duplicate-block'],
+    confidence: 'medium',
+  });
+  assert.equal(
+    result.findings.filter((finding) => finding.ruleId === 'go/duplicate-block').length,
     0,
   );
 });

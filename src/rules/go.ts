@@ -28,13 +28,19 @@ function functions(root: AstNode): AstNode[] {
   return found;
 }
 
-function isGeneratedGo(ctx: RuleContext): boolean {
-  const header = ctx.lines.slice(0, 20).join('\n');
-  return /^\/\/ Code generated .* DO NOT EDIT\.$/m.test(header);
+export function goHeader(ctx: RuleContext): string {
+  const packageClause = ctx.root.namedChildren.find((node) => node.type === 'package_clause');
+  return packageClause ? ctx.source.slice(0, packageClause.startIndex) : ctx.source;
 }
 
-function hasBuildConstraint(ctx: RuleContext): boolean {
-  const header = ctx.lines.slice(0, 20).join('\n');
+export function isGeneratedGo(ctx: RuleContext): boolean {
+  // The canonical marker may follow a long license header. Scan the whole
+  // file so a marker at line 22+ is not missed; the regex is line-anchored.
+  return /^\/\/ Code generated .* DO NOT EDIT\.$/m.test(ctx.source);
+}
+
+export function hasBuildConstraint(ctx: RuleContext): boolean {
+  const header = goHeader(ctx);
   if (/^\/\/go:build\s/m.test(header) || /^\/\/ \+build\s/m.test(header)) return true;
   return /_(?:aix|android|darwin|dragonfly|freebsd|illumos|ios|js|linux|netbsd|openbsd|plan9|solaris|wasip1|windows|amd64|386|arm|arm64|loong64|mips|mips64|mips64le|mipsle|ppc64|ppc64le|riscv64|s390x|wasm|unix)\.go$/.test(
     ctx.file,
@@ -84,8 +90,10 @@ function callName(node: AstNode): string {
 }
 
 function isTestFunction(node: AstNode): boolean {
+  if (node.type !== 'function_declaration') return false;
   const name = node.childForFieldName('name')?.text ?? '';
-  return /^Test[A-Z0-9_]?/.test(name) && name !== 'TestMain';
+  // go test discovers TestX where X is not lowercase (and not TestMain).
+  return /^Test(?:[^a-z]|$)/.test(name) && name !== 'TestMain';
 }
 
 function goPhantomImportRule(): Rule {
@@ -139,12 +147,12 @@ function goUnreachableRule(): Rule {
     run(ctx) {
       if (isGeneratedGo(ctx) || isTestPath(ctx.file) || hasBuildConstraint(ctx)) return [];
       const drafts: RuleDraft[] = [];
-      for (const block of descendantsOfType(ctx.root, ['block'])) {
+      const checkStatements = (statements: AstNode[], owner: AstNode): void => {
         // Labels and goto make a linear "statement after return" analysis
         // unsound: the label may be the target of a jump from earlier code.
-        if (descendantsOfType(block, ['goto_statement', 'labeled_statement']).length > 0) continue;
+        if (descendantsOfType(owner, ['goto_statement', 'labeled_statement']).length > 0) return;
         let dead = false;
-        for (const statement of statementsOf(block)) {
+        for (const statement of statements) {
           if (dead) {
             drafts.push({
               message: 'code after a terminating statement is unreachable',
@@ -158,6 +166,16 @@ function goUnreachableRule(): Rule {
           }
           if (GO_TERMINATORS.has(statement.type)) dead = true;
         }
+      };
+      for (const block of descendantsOfType(ctx.root, ['block'])) {
+        checkStatements(statementsOf(block), block);
+      }
+      for (const caseNode of descendantsOfType(ctx.root, [
+        'expression_case',
+        'communication_case',
+        'default_case',
+      ])) {
+        checkStatements(statementsOf(caseNode), caseNode);
       }
       return drafts;
     },
@@ -208,7 +226,7 @@ function goNoopTestRule(): Rule {
     meta: {
       id: 'go/noop-test',
       title: 'Go test without a failure path',
-      summary: 'Finds a Test function in a _test.go file that contains no assertion, failure or skip.',
+      summary: 'Finds an empty Test function in a _test.go file with no explanatory comment.',
       severity: 'warning',
       confidence: 'high',
       languages: ['go'],

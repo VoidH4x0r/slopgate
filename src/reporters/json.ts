@@ -5,6 +5,7 @@ export interface JsonInput {
   findings: readonly Finding[];
   stats: ScanStats;
   version: string;
+  reportRoot: string;
   suppressedByComment: number;
   baselined: number;
   hiddenByConfidence: number;
@@ -21,6 +22,7 @@ export function renderJson(input: JsonInput): string {
   const payload = {
     tool: 'slopgate',
     version: input.version,
+    reportRoot: input.reportRoot,
     stats: input.stats,
     summary: {
       findings: input.findings.length,

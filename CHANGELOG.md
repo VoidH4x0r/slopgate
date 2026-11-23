@@ -8,7 +8,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 - Stable programmatic API via `src/index.ts`: `scanProject`, `applyFixes`, config helpers, rule metadata, public types and `CONTRACT_VERSION = 1`.
-- `package.json` `main` / `types` / `exports` for `.`, `./package.json` and `./schema/slopgate.schema.json`.
+- `package.json` `main` / `types` / `exports` for `.`, `./package.json`, the config schema and the scan-output schema.
 - `docs/contract.md` and contract snapshot tests for rule ids, JSON fields and SARIF shape.
 - `schema/scan-output.schema.json` for machine consumers.
 - `docs/zh/README.md` Chinese guide under the encoding contract.
@@ -18,9 +18,21 @@ All notable changes to this project are documented here. The format follows [Kee
 - Node 20/22/24 Linux runtime matrix and Node 20/22/24 Windows runtime matrix; Windows Node 24 tests.
 
 ### Changed
-- 388 tests.
-- Benchmark remains **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high**, held-out AI is **8/8 labeled high**.
+- 408 tests.
+- Benchmark remains **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**. Go has 72 parse errors and Rust 157 (10.5%); these are disclosed in `docs/benchmark.md`.
 - `docs/contract.md` makes rule ids, config keys, finding fields, SARIF, MCP methods and exit codes stable for 1.x.
+
+### Fixed
+- Python safe fix removes a trailing `;` and validates the rewritten file with tree-sitter before writing; a would-be syntax error is skipped instead of written.
+- Duplicate detection now receives `.js`/`.jsx`/`.tsx` (tsx grammar), compares Node spans instead of wrapper identity, covers assigned arrow/function expressions and generators, keeps literal whitespace exact, and preserves renamed semantic members when others are exact clones.
+- `scanProject()` creates fresh project-rule instances per call; concurrent scans no longer share candidate state.
+- Go generated/build-tag detection scans the header before `package` (no 20-line cap); `src/bin` is no longer globally ignored for Rust; `go/unreachable` covers switch/select case bodies; `go/noop-test` excludes methods and `Testhelper`; Go duplicate rules skip platform/generated files.
+- Rust accepts own `crateName`, handles `use ... as`, `{...}` groups and `r#` roots, recognizes `cfg(all(test, ...))` / function-level `cfg(test)`, root `sys/`, `src/bin`, and Cargo hyphen/workspace/target/aliased dependency tables.
+- VS Code receives `reportRoot` in JSON and resolves monorepo/subdirectory findings correctly; Windows `.cmd`, TSX/JSX and the quick-fix target document are handled.
+- MCP `scan_diff` uses the repo-root prefix and `scan_path` forwards requested confidence into collection.
+- Nested fix edits covered by an outer deletion are dropped instead of rejecting the whole file; multi-line decorators are handled by `ignore-next-line`.
+- `test:sandbox` skips the git-backed `--fix --diff` test instead of failing the release gate.
+- Added `@types/emscripten` so clean consumers can typecheck the published declarations with `skipLibCheck: false`.
 
 ## [0.4.1] - 2026-11-23
 

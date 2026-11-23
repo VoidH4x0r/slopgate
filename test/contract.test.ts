@@ -71,6 +71,7 @@ test('contract: JSON output keeps the stable fields', () => {
       findings: [finding],
       stats,
       version: '1.0.0',
+      reportRoot: '.',
       suppressedByComment: 0,
       baselined: 0,
       hiddenByConfidence: 0,
@@ -78,6 +79,7 @@ test('contract: JSON output keeps the stable fields', () => {
   ) as Record<string, unknown> & { findings: Array<Record<string, unknown>> };
   assert.deepEqual(Object.keys(payload).sort(), [
     'findings',
+    'reportRoot',
     'stats',
     'summary',
     'tool',

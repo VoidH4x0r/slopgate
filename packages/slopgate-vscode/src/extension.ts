@@ -9,7 +9,15 @@ import {
   type ScanFinding,
 } from './cli.js';
 
-const SUPPORTED = new Set(['python', 'typescript', 'javascript', 'go', 'rust']);
+const SUPPORTED = new Set([
+  'python',
+  'typescript',
+  'typescriptreact',
+  'javascript',
+  'javascriptreact',
+  'go',
+  'rust',
+]);
 const COLLECTION = 'slopgate';
 let collection: vscode.DiagnosticCollection;
 const diagnosticsByUri = new Map<string, vscode.Diagnostic[]>();
@@ -90,7 +98,9 @@ async function scan(
     buildScanArgs(target, settings),
     root,
   );
-  publish(root, payload.findings, replaceAll, targetFile);
+  // The CLI reports paths relative to the git/report root, which can be above
+  // the workspace folder (monorepo) or above a single-file scan.
+  publish(payload.reportRoot ?? root, payload.findings, replaceAll, targetFile);
   output.appendLine(`findings: ${payload.findings.length}`);
 }
 
@@ -185,14 +195,25 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.showWarningMessage(`slopgate scan failed: ${(error as Error).message}`);
       }
     }),
-    vscode.commands.registerCommand('slopgate.fixFile', async () => {
-      await fixActiveDocument(vscode.window.activeTextEditor?.document);
+    vscode.commands.registerCommand('slopgate.fixFile', async (uri?: vscode.Uri) => {
+      const document = uri
+        ? vscode.workspace.textDocuments.find((candidate) => candidate.uri.toString() === uri.toString())
+        : vscode.window.activeTextEditor?.document;
+      await fixActiveDocument(document);
     }),
   );
 
   context.subscriptions.push(
     vscode.languages.registerCodeActionsProvider(
-      [{ language: 'python' }, { language: 'typescript' }, { language: 'javascript' }, { language: 'go' }, { language: 'rust' }],
+      [
+        { language: 'python' },
+        { language: 'typescript' },
+        { language: 'typescriptreact' },
+        { language: 'javascript' },
+        { language: 'javascriptreact' },
+        { language: 'go' },
+        { language: 'rust' },
+      ],
       new SlopgateCodeActionProvider(),
       { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] },
     ),

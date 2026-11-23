@@ -28,11 +28,11 @@ The false-positive corpus is human-written code, which rarely contains AI-specif
 
 ### What the JavaScript half does not cover
 
-The nine packages are popular, hand-maintained libraries, not a hostile JavaScript corpus. They contain **no Tape/TAP test suites, no bundler chunks, and no interface-stub class methods**, so their 0-high result is evidence for those packages, not for JavaScript generally. A separate 6,012-file Electron `app.asar` corpus (not bundled here) exposed three pattern classes: 126 `t.equal`-style assertions, 83 hoisted declarations after `return`, and 65 class methods that throw `Not implemented`. Version 0.1.4 fixes the underlying rules and adds small regression fixtures for each pattern; a future release will add a real Tape/TAP package and a bundled-app corpus to this benchmark.
+The nine packages are popular, hand-maintained libraries, not a hostile JavaScript corpus. They contain **no Tape/TAP test suites, no bundler chunks, and no interface-stub class methods**, so their 0-high result is evidence for those packages, not for JavaScript generally. Separate Tape/TAP and bundled-app runs below cover those shapes; the original 6,012-file Electron `app.asar` observation that exposed three pattern classes (126 `t.equal`-style assertions, 83 hoisted declarations after `return`, and 65 class methods that throw `Not implemented`) remains a local regression source, not a published number.
 
 ### Go corpus
 
-The Go half uses the local source tree of **Go 1.24.0** (`go/src`, 6,090 files, 2,455,171 lines), scanned with `--include '**/*.go'`. It reports **0 high-confidence findings** and is recorded separately from the Python/JS/AI-run in `benchmark/go-results.json`.
+The Go half uses the local source tree of **Go 1.24.0** (`go/src`, 6,090 files, 2,455,171 lines), scanned with `--include '**/*.go'`. It reports **0 high-confidence findings** and is recorded separately from the Python/JS/AI-run in `benchmark/go-results.json`. The run has **72 parse errors**, so this is 0 high among successfully parsed files; high-confidence findings in a file with syntax errors are deliberately demoted to medium. File/line counts come from the benchmark's discovery walk; vendor/third-party trees are excluded from scanning but may still contribute to raw line counts.
 
 ```bash
 node scripts/benchmark.mjs \
@@ -47,7 +47,7 @@ The source tree is identified by digest rather than committed. There are no Go l
 
 ### Rust corpus
 
-The Rust half uses the local **Rust 1.83 `rust-src`** tree (1,494 files, 635,245 lines), scanned with `--include '**/*.rs'`. It reports **0 high-confidence findings** and is recorded in `benchmark/rust-results.json`.
+The Rust half uses the local **Rust 1.83 `rust-src`** tree (1,494 files, 635,245 lines), scanned with `--include '**/*.rs'`. It reports **0 high-confidence findings** and is recorded in `benchmark/rust-results.json`. The run has **157 parse errors (10.5% of files)**, so this is 0 high among parsed files; high findings in a syntactically broken file are demoted to medium rather than silently counted as clean.
 
 ```bash
 node scripts/benchmark.mjs \

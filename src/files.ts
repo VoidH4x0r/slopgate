@@ -6,7 +6,7 @@ import type { LanguageId, SourceDialect } from './types.ts';
 export const DEFAULT_IGNORE_DIRS: ReadonlySet<string> = new Set([
   '.git', '.hg', '.svn', '.idea', '.vscode',
   'node_modules', 'bower_components',
-  'dist', 'build', 'out', 'target', 'bin', 'obj',
+  'dist', 'build', 'out', 'target', 'obj',
   'vendor', 'third_party', 'external',
   '.venv', 'venv', 'env', 'virtualenv', '.tox', '.eggs',
   'site-packages', 'dist-packages',
@@ -178,6 +178,7 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
   const includeRe = (options.include ?? DEFAULT_INCLUDE).map(globToRegExp);
   const excludeRe = (options.exclude ?? []).map(globToRegExp);
   const ignoreDirs = new Set([...DEFAULT_IGNORE_DIRS, ...(options.ignoreDirs ?? [])]);
+  const extraIgnoreDirs = new Set(options.ignoreDirs ?? []);
   const maxBytes = options.maxBytes ?? MAX_FILE_BYTES;
 
   const files: SourceFile[] = [];
@@ -227,7 +228,14 @@ export async function discoverFiles(options: DiscoverOptions): Promise<DiscoverR
         continue;
       }
       if (entry.isDirectory()) {
-        if (ignoreDirs.has(entry.name) || matchesAny(matchRel + '/', excludeRe)) {
+        // Rust's src/bin contains real binary targets, not build output.
+        const rustBin = entry.name === 'bin' && path.basename(dir) === 'src';
+        if (
+          (entry.name === 'bin' && !rustBin) ||
+          (!rustBin && ignoreDirs.has(entry.name)) ||
+          extraIgnoreDirs.has(entry.name) ||
+          matchesAny(matchRel + '/', excludeRe)
+        ) {
           continue;
         }
         await walk(abs);

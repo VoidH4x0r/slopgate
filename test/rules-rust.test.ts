@@ -33,6 +33,44 @@ test('rs/phantom-import stays silent without Cargo.toml', async () => {
   );
 });
 
+test('rs/phantom-import handles aliases, group imports and raw crate names', async () => {
+  const deps = makeDeps({ rustManifests: ['Cargo.toml'], rustDependencies: ['serde'] });
+  for (const source of [
+    'use serde as s;\n',
+    'use {serde, std::fmt};\n',
+    'use {serde as s, std::fmt};\n',
+    'use r#serde::Serialize;\n',
+  ]) {
+    assert.deepEqual(await runRule('rs/phantom-import', source, 'rust', deps), [], source);
+  }
+});
+
+test('rs/phantom-import accepts the own crate name', async () => {
+  const deps = makeDeps({
+    rustManifests: ['Cargo.toml'],
+    rustCrate: 'my-crate',
+  });
+  assert.deepEqual(
+    await runRule('rs/phantom-import', 'use my_crate::helper;\n', 'rust', deps),
+    [],
+  );
+});
+
+test('rs/stub-body skips cfg(all(test, ...)) and root sys/', async () => {
+  assert.deepEqual(
+    await runRule(
+      'rs/stub-body',
+      '#[cfg(all(test, unix))]\nfn helper() {\n    todo!()\n}\n',
+      'rust',
+    ),
+    [],
+  );
+  assert.deepEqual(
+    await runRuleOnFile('rs/stub-body', 'fn pal() {\n    todo!()\n}\n', 'rust', 'sys/pal.rs'),
+    [],
+  );
+});
+
 test('rs/noop-test flags an empty #[test]', async () => {
   const source = '#[test]\nfn t() {}\n';
   const drafts = await runRuleOnFile('rs/noop-test', source, 'rust', 'src/lib.rs');

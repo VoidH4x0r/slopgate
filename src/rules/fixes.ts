@@ -12,7 +12,12 @@ export function statementDeletionEdit(source: string, node: { startIndex: number
   const nextNewline = source.indexOf('\n', end);
   const lineEnd = nextNewline === -1 ? source.length : nextNewline;
   const before = source.slice(lineStart, start);
-  const after = source.slice(end, lineEnd);
+  // Python statements may be followed by a semicolon; the AST node excludes
+  // it, so deleting only the node would leave a dangling `;`.
+  const rest = source.slice(end, lineEnd);
+  const semicolon = /^[ \t]*;[ \t]*/.exec(rest);
+  const deleteEnd = semicolon ? end + semicolon[0].length : end;
+  const after = source.slice(deleteEnd, lineEnd);
   if (/^[ \t\r]*$/.test(before) && /^[ \t\r]*$/.test(after)) {
     return {
       start: lineStart,
@@ -20,7 +25,7 @@ export function statementDeletionEdit(source: string, node: { startIndex: number
       replacement: '',
     };
   }
-  return { start, end, replacement: '' };
+  return { start, end: deleteEnd, replacement: '' };
 }
 
 export function statementDeletionEdits(

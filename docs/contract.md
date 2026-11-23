@@ -51,13 +51,14 @@ Each finding has:
   snippet: string;
   evidence: string[];
   help?: string;
+  fingerprint: string;
 }
 ```
 
 `--format json` wraps findings in:
 
 ```ts
-{ tool: 'slopgate', version: string, findings: Finding[], stats: ScanStats }
+{ tool: 'slopgate', version: string, reportRoot: string, findings: Finding[], stats: ScanStats, summary: {...} }
 ```
 
 The machine schema is `schema/scan-output.schema.json` (published in the npm package). Positions are 1-based. Paths are relative to the repository/report root.

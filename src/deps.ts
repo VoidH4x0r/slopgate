@@ -485,32 +485,56 @@ async function loadGoDeps(root: string): Promise<GoDeps> {
 /** Parse direct dependency names from Cargo.toml (best effort, no TOML library). */
 export function parseCargoTomlText(text: string): { crateName?: string; dependencies: string[] } {
   let crateName: string | undefined;
-  const dependencies: string[] = [];
+  const dependencies = new Set<string>();
   let section = '';
+  let sectionDependency: string | undefined;
+  const addDependency = (name: string): void => {
+    const clean = name.replace(/-/g, '_').trim();
+    if (clean) dependencies.add(clean);
+  };
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.replace(/#.*$/, '').trim();
     if (!line) continue;
+    // [[bin]] / [[test]] / [[bench]] are target arrays; their `name`/`path`
+    // keys are not dependencies.
+    if (/^\[\[[^\]]+\]\]$/.test(line)) {
+      section = '';
+      sectionDependency = undefined;
+      continue;
+    }
     const sectionMatch = /^\[([^\]]+)\]$/.exec(line);
     if (sectionMatch?.[1]) {
       section = sectionMatch[1].trim();
+      sectionDependency = undefined;
+      const dependencyTable =
+        /^(?:workspace\.)?(?:target\..+\.)?(?:dev-dependencies|build-dependencies|dependencies)(?:\.(.+))?$/.exec(
+          section,
+        );
+      sectionDependency = dependencyTable?.[1]?.replace(/^["']|["']$/g, '');
+      if (sectionDependency) addDependency(sectionDependency);
       continue;
     }
     if (section === 'package') {
-      const name = /^name\s*=\s*"([^"]+)"/.exec(line);
+      const name = /^name\s*=\s*["']([^"']+)["']/.exec(line);
       if (name?.[1]) crateName = name[1];
       continue;
     }
+    if (sectionDependency) {
+      // [dependencies.foo] package = "bar" is an alias for the real crate bar.
+      const pkg = /^package\s*=\s*["']([^"']+)["']/.exec(line);
+      if (pkg?.[1]) addDependency(pkg[1]);
+      continue;
+    }
     const dependencySection =
-      section === 'dependencies' ||
-      section === 'dev-dependencies' ||
-      section === 'build-dependencies' ||
-      section === 'workspace.dependencies' ||
-      /(?:^|\.)dependencies$/.test(section);
+      /^(?:workspace\.)?(?:target\..+\.)?(?:dev-dependencies|build-dependencies|dependencies)$/.test(
+        section,
+      );
     if (!dependencySection) continue;
-    const key = /^(?:"([^"]+)"|([A-Za-z0-9_-]+))\s*=/.exec(line);
-    if (key?.[1] ?? key?.[2]) dependencies.push(key[1] ?? key[2] ?? '');
+    const key = /^(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_-]+))(?:\.[A-Za-z0-9_-]+)*\s*=/.exec(line);
+    const name = key?.[1] ?? key?.[2] ?? key?.[3];
+    if (name) addDependency(name);
   }
-  return { ...(crateName ? { crateName } : {}), dependencies };
+  return { ...(crateName ? { crateName } : {}), dependencies: [...dependencies] };
 }
 
 async function loadRustDeps(root: string): Promise<RustDeps> {

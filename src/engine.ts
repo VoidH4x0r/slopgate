@@ -5,7 +5,7 @@ import { asAst, type AstNode } from './ast.ts';
 import { discoverFiles, toPosix } from './files.ts';
 import { getParser } from './parser.ts';
 import { loadProjectRegistry, type ProjectRegistry } from './projects.ts';
-import { ALL_RULE_BY_ID, ALL_RULE_METAS, FILE_RULES, PROJECT_RULES } from './rules/index.ts';
+import { ALL_RULE_BY_ID, ALL_RULE_METAS, FILE_RULES, createProjectRules } from './rules/index.ts';
 import { confidenceRank } from './config.ts';
 import { collectCommentRanges } from './rules/helpers.ts';
 import { isSuppressed, readSuppressions, type Suppressions } from './suppress.ts';
@@ -112,7 +112,8 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     if (options.onlyRules && !options.onlyRules.has(rule.meta.id)) return false;
     return true;
   });
-  const enabledProject = PROJECT_RULES.filter((rule) => {
+  const projectRules = createProjectRules();
+  const enabledProject = projectRules.filter((rule) => {
     const setting = config.rules[rule.meta.id];
     if (setting === 'off') return false;
     if (options.onlyRules && !options.onlyRules.has(rule.meta.id)) return false;
