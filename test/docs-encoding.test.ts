@@ -4,65 +4,34 @@ import * as path from 'node:path';
 import test from 'node:test';
 import { ROOT } from './helpers.ts';
 
-const SKIP = new Set(['node_modules', '.git', 'dist', '.tmp']);
+const POLICY = JSON.parse(
+  await readFile(path.join(ROOT, 'scripts', 'encoding-policy.json'), 'utf8'),
+) as {
+  allowedNonAscii: number[];
+  localizedPrefixes: string[];
+  localizedSuffixes: string[];
+};
+const ALLOWED = new Set(POLICY.allowedNonAscii);
 
-// Known GBK/CP936 double-decodes. Legitimate CJK text is allowed in files
-// that are actually written in Chinese; see cjkRatio below.
-const CJK_MOJIBAKE = /[\u9225\u922b\u9239\u9241\u9242\u923f\u95f3\u72c5\u7b0d\u6dce]/u;
-const LATIN_MOJIBAKE = /â€|Ã[\u0080-\u00bf]|Â[\u0080-\u00bf]|ð[\u0080-\u017f]/u;
-// `路` is a legitimate Chinese character. Mojibake `路` for `·` appears in
-// ASCII/number/table context; Chinese prose such as `前方 路 口` must pass.
-const MOJIBAKE_AROUND_ASCII =
-  /(?:[A-Za-z0-9|)\]}])\s*路(?=\s|$)|(?:^|\s)路(?=\s*[A-Za-z0-9|([{])/u;
-
-function hasAsciiRoadRun(text: string): boolean {
-  for (const match of text.matchAll(/路{2,}(?:\s+路+)*|路(?:\s+路)+/gu)) {
-    const start = match.index ?? 0;
-    const end = start + match[0].length;
-    const lineStart = text.lastIndexOf('\n', start - 1) + 1;
-    const nextLine = text.indexOf('\n', end);
-    const lineEnd = nextLine === -1 ? text.length : nextLine;
-    const line = text.slice(lineStart, lineEnd);
-    // A line with other CJK text is Chinese prose, not a mojibake context.
-    if (/[\u4e00-\u9fff]/u.test(line.replaceAll('路', ''))) continue;
-    const before = line.slice(0, start - lineStart).trimEnd().at(-1) ?? '';
-    const after = line.slice(end - lineStart).trimStart()[0] ?? '';
-    if (/[A-Za-z0-9|)\]}([{]/.test(before) || /[A-Za-z0-9|([{]/.test(after)) return true;
-  }
-  return false;
+function isLocalizedDoc(relative: string): boolean {
+  const normalized = relative.split(path.sep).join('/');
+  if (POLICY.localizedPrefixes.some((prefix) => normalized.startsWith(prefix))) return true;
+  return POLICY.localizedSuffixes.some((suffix) => normalized.endsWith(suffix));
 }
 
-function isCjkDocument(text: string): boolean {
-  // Code blocks are mostly ASCII; classify the prose, not the code.
-  const prose = text.replace(/```[\s\S]*?```/g, '');
-  const lines = prose.split(/\r?\n/).filter((line) => line.trim().length > 0);
-  const chars = [...prose].filter((char) => !/\s/.test(char));
-  const cjk = chars.filter((char) => /[\u4e00-\u9fff]/u.test(char)).length;
-  if (cjk < 5) return false;
-  const density = cjk / chars.length;
-  const cjkLines = lines.filter((line) => /[\u4e00-\u9fff]/u.test(line)).length;
-  if (density < 0.1 || cjkLines / lines.length < 0.3) return false;
-  const runs = prose.match(/[\u4e00-\u9fff]{4,}/gu) ?? [];
-  if (runs.length === 0) return false;
-  // Every 4+ CJK run must be free of mojibake markers and must not consist
-  // solely of `路` (which would be the `·` mojibake repeated).
-  return !runs.some(
-    (run) =>
-      [...run].some((char) => CJK_MOJIBAKE.test(char)) ||
-      [...run].every((char) => char === '路'),
-  );
-}
-
-/** Returns a reason when a markdown document contains known corruption. */
-function markdownProblem(text: string): string | undefined {
+/** English docs are a whitelist; localized docs are a path contract. */
+function markdownProblem(text: string, relative = 'README.md'): string | undefined {
+  if (text.charCodeAt(0) === 0xfeff) return 'UTF-8 BOM';
+  if (text.includes('\uFEFF')) return 'U+FEFF zero-width no-break space';
   if (text.includes('\uFFFD')) return 'U+FFFD replacement character';
-  if (LATIN_MOJIBAKE.test(text)) return 'Latin-1/CP1252 mojibake';
-  // Do not fail a document that is actually written in Chinese; its `路` and
-  // rare CJK characters are legitimate content.
-  if (isCjkDocument(text)) return undefined;
-  if (CJK_MOJIBAKE.test(text)) return 'GBK/CP936 mojibake';
-  if (hasAsciiRoadRun(text)) return 'repeated 路 (mojibake for ·)';
-  if (MOJIBAKE_AROUND_ASCII.test(text)) return 'whitespace-delimited 路 (mojibake for ·)';
+  if (isLocalizedDoc(relative)) return undefined;
+
+  for (const char of text) {
+    const codePoint = char.codePointAt(0) ?? 0;
+    if (codePoint > 0x7f && !ALLOWED.has(codePoint)) {
+      return `unexpected non-ASCII U+${codePoint.toString(16).toUpperCase().padStart(4, '0')}`;
+    }
+  }
   return undefined;
 }
 
@@ -71,7 +40,8 @@ async function markdownFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.isDirectory()) {
-      if (SKIP.has(entry.name) || entry.name.startsWith('.tmp')) continue;
+      if (['.git', 'node_modules', 'dist', 'coverage'].includes(entry.name)) continue;
+      if (entry.name.startsWith('.tmp')) continue;
       out.push(...(await markdownFiles(path.join(dir, entry.name))));
       continue;
     }
@@ -80,73 +50,27 @@ async function markdownFiles(dir: string): Promise<string[]> {
   return out;
 }
 
-test('docs: markdown files contain no mojibake or replacement characters', async () => {
+test('docs: English markdown uses the whitelist and localized markdown is a path contract', async () => {
   const files = await markdownFiles(ROOT);
   assert.ok(files.length > 0);
   for (const file of files) {
     const text = await readFile(file, 'utf8');
     const relative = path.relative(ROOT, file);
-    const problem = markdownProblem(text);
-    assert.equal(problem, undefined, `${relative} contains ${problem ?? 'no problem'}`);
+    assert.equal(
+      markdownProblem(text, relative),
+      undefined,
+      `${relative} violates the encoding policy`,
+    );
   }
 
-  // Guard the guard: legitimate CJK must pass, common mojibake must not.
-  assert.equal(markdownProblem('中文文档 — 正常'), undefined);
-  assert.equal(markdownProblem('前方 路 口'), undefined);
-  assert.equal(markdownProblem('中文文档 路 说明'), undefined);
-  assert.equal(markdownProblem('中文文档 包含 鈥 字符'), undefined);
-  assert.equal(markdownProblem('中文文档 鈥鈥鈥鈥'), 'GBK/CP936 mojibake');
-  assert.equal(markdownProblem('中文文档 路路 说明'), undefined);
-  assert.equal(markdownProblem('English 路路路路'), 'repeated 路 (mojibake for ·)');
-  assert.equal(markdownProblem('English 路 路 路 路'), 'repeated 路 (mojibake for ·)');
-  assert.equal(markdownProblem('English 路路路路路'), 'repeated 路 (mojibake for ·)');
-  assert.equal(markdownProblem('中文 路路'), undefined);
-  assert.equal(markdownProblem('中文 路路 4'), undefined);
-  assert.equal(markdownProblem('English line\n路路'), undefined);
-  assert.equal(markdownProblem('路路\nEnglish line'), undefined);
-  const mixed = [
-    'English line one',
-    'English line two',
-    'English line three',
-    'English line four',
-    'English line five',
-    'English line six',
-    'English line seven',
-    'English line eight',
-    '道路工程 example',
-    'A 鈥 marker',
-  ].join('\n');
-  assert.equal(markdownProblem(mixed), 'GBK/CP936 mojibake');
-  const chineseCode = [
-    '# 中文文档',
-    '',
-    '这是中文说明。',
-    '',
-    '```ts',
-    'const x = 1;',
-    '```',
-  ].join('\n');
-  assert.equal(markdownProblem(chineseCode), undefined);
-  const chineseCodeHeavy = [
-    '# 中文文档',
-    '',
-    '这是中文说明，介绍项目的用法和安装步骤。',
-    '',
-    '```ts',
-    ...Array.from({ length: 30 }, (_, i) => `const value${i} = ${i};`),
-    '```',
-    '',
-    '更多中文解释。',
-  ].join('\n');
-  assert.equal(markdownProblem(chineseCodeHeavy), undefined);
-  assert.equal(markdownProblem('English 鈥 鈥 鈥 鈥 鈥'), 'GBK/CP936 mojibake');
-  assert.equal(markdownProblem('English 鈥鈥鈥鈥'), 'GBK/CP936 mojibake');
-  assert.equal(markdownProblem('slopgate 0.2.3 路 4 files'), 'whitespace-delimited 路 (mojibake for ·)');
-  assert.equal(markdownProblem('English text 鈥淎uditing'), 'GBK/CP936 mojibake');
-  assert.equal(markdownProblem('English â€”'), 'Latin-1/CP1252 mojibake');
-  assert.equal(markdownProblem('English Ã©'), 'Latin-1/CP1252 mojibake');
-  assert.equal(markdownProblem('English Ã'), undefined);
-  assert.equal(markdownProblem('English Â'), undefined);
-  assert.equal(markdownProblem('English ð'), undefined);
-  assert.equal(markdownProblem('English 狅'), 'GBK/CP936 mojibake');
+  // Deliberate typography is allowed.
+  assert.equal(markdownProblem('English — – · │ → ← ↳ ≈ … “ ” ‘ ’ § ✅ ❌ ⚠️'), undefined);
+  // A bare U+8DEF is not allowed in an English document, but is fine in docs/zh.
+  assert.equal(markdownProblem('slopgate 0.2.3 路 4 files'), 'unexpected non-ASCII U+8DEF');
+  assert.equal(markdownProblem('中文文档', 'docs/zh/README.md'), undefined);
+  assert.equal(markdownProblem('中文文档', 'README.zh-CN.md'), undefined);
+  assert.equal(markdownProblem('中文文档', 'README.md'), 'unexpected non-ASCII U+4E2D');
+  // BOM/replacement characters fail everywhere.
+  assert.equal(markdownProblem('\uFEFF# title'), 'UTF-8 BOM');
+  assert.equal(markdownProblem('English \uFFFD'), 'U+FFFD replacement character');
 });

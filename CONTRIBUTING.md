@@ -91,6 +91,16 @@ const noReturnValue: Rule = {
 
 Never raise confidence to make a rule more visible. Lower it, or drop the rule.
 
+## Encoding
+
+Every text file is UTF-8 without a BOM. English docs are the default and may only contain the typographic characters in `scripts/encoding-policy.json`; translations live under `docs/zh/` or use a `.zh*.md` suffix. Run:
+
+```bash
+npm run check:encoding
+```
+
+See [docs/encoding.md](docs/encoding.md) for the incident analysis, the whitelist policy, and the recovery procedure.
+
 ## Tests
 
 - Tests must not touch the network and must not spawn processes; they run in-process in milliseconds.

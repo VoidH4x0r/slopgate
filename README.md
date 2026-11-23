@@ -313,7 +313,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.2.4 — strict config keys, pyusb mapping, language-aware documentation guard
 - [x] v0.2.5 — `$schema` allowance and CJK-run encoding guard
 - [x] v0.2.6 — mojibake-proof CJK run detection
-- [x] v0.2.7 — all-run marker and repeated-`路` guard
+- [x] v0.2.7 — all-run marker and repeated U+8DEF guard
 - [x] v0.2.8 — CJK density classification and ASCII-context road runs
 - [x] v0.2.9 — line-bounded road-run detection
 - [ ] v0.3 — Go and Rust grammars, VS Code diagnostics

@@ -4,11 +4,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+- Added an explicit encoding contract (`docs/encoding.md`, `scripts/encoding-policy.json`, `scripts/check-encoding.mjs`, `.editorconfig`) enforced by `npm run verify` and CI on Linux and Windows.
+- Replaced content-based CJK density/run heuristics with a path-based localization policy and a reviewed non-ASCII whitelist for English docs.
+
 ## [0.2.9] - 2026-11-23
 
 ### Fixed
-- `hasAsciiRoadRun` now inspects only the current line, so an English line ending followed by a Chinese `路路` line is not treated as ASCII context.
-- Lines containing other CJK characters are treated as Chinese prose, so `中文 路路 4` no longer false-positives.
+- `hasAsciiRoadRun` now inspects only the current line, so an English line ending followed by a Chinese line containing U+8DEF repetitions is not treated as ASCII context.
+- Lines containing other CJK characters are treated as Chinese prose, so a Chinese prose line with U+8DEF repetitions and a numeric suffix no longer false-positives.
 
 ### Changed
 - 343 tests.
@@ -29,7 +33,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 - The encoding guard now checks every 4+ CJK run: any run containing a known mojibake marker rejects the document, even when an earlier run is clean.
-- Repeated `路` runs (including whitespace-separated runs) in non-Chinese documents are rejected as `·` mojibake; legitimate `道路工程`, `前方 路 口` and `中文文档 路路 说明` still pass.
+- Repeated `U+8DEF` runs (including whitespace-separated runs) in non-Chinese documents are rejected as `·` mojibake; legitimate Chinese prose examples still pass.
 
 ### Changed
 - 343 tests.
@@ -60,7 +64,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Fixed
 - Unknown `.slopgate.json` keys are rejected with exit 2 instead of being silently ignored.
 - `import usb` maps to the `pyusb` distribution, avoiding a phantom-import false positive.
-- The markdown encoding guard is language-aware: Chinese documents may contain legitimate `路` and rare CJK characters, while English documents still reject known mojibake.
+- The markdown encoding guard is language-aware: Chinese documents may contain legitimate `U+8DEF` and rare CJK characters, while English documents still reject known mojibake.
 - Added `--fix` coverage for `--confidence`, `--verbose`, and read-only `--fix-dry-run`.
 
 ### Changed

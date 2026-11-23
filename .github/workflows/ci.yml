@@ -20,6 +20,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run check:encoding
       - run: node scripts/check-links.mjs
       - run: node scripts/set-repo.mjs --self-test
       - run: npm test
@@ -74,4 +75,14 @@ jobs:
           status=$?
           set -e
           test "$status" -eq 1
+
+  encoding-windows:
+    name: encoding (windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/check-encoding.mjs
 

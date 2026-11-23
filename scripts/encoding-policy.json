@@ -1,0 +1,41 @@
+{
+  "allowedNonAscii": [
+    167,
+    183,
+    8211,
+    8212,
+    8216,
+    8217,
+    8220,
+    8221,
+    8230,
+    8592,
+    8594,
+    8615,
+    8627,
+    8776,
+    9472,
+    9474,
+    9888,
+    9989,
+    10060,
+    65039
+  ],
+  "localizedPrefixes": [
+    "docs/zh/"
+  ],
+  "localizedSuffixes": [
+    ".zh.md",
+    ".zh-CN.md",
+    ".zh-TW.md",
+    ".zh-Hans.md",
+    ".zh-Hant.md"
+  ],
+  "bomAllowlist": [
+    "fixtures/regressions/globcase/.slopgate.json",
+    "fixtures/regressions/globcase/a.ts",
+    "fixtures/regressions/globcase/b.tsx",
+    "fixtures/regressions/globcase/package.json",
+    "fixtures/regressions/js-jsx/src/Card.js"
+  ]
+}
