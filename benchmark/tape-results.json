@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T02:36:49.829Z",
-  "slopgateVersion": "0.4.0",
+  "generatedAt": "2026-11-23T02:42:11.916Z",
+  "slopgateVersion": "0.4.1",
   "nodeVersion": "v24.19.0",
   "corpora": [
     {
@@ -13,15 +13,15 @@
       "digest": "3657d8426287c4a3",
       "files": 185,
       "lines": 11958,
-      "durationMs": 259,
-      "findings": 2,
+      "durationMs": 264,
+      "findings": 37,
       "high": 0,
       "suppressed": 0,
       "parseErrors": 2,
       "byRule": {
         "ts/noop-test": {
           "high": 0,
-          "medium": 2,
+          "medium": 37,
           "low": 0
         }
       },

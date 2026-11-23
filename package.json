@@ -1,6 +1,6 @@
 {
   "name": "@voidh4x0r/slopgate",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "The slop gate for AI-written code. Precision-first structural linting for Python, TypeScript, Go and Rust.",
   "type": "module",
   "license": "MIT",

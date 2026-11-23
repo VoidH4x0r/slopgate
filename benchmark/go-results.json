@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T02:27:50.155Z",
-  "slopgateVersion": "0.4.0",
+  "generatedAt": "2026-11-23T02:41:02.392Z",
+  "slopgateVersion": "0.4.1",
   "nodeVersion": "v24.19.0",
   "corpora": [
     {
@@ -9,17 +9,12 @@
       "digest": "3970b1f25e424815",
       "files": 6090,
       "lines": 2455171,
-      "durationMs": 115081,
-      "findings": 1272,
+      "durationMs": 22883,
+      "findings": 761,
       "high": 0,
       "suppressed": 0,
       "parseErrors": 72,
       "byRule": {
-        "go/semantic-duplicate": {
-          "high": 0,
-          "medium": 511,
-          "low": 0
-        },
         "go/duplicate-block": {
           "high": 0,
           "medium": 761,
