@@ -25,7 +25,7 @@ import { renderSarif } from './reporters/sarif.ts';
 import { ALL_RULE_BY_ID, ALL_RULE_METAS } from './rules/index.ts';
 import type { Confidence, Finding } from './types.ts';
 
-const FALLBACK_VERSION = '0.2.10';
+const FALLBACK_VERSION = '0.3.0';
 const DEFAULT_BASELINE = '.slopgate-baseline.json';
 const CONFIDENCES: readonly Confidence[] = ['high', 'medium', 'low'];
 const FAIL_ON: readonly FailOn[] = ['high', 'medium', 'low', 'none'];

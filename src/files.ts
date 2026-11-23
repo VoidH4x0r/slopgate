@@ -19,6 +19,7 @@ export const DEFAULT_INCLUDE: readonly string[] = [
   '**/*.py', '**/*.pyi',
   '**/*.ts', '**/*.mts', '**/*.cts', '**/*.tsx',
   '**/*.js', '**/*.mjs', '**/*.cjs', '**/*.jsx',
+  '**/*.go',
 ];
 
 const EXTENSIONS: Readonly<
@@ -35,6 +36,7 @@ const EXTENSIONS: Readonly<
   '.jsx': { language: 'tsx', dialect: 'javascript' },
   '.mjs': { language: 'tsx', dialect: 'javascript' },
   '.cjs': { language: 'tsx', dialect: 'javascript' },
+  '.go': { language: 'go', dialect: 'go' },
 };
 
 const MAX_FILE_BYTES = 1024 * 1024;

@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.2.10  ·  4 files  ·  50ms
+slopgate 0.3.0  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -59,7 +59,7 @@ Models are good at producing code that compiles, imports cleanly in the editor w
 | `except Exception: pass` | The error disappears; the incident does not |
 | `return user` followed by 12 lines of code | Dead code that nobody notices until it rots |
 
-`slopgate` is a **precision-first** linter for exactly this class of defect, for Python and TypeScript/JavaScript.
+`slopgate` is a **precision-first** linter for exactly this class of defect, for Python, TypeScript/JavaScript and Go.
 
 It is built for the people who review AI-generated pull requests: the reviewer who cannot read every line, the maintainer who needs CI to say "this is not finished", and the coding agent that should check itself before declaring done.
 
@@ -73,6 +73,8 @@ Measured on **1,115,270 lines** of real code — the CPython standard library (a
 | Labeled precision of high-confidence findings | **97.7%** (42/43 manually reviewed) |
 | Recall on seeded defects | **30/30** (14 demo + 16 AI-generated) |
 | High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
+
+A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings**. The Go runner uses `--include '**/*.go'`; see [`docs/benchmark.md`](docs/benchmark.md).
 
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
 
@@ -103,7 +105,7 @@ npm install -D @voidh4x0r/slopgate         # or pin it in your project
 npx @voidh4x0r/slopgate init               # write .slopgate.json + a GitHub Action
 ```
 
-Requires Node 20+. Python and TypeScript grammars are bundled — no Python or `tsc` needed at scan time.
+Requires Node 20+. Python, TypeScript and Go grammars are bundled — no Python, `tsc` or Go toolchain needed at scan time.
 
 The npm scope is `@voidh4x0r` because the unscoped name `slopgate` was rejected as too similar to the existing `slop-gate` package; the command is still `slopgate`.
 
@@ -146,13 +148,13 @@ slopgate [path] [options]
 }
 ```
 
-- `include` / `exclude` — globs relative to the **config file's directory** (or the project root when no config file exists). **A config `include` replaces the default pattern set** (the ten Python/TS/JS globs); list every extension you still want. The CLI `--include` **appends** to the effective set, so `--include "src/**"` keeps the defaults.
+- `include` / `exclude` — globs relative to the **config file's directory** (or the project root when no config file exists). **A config `include` replaces the default pattern set** (the default Python/TS/JS/Go globs); list every extension you still want. The CLI `--include` **appends** to the effective set, so `--include "src/**"` keeps the defaults.
 - `ignoreModules` — top-level modules to always treat as declared (dynamic imports, private packages).
 - `rules` — `"off"` or an explicit severity (`"error"`, `"warning"`, `"info"`). Severity changes display and annotation level only; **CI failure is controlled by confidence and `--fail-on`**. A rule set to `"info"` stays visible and still fails when its confidence meets `--fail-on`; use `"off"` or a baseline to exempt it.
 - `confidence` / `failOn` — same meaning as the CLI flags; CLI flags win.
 - Unknown config keys are rejected (exit 2) instead of being silently ignored; the standard `$schema` meta key is accepted and ignored.
 
-For example, `{"include": ["src/**"]}` scans only files under `src/`; it does **not** keep the default Python/TS/JS coverage. Add the patterns you need, or use the CLI flag to append one pattern to the defaults.
+For example, `{"include": ["src/**"]}` scans only files under `src/`; it does **not** keep the default Python/TS/JS/Go coverage. Add the patterns you need, or use the CLI flag to append one pattern to the defaults.
 
 In a monorepo, dependencies are resolved per file from the nearest manifest **for that language** (a nested `package.json` does not hide a parent Python `pyproject.toml`). The `.slopgate.json` closest to the scan target applies to the whole run; scan an individual package when you need that package's config to govern its own files.
 
@@ -235,7 +237,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.2.10 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.3.0 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -243,7 +245,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.2.10 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.3.0 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -271,7 +273,7 @@ try { ... } catch {}
 
 ## Rules
 
-16 rules across Python and TypeScript/JavaScript. Full reference with examples: [docs/rules.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/rules.md).
+22 rules across Python, TypeScript/JavaScript and Go. Full reference with examples: [docs/rules.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/rules.md).
 
 | Rule | Catches |
 | --- | --- |
@@ -282,7 +284,12 @@ try { ... } catch {}
 | `py/swallowed-exception` · `ts/swallowed-exception` | `except: pass`, `catch {}` (JS empty catch is medium by design) |
 | `py/dead-branch` · `ts/dead-branch` | `if False:` / `if (false)`, and their always-true twins |
 | `py/unreachable` · `ts/unreachable` | statements after `return` / `raise` / `throw` / `continue` |
-| `py/duplicate-block` · `ts/duplicate-block` | the same normalized function/method body in two or more files |
+| `py/duplicate-block` · `ts/duplicate-block` · `go/duplicate-block` | the same normalized function/method body in two or more files |
+| `go/phantom-import` | Go import not in the standard library, current module, or go.mod |
+| `go/noop-test` | `Test*` functions in `_test.go` with an empty body and no explanatory comment |
+| `go/unreachable` | statements after `return` / `break` / `continue` in a Go block |
+| `go/stub-body` | functions whose body is only an exact not-implemented panic |
+| `go/swallowed-error` | empty `if err != nil` blocks |
 
 ## Precision is the product
 
@@ -319,7 +326,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.2.8 — CJK density classification and ASCII-context road runs
 - [x] v0.2.9 — line-bounded road-run detection
 - [x] v0.2.10 — maintenance: encoding contract release, autofix matrix, Windows CI, packaging hygiene
-- [ ] v0.3.0 — Go support
+- [x] v0.3.0 — Go support: parser, go.mod resolution, 6 rules, 20 fixtures, 2.45M-line clean corpus
 - [ ] v0.3.1 — Rust support
 - [ ] v0.3.2 — VS Code extension
 - [ ] v0.4 — semantic duplicates, expanded benchmark, integrations
@@ -336,9 +343,12 @@ The detailed plan, estimates, release gates, risks and next-14-days actions are 
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 - Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
 - The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
-- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.2.10. A file contributes at most one representative per duplicate group.
-- `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off" }` if you do not need medium findings.
+- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.3.0. A file contributes at most one representative per duplicate group.
+- `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off", "go/duplicate-block": "off" }` if you do not need medium findings.
 - `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
+- `go/phantom-import` accepts the reserved `internal/...` root and treats module-internal imports as local; it does not check whether a local package directory exists. `go.work` is not resolved yet.
+- `go/noop-test` only reports an empty test body with no nearby comment; a test that delegates assertions to a helper is left alone.
+- `go/unreachable` skips blocks containing `goto`/labels and does not treat `panic`/`os.Exit` as terminators.
 
 ## When **not** to use it
 
@@ -354,7 +364,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 346 tests; the tests themselves make no network or child-process calls
+npm test            # 364 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

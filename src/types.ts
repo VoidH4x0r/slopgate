@@ -1,10 +1,10 @@
 import type { AstNode } from './ast.ts';
 
 /** Tree-sitter grammars we ship. */
-export type LanguageId = 'python' | 'typescript' | 'tsx';
+export type LanguageId = 'python' | 'typescript' | 'tsx' | 'go';
 
 /** Human-facing source dialect, independent of the grammar used to parse it. */
-export type SourceDialect = 'python' | 'javascript' | 'typescript' | 'tsx';
+export type SourceDialect = 'python' | 'javascript' | 'typescript' | 'tsx' | 'go';
 
 /** How sure we are that a finding is worth a human's time. */
 export type Confidence = 'high' | 'medium' | 'low';
@@ -91,6 +91,14 @@ export interface PythonDeps {
   localModules: Set<string>;
 }
 
+export interface GoDeps {
+  /** Module path from go.mod, when present. */
+  module?: string;
+  /** Required module paths from go.mod. */
+  requires: Set<string>;
+  manifests: string[];
+}
+
 export interface NodeDeps {
   declared: Set<string>;
   workspaces: Set<string>;
@@ -105,6 +113,7 @@ export interface ProjectDeps {
   root: string;
   python: PythonDeps;
   node: NodeDeps;
+  go: GoDeps;
   /** Module/package names the user told us to trust (`ignoreModules`). */
   ignoredModules: Set<string>;
 }

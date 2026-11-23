@@ -7,7 +7,7 @@ import type { Finding, ScanStats } from '../src/types.ts';
 
 const stats: ScanStats = {
   files: 2,
-  byLanguage: { python: 1, javascript: 0, typescript: 1, tsx: 0 },
+  byLanguage: { python: 1, javascript: 0, typescript: 1, tsx: 0, go: 0 },
   skipped: 0,
   parseErrors: 0,
   durationMs: 12,

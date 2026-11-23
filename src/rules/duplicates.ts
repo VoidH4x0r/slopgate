@@ -29,6 +29,7 @@ function bodyOf(node: AstNode): AstNode | undefined {
   if (node.type === 'function_definition') return node.childForFieldName('body') ?? undefined;
   if (
     node.type === 'function_declaration' ||
+    node.type === 'method_declaration' ||
     node.type === 'method_definition' ||
     node.type === 'function_expression' ||
     node.type === 'arrow_function'
@@ -40,6 +41,9 @@ function bodyOf(node: AstNode): AstNode | undefined {
 
 function isCandidate(node: AstNode, language: LanguageId): boolean {
   if (language === 'python') return node.type === 'function_definition';
+  if (language === 'go') {
+    return node.type === 'function_declaration' || node.type === 'method_declaration';
+  }
   if (node.type === 'function_declaration' || node.type === 'method_definition') return true;
   if (node.type !== 'function_expression' && node.type !== 'arrow_function') return false;
   // A callback passed to map/filter is not a reusable duplicated function.
@@ -50,6 +54,7 @@ function isCandidate(node: AstNode, language: LanguageId): boolean {
 const FUNCTION_NODE_TYPES = new Set([
   'function_definition',
   'function_declaration',
+  'method_declaration',
   'method_definition',
   'function_expression',
   'arrow_function',
@@ -109,12 +114,22 @@ function signatureOf(body: AstNode): { hash: string; tokens: number } {
 function collectRule(kind: 'function' | 'method', language: LanguageId): ProjectRule {
   const candidates: Candidate[] = [];
   const meta: RuleMeta = {
-    id: language === 'python' ? 'py/duplicate-block' : 'ts/duplicate-block',
+    id:
+      language === 'python'
+        ? 'py/duplicate-block'
+        : language === 'go'
+          ? 'go/duplicate-block'
+          : 'ts/duplicate-block',
     title: 'Duplicated function body',
     summary: 'Finds the same normalized function or method body in more than one file.',
     severity: 'warning',
     confidence: 'medium',
-    languages: language === 'python' ? ['python'] : ['typescript', 'tsx'],
+    languages:
+      language === 'python'
+        ? ['python']
+        : language === 'go'
+          ? ['go']
+          : ['typescript', 'tsx'],
     tags: ['duplication'],
   };
 
@@ -125,6 +140,12 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
     },
     collect(ctx) {
       if (ctx.language !== language || isTestPath(ctx.file)) return;
+      if (
+        language === 'go' &&
+        /^\/\/ Code generated .* DO NOT EDIT\.$/m.test(ctx.lines.slice(0, 20).join('\n'))
+      ) {
+        return;
+      }
       const byNode = new Map<string, Candidate>();
       for (const node of collectCandidates(ctx.root, language)) {
         if (!isCandidate(node, language)) continue;
@@ -144,7 +165,7 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
           hash: normalized.hash,
           lines,
           tokens: normalized.tokens,
-          kind: node.type === 'method_definition' ? 'method' : kind,
+          kind: node.type === 'method_definition' || node.type === 'method_declaration' ? 'method' : kind,
         };
         const ancestor = nearestCandidateAncestor(node, byNode);
         if (ancestor) candidate.ancestor = ancestor;
@@ -216,7 +237,9 @@ function collectCandidates(root: AstNode, language: LanguageId): AstNode[] {
   const wanted =
     language === 'python'
       ? new Set(['function_definition'])
-      : new Set(['function_declaration', 'method_definition', 'function_expression', 'arrow_function']);
+      : language === 'go'
+        ? new Set(['function_declaration', 'method_declaration'])
+        : new Set(['function_declaration', 'method_definition', 'function_expression', 'arrow_function']);
   const found: AstNode[] = [];
   walk(root, (node) => {
     if (wanted.has(node.type)) found.push(node);
@@ -227,4 +250,5 @@ function collectCandidates(root: AstNode, language: LanguageId): AstNode[] {
 export const duplicateRules: ProjectRule[] = [
   collectRule('function', 'python'),
   collectRule('function', 'typescript'),
+  collectRule('function', 'go'),
 ];

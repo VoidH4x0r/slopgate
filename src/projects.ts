@@ -170,7 +170,9 @@ export async function loadProjectRegistry(
   const matchesLanguage = (deps: ProjectDeps, language: LanguageId): boolean =>
     language === 'python'
       ? deps.python.manifests.length > 0
-      : deps.node.hasPackageJson;
+      : language === 'go'
+        ? deps.go.manifests.length > 0
+        : deps.node.hasPackageJson;
 
   const fallback = (): Promise<ProjectDeps> => loadProject(fallbackDir);
 
@@ -204,7 +206,7 @@ export async function loadProjectRegistry(
       return fallback();
     },
     async missingPackageJson(fileAbs: string, language: LanguageId): Promise<string | undefined> {
-      if (language === 'python') return undefined;
+      if (language === 'python' || language === 'go') return undefined;
       const deps = await registry.depsFor(fileAbs, language);
       if (deps.node.hasPackageJson) return undefined;
       const project = deps.root;

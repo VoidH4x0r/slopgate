@@ -1,7 +1,7 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
 import * as path from 'node:path';
-import type { NodeDeps, ProjectDeps, PythonDeps } from './types.ts';
+import type { GoDeps, NodeDeps, ProjectDeps, PythonDeps } from './types.ts';
 
 /** PEP 503 normalization: lowercase, runs of `[-_.]` collapse to `-`. */
 export function normalizePythonName(name: string): string {
@@ -302,7 +302,7 @@ const PYTHON_MANIFESTS = [
   'environment.yml', 'environment.yaml',
 ];
 
-export const PROJECT_MARKERS = [...PYTHON_MANIFESTS, 'package.json'];
+export const PROJECT_MARKERS = [...PYTHON_MANIFESTS, 'package.json', 'go.mod'];
 
 async function hasProjectMarker(dir: string): Promise<boolean> {
   for (const marker of PROJECT_MARKERS) {
@@ -430,6 +430,56 @@ async function loadPythonDeps(root: string): Promise<PythonDeps> {
     for (const name of parsePythonManifestText(rel, text)) declared.add(name);
   }
   return { declared, manifests, localModules: new Set<string>() };
+}
+
+/** Parse the parts of go.mod that matter for import resolution. */
+export function parseGoModText(text: string): { module?: string; requires: string[] } {
+  let module: string | undefined;
+  const requires: string[] = [];
+  let inRequireBlock = false;
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.replace(/\/\/.*$/, '').trim();
+    if (!line) continue;
+    const moduleMatch = /^module\s+(?:"([^"]+)"|(\S+))$/.exec(line);
+    if (moduleMatch) {
+      module = moduleMatch[1] ?? moduleMatch[2];
+      continue;
+    }
+    if (/^require\s*\($/.test(line)) {
+      inRequireBlock = true;
+      continue;
+    }
+    if (inRequireBlock && line === ')') {
+      inRequireBlock = false;
+      continue;
+    }
+    const requireMatch = /^require\s+(?:"([^"]+)"|(\S+))(?:\s+\S+)?$/.exec(line);
+    if (requireMatch) {
+      const value = requireMatch[1] ?? requireMatch[2];
+      if (value) requires.push(value);
+      continue;
+    }
+    if (inRequireBlock) {
+      const dependency = /^(?:"([^"]+)"|(\S+))(?:\s+\S+)?$/.exec(line);
+      const value = dependency?.[1] ?? dependency?.[2];
+      if (value && value !== ')') requires.push(value);
+    }
+  }
+  return { ...(module ? { module } : {}), requires };
+}
+
+async function loadGoDeps(root: string): Promise<GoDeps> {
+  const goMod = path.join(root, 'go.mod');
+  const text = await readIfExists(goMod);
+  if (text === undefined) {
+    return { requires: new Set<string>(), manifests: [] };
+  }
+  const parsed = parseGoModText(text);
+  return {
+    ...(parsed.module ? { module: parsed.module } : {}),
+    requires: new Set(parsed.requires),
+    manifests: ['go.mod'],
+  };
 }
 
 function stripJsonComments(text: string): string {
@@ -711,6 +761,10 @@ async function loadNodeDeps(root: string): Promise<NodeDeps> {
 
 export async function loadProjectDeps(root: string): Promise<ProjectDeps> {
   const absRoot = path.resolve(root);
-  const [python, node] = await Promise.all([loadPythonDeps(absRoot), loadNodeDeps(absRoot)]);
-  return { root: absRoot, python, node, ignoredModules: new Set<string>() };
+  const [python, node, go] = await Promise.all([
+    loadPythonDeps(absRoot),
+    loadNodeDeps(absRoot),
+    loadGoDeps(absRoot),
+  ]);
+  return { root: absRoot, python, node, go, ignoredModules: new Set<string>() };
 }

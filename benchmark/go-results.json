@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T02:03:24.709Z",
+  "slopgateVersion": "0.3.0",
+  "nodeVersion": "v24.19.0",
+  "corpora": [
+    {
+      "name": "go-stdlib",
+      "digest": "3970b1f25e424815",
+      "files": 6090,
+      "lines": 2455171,
+      "durationMs": 20651,
+      "findings": 761,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 72,
+      "byRule": {
+        "go/duplicate-block": {
+          "high": 0,
+          "medium": 761,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    }
+  ],
+  "staleLabels": [],
+  "unlabeledHigh": []
+}

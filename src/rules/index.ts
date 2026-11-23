@@ -1,10 +1,11 @@
 import type { ProjectRule, Rule, RuleMeta } from '../types.ts';
 import { duplicateRules } from './duplicates.ts';
+import { goRules } from './go.ts';
 import { pythonRules } from './python.ts';
 import { typescriptRules } from './typescript.ts';
 
 /** Per-file rules. */
-export const FILE_RULES: readonly Rule[] = [...pythonRules, ...typescriptRules];
+export const FILE_RULES: readonly Rule[] = [...pythonRules, ...typescriptRules, ...goRules];
 
 /** Rules that need the whole scan before they can report. */
 export const PROJECT_RULES: readonly ProjectRule[] = duplicateRules;

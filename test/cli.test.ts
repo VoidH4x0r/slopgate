@@ -285,7 +285,7 @@ test('cli: an unknown --rule id exits 2 and lists the rule count', async () => {
   const result = await run(['fixtures/demo', '--rule', 'py/nope']);
   assert.equal(result.status, 2);
   assert.match(result.stderr, /unknown rule id: py\/nope/);
-  assert.match(result.stderr, /16 rule ids/);
+  assert.match(result.stderr, /22 rule ids/);
 });
 
 test('cli: confidence filter hides medium findings', async () => {
@@ -427,7 +427,7 @@ test('cli: --verbose shows the effective include count', async () => {
     'none',
   ]);
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /include: 11 pattern\(s\)/);
+  assert.match(result.stdout, /include: 12 pattern\(s\)/);
 });
 
 test('cli: --fail-on medium lowers the display threshold and fails the run', async () => {

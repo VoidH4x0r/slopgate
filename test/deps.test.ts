@@ -6,6 +6,7 @@ import test from 'node:test';
 import {
   loadProjectDeps,
   normalizePythonName,
+  parseGoModText,
   parsePythonManifestText,
   requirementName,
   resolveProjectRoot,
@@ -152,6 +153,27 @@ test('loadProjectDeps reads the demo fixture', async () => {
   assert.deepEqual(deps.python.manifests, ['pyproject.toml']);
   assert.ok(deps.node.declared.has('left-pad'));
   assert.equal(deps.node.hasPackageJson, true);
+});
+
+test('loadProjectDeps reads go.mod module and require blocks', async () => {
+  const deps = await loadProjectDeps(path.join(FIXTURES, 'go-demo'));
+  assert.equal(deps.go.module, 'example.com/demo');
+  assert.deepEqual([...deps.go.requires], ['github.com/acme/lib']);
+  assert.deepEqual(deps.go.manifests, ['go.mod']);
+});
+
+test('parseGoModText handles single-line and block require directives', () => {
+  const parsed = parseGoModText([
+    'module example.com/x',
+    'go 1.24',
+    'require github.com/a/b v1.0.0',
+    'require (',
+    '  github.com/c/d v2.0.0',
+    '  github.com/e/f v0.1.0 // indirect',
+    ')',
+  ].join('\n'));
+  assert.equal(parsed.module, 'example.com/x');
+  assert.deepEqual(parsed.requires, ['github.com/a/b', 'github.com/c/d', 'github.com/e/f']);
 });
 
 test('loadProjectDeps expands a tsconfig baseUrl into import aliases', async () => {

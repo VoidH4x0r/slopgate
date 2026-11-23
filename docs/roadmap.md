@@ -1,6 +1,6 @@
 # Development roadmap
 
-Status: **0.2.10 is the release candidate**. The encoding contract in `bbd9401` is merged on `main` and ships in **0.2.10**. This roadmap is effort-based, not a promise of dates.
+Status: **0.3.0 is the Go release candidate**. 0.2.10 maintenance shipped the encoding contract and release hardening. This roadmap is effort-based, not a promise of dates.
 
 ## 1. Product thesis
 
@@ -21,13 +21,13 @@ Every roadmap decision should protect those advantages.
 
 | Area | State at 0.2.9 |
 | --- | --- |
-| Languages | Python, TypeScript/JavaScript |
-| Rules | 16, all with negative tests |
+| Languages | Python, TypeScript/JavaScript, Go |
+| Rules | 22, all with negative tests |
 | Interfaces | CLI, JSON, SARIF, GitHub annotations, MCP, baseline, diff, suppression |
 | Autofix | Safe deletion of unreachable statements after `return` / `raise` / `break` / `continue` |
-| Benchmark | 1,115,270 lines, 43 high findings, 97.7% labeled precision, 30/30 seeded recall |
+| Benchmark | 1,115,270 Python/JS/AI lines: 43 high, 97.7% precision, 30/30 seeded; Go 1.24: 2,455,171 lines, 0 high |
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
-| Release | npm `@voidh4x0r/slopgate`; latest published 0.2.9 |
+| Release | npm `@voidh4x0r/slopgate`; latest published 0.2.9, 0.3.0 release candidate |
 
 The current limitations are documented in `README.md`. The biggest product gaps are language coverage, editor integration, semantic duplicate detection, and a benchmark that still under-represents JavaScript test theatre and bundled output.
 
@@ -77,7 +77,7 @@ Exit criteria:
 
 ### 0.3.0 - Go support
 
-Goal: a real Go mode, not a parser demo. Target: 4 to 6 weeks after 0.2.10.
+Goal: a real Go mode, not a parser demo. **Status: implemented in 0.3.0; pending release validation.**
 
 Scope:
 

@@ -21,6 +21,9 @@ export interface DepsOverrides {
   nodeAliases?: string[];
   nodeWorkspaces?: string[];
   hasPackageJson?: boolean;
+  goModule?: string;
+  goRequires?: string[];
+  goManifests?: string[];
   ignored?: string[];
 }
 
@@ -38,6 +41,11 @@ export function makeDeps(overrides: DepsOverrides = {}): ProjectDeps {
       aliases: overrides.nodeAliases ?? [],
       hasPackageJson: overrides.hasPackageJson ?? true,
       installed: new Set(overrides.nodeInstalled ?? []),
+    },
+    go: {
+      ...(overrides.goModule ? { module: overrides.goModule } : {}),
+      requires: new Set(overrides.goRequires ?? []),
+      manifests: overrides.goManifests ?? [],
     },
     ignoredModules: new Set(overrides.ignored ?? []),
   };

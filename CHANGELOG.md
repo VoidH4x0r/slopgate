@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-23
+
+### Added
+- Go support: tree-sitter-go grammar, `.go` discovery, `go.mod` module/require resolution, Go project roots, and Go dependency context.
+- Six Go rules: `go/phantom-import`, `go/noop-test`, `go/unreachable`, `go/stub-body`, `go/swallowed-error`, and `go/duplicate-block`.
+- 20 Go fixtures, including generated-file, build-tag, test-helper and table-driven negative cases.
+- Go benchmark corpus: 6,090 files / 2,455,171 lines of Go 1.24 source, **0 high findings**, recorded in `benchmark/go-results.json`; `--include` support in the benchmark harness.
+- README, rule reference, grammar notices and package metadata now describe Go support.
+
+### Changed
+- 22 rules across Python, TypeScript/JavaScript and Go; 364 tests.
+- Python/JS benchmark remains **43 high / 97.7% (42/43) / 30/30 seeded**; stale labels and unlabeled high findings remain empty.
+- Go precision is deliberately conservative: module-internal package existence is not checked, `go.work` is not resolved, empty tests with an explanatory comment are skipped, and build-tag/platform files are not scanned by stub/unreachable rules.
+
 ## [0.2.10] - 2026-11-23
 
 ### Added

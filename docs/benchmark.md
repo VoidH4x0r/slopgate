@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.2.10): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
+> Status (0.3.0): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
 
 ## The claim
 
@@ -29,6 +29,21 @@ The false-positive corpus is human-written code, which rarely contains AI-specif
 ### What the JavaScript half does not cover
 
 The nine packages are popular, hand-maintained libraries, not a hostile JavaScript corpus. They contain **no Tape/TAP test suites, no bundler chunks, and no interface-stub class methods**, so their 0-high result is evidence for those packages, not for JavaScript generally. A separate 6,012-file Electron `app.asar` corpus (not bundled here) exposed three pattern classes: 126 `t.equal`-style assertions, 83 hoisted declarations after `return`, and 65 class methods that throw `Not implemented`. Version 0.1.4 fixes the underlying rules and adds small regression fixtures for each pattern; a future release will add a real Tape/TAP package and a bundled-app corpus to this benchmark.
+
+### Go corpus
+
+The Go half uses the local source tree of **Go 1.24.0** (`go/src`, 6,090 files, 2,455,171 lines), scanned with `--include '**/*.go'`. It reports **0 high-confidence findings** and is recorded separately from the Python/JS/AI-run in `benchmark/go-results.json`.
+
+```bash
+node scripts/benchmark.mjs \
+  --corpus go-stdlib=/path/to/go1.24.0/src \
+  --include '**/*.go' \
+  --labels benchmark/go-labels.json \
+  --out benchmark/go-results.json \
+  --report benchmark/go-report.md
+```
+
+The source tree is identified by digest rather than committed. There are no Go labels because the run has no high findings; the label file is intentionally empty.
 
 ## Reproducing
 

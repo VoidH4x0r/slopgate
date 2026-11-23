@@ -50,8 +50,8 @@ function scanResult(findings: Finding[], files = 3): ScanResult {
       files,
       byLanguage:
         files === 0
-          ? { python: 0, javascript: 0, typescript: 0, tsx: 0 }
-          : { python: 3, javascript: 0, typescript: 0, tsx: 0 },
+          ? { python: 0, javascript: 0, typescript: 0, tsx: 0, go: 0 }
+          : { python: 3, javascript: 0, typescript: 0, tsx: 0, go: 0 },
       skipped: files === 0 ? 1 : 0,
       parseErrors: 0,
       durationMs: 12,

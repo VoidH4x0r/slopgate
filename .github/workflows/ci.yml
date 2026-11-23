@@ -75,6 +75,17 @@ jobs:
           status=$?
           set -e
           test "$status" -eq 1
+      - name: Scan a Go file from the packed tarball
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/gosmoke && cd /tmp/gosmoke
+          printf 'module example.com/x\n\ngo 1.24\n' > go.mod
+          printf 'package main\n\nimport "github.com/nope/missing"\n\nfunc main() {}\n' > main.go
+          set +e
+          /tmp/smoke/node_modules/.bin/slopgate main.go --fail-on high --no-color
+          status=$?
+          set -e
+          test "$status" -eq 1
 
   encoding-windows:
     name: encoding (windows)

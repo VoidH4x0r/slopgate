@@ -21,7 +21,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 
 function parseArgs(argv) {
-  const options = { corpora: [], out: 'benchmark/results.json', report: 'benchmark/report.md', labels: 'benchmark/labels.json', seeded: 'benchmark/seeded.json', maxRegression: undefined };
+  const options = { corpora: [], out: 'benchmark/results.json', report: 'benchmark/report.md', labels: 'benchmark/labels.json', seeded: 'benchmark/seeded.json', maxRegression: undefined, include: undefined };
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--corpus') {
@@ -30,6 +30,8 @@ function parseArgs(argv) {
       const [name, dir] = value.split('=');
       if (!name || !dir) throw new Error('--corpus expects name=/path');
       options.corpora.push({ name, dir });
+    } else if (token === '--include') {
+      options.include = argv[++i];
     } else if (token === '--out') { options.out = argv[++i]; }
     else if (token === '--report') { options.report = argv[++i]; }
     else if (token === '--labels') { options.labels = argv[++i]; }
@@ -39,7 +41,7 @@ function parseArgs(argv) {
       if (!Number.isFinite(value) || value < 0) throw new Error('--max-regression expects a non-negative percentage');
       options.maxRegression = value;
     }
-    else if (token === '--help' || token === '-h') { console.log('usage: node scripts/benchmark.mjs --corpus name=/path [--corpus ...] [--out file] [--report file] [--max-regression percent]'); process.exit(0); }
+    else if (token === '--help' || token === '-h') { console.log('usage: node scripts/benchmark.mjs --corpus name=/path [--corpus ...] [--include glob] [--out file] [--report file] [--max-regression percent]'); process.exit(0); }
     else throw new Error(`unknown option: ${token}`);
   }
   if (options.corpora.length === 0) throw new Error('at least one --corpus name=/path is required');
@@ -47,7 +49,7 @@ function parseArgs(argv) {
 }
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'out', 'target', 'venv', '.venv', '__pycache__', '.mypy_cache', 'site-packages', 'coverage']);
-const SOURCE_EXT = /\.(py|pyi|ts|tsx|mts|cts|js|jsx|mjs|cjs)$/;
+const SOURCE_EXT = /\.(py|pyi|ts|tsx|mts|cts|js|jsx|mjs|cjs|go)$/;
 
 async function countLines(dir) {
   let files = 0;
@@ -181,7 +183,12 @@ async function main() {
 
   for (const corpus of options.corpora) {
     const started = performance.now();
-    const scan = await scanProject({ root: corpus.dir, config: { ...DEFAULT_CONFIG } });
+    const scan = await scanProject({
+      root: corpus.dir,
+      config: options.include
+        ? { ...DEFAULT_CONFIG, include: [options.include] }
+        : { ...DEFAULT_CONFIG },
+    });
     const durationMs = Math.round(performance.now() - started);
     const loc = await countLines(corpus.dir);
     const pkg = await readPackage(corpus.dir);

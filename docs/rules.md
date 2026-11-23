@@ -25,6 +25,12 @@ Every rule runs on a real AST (tree-sitter), reports a **confidence**, and has a
 | [`ts/dead-branch`](#tsdead-branch) | TS/JS | warning | high / medium |
 | [`ts/unreachable`](#tsunreachable) | TS/JS | error | high |
 | [`ts/duplicate-block`](#tsduplicate-block) | TS/JS | warning | medium |
+| [`go/phantom-import`](#gophantom-import) | Go | error | high |
+| [`go/noop-test`](#gonoop-test) | Go | warning | high |
+| [`go/unreachable`](#gounreachable) | Go | error | high |
+| [`go/stub-body`](#gostub-body) | Go | warning | high |
+| [`go/swallowed-error`](#goswallowed-error) | Go | warning | high |
+| [`go/duplicate-block`](#goduplicate-block) | Go | warning | medium |
 
 ---
 
@@ -253,3 +259,62 @@ try {
 **Not reported.** Hoisted declarations after the exit (`function` declarations and generators, bare `var a, b;`) and type-only declarations erased at compile time (`type`, `interface`, `declare`). `enum` declarations, classes, `let`/`const` and initialised `var` statements execute at their position and are reported.
 
 **Fixable.** `slopgate --fix` deletes the unreachable runtime statements but leaves hoisted/erased declarations in place. `--fix-dry-run` validates the edits without writing.
+
+---
+
+## go/phantom-import
+
+**What it catches.** An import that is neither a Go standard-library root, inside the current module, nor provided by a `require` path in `go.mod`.
+
+```go
+import (
+    "fmt"                       // stdlib
+    "example.com/app/internal"  // inside the module
+    "github.com/acme/lib"       // declared in go.mod
+    "github.com/nope/missing"   // finding
+)
+```
+
+**Precision controls.** `C` (cgo) is accepted; test files and `// Code generated ... DO NOT EDIT.` files are skipped; no go.mod means the rule stays silent rather than guessing. The reserved `internal/...` root is accepted because the standard library and its modules use it; local package existence inside the module is not checked yet, which intentionally avoids flagging module-internal packages that are resolved by the Go toolchain.
+
+---
+
+## go/noop-test
+
+**What it catches.** A `Test*` function in a `_test.go` file with an empty body and no explanatory comment.
+
+**Not reported.** Tests with any statement, even `t.Log` or a helper call, because the helper may contain the assertion; tests with a nearby comment (compile/init tests); benchmarks; `TestMain`; generated files; and non-test files.
+
+---
+
+## go/unreachable
+
+**What it catches.** Statements after `return`, `break` or `continue` in the same Go block.
+
+**Not reported.** Test files, generated files, platform/build-tag files, and blocks containing a `goto` or label (the label may be the target of a jump). Code after `panic`/`os.Exit` is also not treated as unreachable because those functions can be shadowed.
+
+---
+
+## go/stub-body
+
+**What it catches.** A function or method whose entire body is exactly `panic("not implemented")`, `panic("unimplemented")`, or `panic("TODO")`.
+
+**Not reported.** Empty methods/functions, qualified panic messages such as `panic("handler: With unimplemented")`, platform/build-tag files, test files and generated files.
+
+---
+
+## go/swallowed-error
+
+**What it catches.** An `if err != nil` (or `*Err`) block with no statements and no comment, which silently discards a returned error.
+
+**Not reported.** Branches that return, log, panic or otherwise handle the error; comments in the branch are treated as intentional and skip the finding; test and generated files are skipped. The rule handles the simple condition form, not `if err := f(); err != nil`.
+
+---
+
+## go/duplicate-block
+
+**What it catches.** The same normalized function or method body in two or more Go files. Comments and whitespace are ignored; identifiers and literals are preserved. A body must span at least **6 lines** and contain at least **15 leaf tokens**.
+
+**Not reported.** Test files, generated files, platform-specific files, single-file copies, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
+
+**Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations.
