@@ -14,7 +14,7 @@ AI writes code that *looks* right. `slopgate` finds the parts that only look rig
 ```console
 $ npx @voidh4x0r/slopgate .
 
-slopgate 0.3.0  ·  4 files  ·  50ms
+slopgate 0.3.1  ·  4 files  ·  50ms
 
 app.py
        4:1  error   high   py/phantom-import       `helper` is imported but not declared in any manifest and not present in this repository
@@ -59,7 +59,7 @@ Models are good at producing code that compiles, imports cleanly in the editor w
 | `except Exception: pass` | The error disappears; the incident does not |
 | `return user` followed by 12 lines of code | Dead code that nobody notices until it rots |
 
-`slopgate` is a **precision-first** linter for exactly this class of defect, for Python, TypeScript/JavaScript and Go.
+`slopgate` is a **precision-first** linter for exactly this class of defect, for Python, TypeScript/JavaScript, Go and Rust.
 
 It is built for the people who review AI-generated pull requests: the reviewer who cannot read every line, the maintainer who needs CI to say "this is not finished", and the coding agent that should check itself before declaring done.
 
@@ -74,7 +74,7 @@ Measured on **1,115,270 lines** of real code — the CPython standard library (a
 | Recall on seeded defects | **30/30** (14 demo + 16 AI-generated) |
 | High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
 
-A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings**. The Go runner uses `--include '**/*.go'`; see [`docs/benchmark.md`](docs/benchmark.md).
+A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings**; a Rust-only run of **Rust 1.83 std source** (1,494 files, 635,245 lines) also reports **0 high**. The runners use `--include '**/*.go'` / `--include '**/*.rs'`; see [`docs/benchmark.md`](docs/benchmark.md).
 
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
 
@@ -105,7 +105,7 @@ npm install -D @voidh4x0r/slopgate         # or pin it in your project
 npx @voidh4x0r/slopgate init               # write .slopgate.json + a GitHub Action
 ```
 
-Requires Node 20+. Python, TypeScript and Go grammars are bundled — no Python, `tsc` or Go toolchain needed at scan time.
+Requires Node 20+. Python, TypeScript, Go and Rust grammars are bundled — no Python, `tsc`, Go or Rust toolchain needed at scan time.
 
 The npm scope is `@voidh4x0r` because the unscoped name `slopgate` was rejected as too similar to the existing `slop-gate` package; the command is still `slopgate`.
 
@@ -237,7 +237,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@0.3.0 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.3.1 . --fail-on high
 ```
 
 For GitHub code scanning, use `--format sarif` and upload with `github/codeql-action/upload-sarif`.
@@ -245,7 +245,7 @@ For GitHub code scanning, use `--format sarif` and upload with `github/codeql-ac
 For inline pull-request annotations **without** code scanning, use `--format github`, which emits [workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions):
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@0.3.0 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@0.3.1 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the exact line, followed by a summary notice.
@@ -273,7 +273,7 @@ try { ... } catch {}
 
 ## Rules
 
-22 rules across Python, TypeScript/JavaScript and Go. Full reference with examples: [docs/rules.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/rules.md).
+28 rules across Python, TypeScript/JavaScript, Go and Rust. Full reference with examples: [docs/rules.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/rules.md).
 
 | Rule | Catches |
 | --- | --- |
@@ -290,6 +290,11 @@ try { ... } catch {}
 | `go/unreachable` | statements after `return` / `break` / `continue` in a Go block |
 | `go/stub-body` | functions whose body is only an exact not-implemented panic |
 | `go/swallowed-error` | empty `if err != nil` blocks |
+| `rs/phantom-import` | Rust use path not from std, Cargo.toml, or a local module (medium) |
+| `rs/noop-test` | empty `#[test]` functions with no explanatory comment |
+| `rs/unreachable` | statements after `return` / `break` / `continue` in a Rust block |
+| `rs/stub-body` | functions whose body is only `todo!()` / `unimplemented!()` |
+| `rs/swallowed-error` | empty `if let Err(_) = ...` blocks |
 
 ## Precision is the product
 
@@ -327,7 +332,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.2.9 — line-bounded road-run detection
 - [x] v0.2.10 — maintenance: encoding contract release, autofix matrix, Windows CI, packaging hygiene
 - [x] v0.3.0 — Go support: parser, go.mod resolution, 6 rules, 20 fixtures, 2.45M-line clean corpus
-- [ ] v0.3.1 — Rust support
+- [x] v0.3.1 — Rust support: parser, Cargo.toml resolution, 6 rules, 20 fixtures, 635k-line clean corpus
 - [ ] v0.3.2 — VS Code extension
 - [ ] v0.4 — semantic duplicates, expanded benchmark, integrations
 - [ ] v1.0 — stable public API and release gate
@@ -343,12 +348,13 @@ The detailed plan, estimates, release gates, risks and next-14-days actions are 
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 - Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
 - The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
-- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.3.0. A file contributes at most one representative per duplicate group.
+- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.3.1. A file contributes at most one representative per duplicate group.
 - `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off", "go/duplicate-block": "off" }` if you do not need medium findings.
 - `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
 - `go/phantom-import` accepts the reserved `internal/...` root and treats module-internal imports as local; it does not check whether a local package directory exists. `go.work` is not resolved yet.
 - `go/noop-test` only reports an empty test body with no nearby comment; a test that delegates assertions to a helper is left alone.
 - `go/unreachable` skips blocks containing `goto`/labels and does not treat `panic`/`os.Exit` as terminators.
+- `rs/phantom-import` is medium confidence: Rust name resolution cannot be reproduced from a single file; uppercase roots and local modules are accepted, and `Cargo.toml` is required. `rs/noop-test` only reports empty tests; `rs/unreachable` skips hoisted items and test contexts.
 
 ## When **not** to use it
 
@@ -364,7 +370,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 364 tests; the tests themselves make no network or child-process calls
+npm test            # 378 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

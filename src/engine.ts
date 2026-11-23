@@ -119,7 +119,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   });
   for (const projectRule of enabledProject) projectRule.reset();
 
-  const byLanguage: Record<SourceDialect, number> = { python: 0, javascript: 0, typescript: 0, tsx: 0, go: 0 };
+  const byLanguage: Record<SourceDialect, number> = { python: 0, javascript: 0, typescript: 0, tsx: 0, go: 0, rust: 0 };
   const findings: Finding[] = [];
   const fixes: ScanFix[] = [];
   const scannedFiles: string[] = [];
@@ -284,7 +284,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   );
 
   const stats: ScanStats = {
-    files: byLanguage.python + byLanguage.javascript + byLanguage.typescript + byLanguage.tsx + byLanguage.go,
+    files: byLanguage.python + byLanguage.javascript + byLanguage.typescript + byLanguage.tsx + byLanguage.go + byLanguage.rust,
     byLanguage,
     skipped,
     parseErrors,

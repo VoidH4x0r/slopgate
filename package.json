@@ -1,7 +1,7 @@
 {
   "name": "@voidh4x0r/slopgate",
-  "version": "0.3.0",
-  "description": "The slop gate for AI-written code. Precision-first structural linting for Python, TypeScript and Go.",
+  "version": "0.3.1",
+  "description": "The slop gate for AI-written code. Precision-first structural linting for Python, TypeScript, Go and Rust.",
   "type": "module",
   "license": "MIT",
   "author": "slopgate contributors",
@@ -58,7 +58,8 @@
     "ai-agents",
     "python",
     "typescript",
-    "go"
+    "go",
+    "rust"
   ],
   "publishConfig": {
     "access": "public"

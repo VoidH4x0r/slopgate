@@ -111,6 +111,7 @@ export function isTestPath(file: string): boolean {
   if (/^test_.*\.pyi?$/.test(base) || /_tests?\.pyi?$/.test(base)) return true;
   if (/\.(test|spec)\.(ts|tsx|js|jsx|mts|cts|mjs|cjs)$/.test(base)) return true;
   if (base.endsWith('_test.go')) return true;
+  if (base === 'tests.rs' || base.endsWith('_tests.rs')) return true;
   if (parts.some((part) => part === 'testdata')) return true;
   // Test/build infrastructure that pytest, nox and Sphinx import directly.
   if (base === 'conftest.py' || base === 'noxfile.py') return true;

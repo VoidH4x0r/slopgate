@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.3.0): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
+> Status (0.3.1): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
 
 ## The claim
 
@@ -44,6 +44,21 @@ node scripts/benchmark.mjs \
 ```
 
 The source tree is identified by digest rather than committed. There are no Go labels because the run has no high findings; the label file is intentionally empty.
+
+### Rust corpus
+
+The Rust half uses the local **Rust 1.83 `rust-src`** tree (1,494 files, 635,245 lines), scanned with `--include '**/*.rs'`. It reports **0 high-confidence findings** and is recorded in `benchmark/rust-results.json`.
+
+```bash
+node scripts/benchmark.mjs \
+  --corpus rust-stdlib=/path/to/rust-src-1.83.0/rust-src \
+  --include '**/*.rs' \
+  --labels benchmark/rust-labels.json \
+  --out benchmark/rust-results.json \
+  --report benchmark/rust-report.md
+```
+
+The source tree is identified by digest rather than committed. There are no Rust labels because the run has no high findings; the label file is intentionally empty.
 
 ## Reproducing
 

@@ -30,6 +30,7 @@ function bodyOf(node: AstNode): AstNode | undefined {
   if (
     node.type === 'function_declaration' ||
     node.type === 'method_declaration' ||
+    node.type === 'function_item' ||
     node.type === 'method_definition' ||
     node.type === 'function_expression' ||
     node.type === 'arrow_function'
@@ -44,6 +45,7 @@ function isCandidate(node: AstNode, language: LanguageId): boolean {
   if (language === 'go') {
     return node.type === 'function_declaration' || node.type === 'method_declaration';
   }
+  if (language === 'rust') return node.type === 'function_item';
   if (node.type === 'function_declaration' || node.type === 'method_definition') return true;
   if (node.type !== 'function_expression' && node.type !== 'arrow_function') return false;
   // A callback passed to map/filter is not a reusable duplicated function.
@@ -55,6 +57,7 @@ const FUNCTION_NODE_TYPES = new Set([
   'function_definition',
   'function_declaration',
   'method_declaration',
+  'function_item',
   'method_definition',
   'function_expression',
   'arrow_function',
@@ -119,7 +122,9 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
         ? 'py/duplicate-block'
         : language === 'go'
           ? 'go/duplicate-block'
-          : 'ts/duplicate-block',
+          : language === 'rust'
+            ? 'rs/duplicate-block'
+            : 'ts/duplicate-block',
     title: 'Duplicated function body',
     summary: 'Finds the same normalized function or method body in more than one file.',
     severity: 'warning',
@@ -129,7 +134,9 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
         ? ['python']
         : language === 'go'
           ? ['go']
-          : ['typescript', 'tsx'],
+          : language === 'rust'
+            ? ['rust']
+            : ['typescript', 'tsx'],
     tags: ['duplication'],
   };
 
@@ -143,6 +150,14 @@ function collectRule(kind: 'function' | 'method', language: LanguageId): Project
       if (
         language === 'go' &&
         /^\/\/ Code generated .* DO NOT EDIT\.$/m.test(ctx.lines.slice(0, 20).join('\n'))
+      ) {
+        return;
+      }
+      if (
+        language === 'rust' &&
+        /^(?:\/\/\s*@generated|\/\/ Code generated .* DO NOT EDIT\.)$/m.test(
+          ctx.lines.slice(0, 20).join('\n'),
+        )
       ) {
         return;
       }
@@ -239,7 +254,9 @@ function collectCandidates(root: AstNode, language: LanguageId): AstNode[] {
       ? new Set(['function_definition'])
       : language === 'go'
         ? new Set(['function_declaration', 'method_declaration'])
-        : new Set(['function_declaration', 'method_definition', 'function_expression', 'arrow_function']);
+        : language === 'rust'
+          ? new Set(['function_item'])
+          : new Set(['function_declaration', 'method_definition', 'function_expression', 'arrow_function']);
   const found: AstNode[] = [];
   walk(root, (node) => {
     if (wanted.has(node.type)) found.push(node);
@@ -251,4 +268,5 @@ export const duplicateRules: ProjectRule[] = [
   collectRule('function', 'python'),
   collectRule('function', 'typescript'),
   collectRule('function', 'go'),
+  collectRule('function', 'rust'),
 ];

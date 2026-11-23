@@ -1,0 +1,322 @@
+import type { AstNode } from '../ast.ts';
+import type { Rule, RuleContext, RuleDraft } from '../types.ts';
+import {
+  descendantsOfType,
+  endOf,
+  hasCommentBetween,
+  isTestPath,
+  snippetOf,
+  startOf,
+  statementsOf,
+  walk,
+} from './helpers.ts';
+
+const RUST_FUNCTIONS = new Set(['function_item']);
+const RUST_TERMINATORS = new Set(['return_expression', 'break_expression', 'continue_expression']);
+// Items declared in a block are not executed in source order; Rust hoists them
+// and allows them after a return. They must not be reported as dead code.
+const RUST_ITEMS = new Set([
+  'function_item',
+  'struct_item',
+  'enum_item',
+  'union_item',
+  'trait_item',
+  'impl_item',
+  'mod_item',
+  'use_declaration',
+  'type_item',
+  'const_item',
+  'static_item',
+  'attribute_item',
+  'extern_crate_declaration',
+  'macro_definition',
+]);
+const RUST_STD_ROOTS = new Set(['std', 'core', 'alloc', 'proc_macro', 'test']);
+const RUST_LOCAL_ROOTS = new Set(['crate', 'self', 'super']);
+
+function bodyOf(node: AstNode): AstNode | undefined {
+  return node.childForFieldName('body') ?? undefined;
+}
+
+function functions(root: AstNode): AstNode[] {
+  const found: AstNode[] = [];
+  walk(root, (node) => {
+    if (RUST_FUNCTIONS.has(node.type)) found.push(node);
+  });
+  return found;
+}
+
+function isGeneratedRust(ctx: RuleContext): boolean {
+  const header = ctx.lines.slice(0, 20).join('\n');
+  return /^(?:\/\/\s*@generated|\/\/ Code generated .* DO NOT EDIT\.)/m.test(header);
+}
+
+function previousAttributes(node: AstNode): AstNode[] {
+  const parent = node.parent;
+  if (!parent) return [];
+  const siblings = parent.namedChildren;
+  const index = siblings.findIndex(
+    (sibling) => sibling.startIndex === node.startIndex && sibling.endIndex === node.endIndex,
+  );
+  if (index < 0) return [];
+  const attributes: AstNode[] = [];
+  for (let i = index - 1; i >= 0; i -= 1) {
+    const sibling = siblings[i];
+    if (!sibling || sibling.type !== 'attribute_item') break;
+    attributes.push(sibling);
+  }
+  return attributes;
+}
+
+function hasAttribute(node: AstNode, pattern: RegExp): boolean {
+  return previousAttributes(node).some((attribute) => pattern.test(attribute.text));
+}
+
+function isTestFunction(node: AstNode): boolean {
+  return hasAttribute(node, /^#\[\s*(?:tokio::)?test\b/);
+}
+
+function hasTestContext(node: AstNode): boolean {
+  let current: AstNode | null = node;
+  while (current) {
+    if (current.type === 'function_item' && isTestFunction(current)) return true;
+    if (current.type === 'mod_item' && hasAttribute(current, /^#\[\s*cfg\s*\(\s*test\s*\)/)) {
+      return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
+function pathOfUse(node: AstNode): string | undefined {
+  return node.childForFieldName('argument')?.text.replace(/\s+/g, '');
+}
+
+function isDeclaredRustPath(path: string, ctx: RuleContext): boolean {
+  const clean = path.replace(/^::/, '');
+  const first = clean.split('::')[0] ?? '';
+  if (!first) return true;
+  // Rust convention: crate and module names start lowercase; uppercase roots
+  // are local types, enums or constants, not crates.
+  if (/^[A-Z]/.test(first)) return true;
+  if (RUST_STD_ROOTS.has(first) || RUST_LOCAL_ROOTS.has(first)) return true;
+  if (ctx.deps.rust.manifests.length === 0) return true;
+  if (ctx.deps.rust.dependencies.has(first) || ctx.deps.rust.localModules.has(first)) return true;
+  for (const ignored of ctx.deps.ignoredModules) {
+    if (first === ignored) return true;
+  }
+  return false;
+}
+
+function isStubMacro(node: AstNode): boolean {
+  const text = node.text.trim();
+  return (
+    /^(?:todo|unimplemented)!\(\)$/i.test(text) ||
+    /^panic!\(\s*"(?:not implemented|unimplemented|todo)"\s*\)$/i.test(text)
+  );
+}
+
+function isTerminator(statement: AstNode): boolean {
+  if (statement.type === 'expression_statement') {
+    const child = statement.namedChildren[0];
+    return child !== undefined && RUST_TERMINATORS.has(child.type);
+  }
+  return RUST_TERMINATORS.has(statement.type);
+}
+
+function rustPhantomImportRule(): Rule {
+  return {
+    meta: {
+      id: 'rs/phantom-import',
+      title: 'Unresolved Rust import',
+      summary: 'Finds a Rust use path that is neither std/core/alloc, a Cargo dependency, nor a local module.',
+      severity: 'error',
+      confidence: 'medium',
+      languages: ['rust'],
+      tags: ['imports', 'dependencies'],
+    },
+    run(ctx) {
+      if (isGeneratedRust(ctx) || isTestPath(ctx.file)) return [];
+      if (ctx.deps.rust.manifests.length === 0) return [];
+      const drafts: RuleDraft[] = [];
+      const seen = new Set<string>();
+      for (const node of descendantsOfType(ctx.root, ['use_declaration'])) {
+        const path = pathOfUse(node);
+        if (!path || seen.has(path)) continue;
+        seen.add(path);
+        if (isDeclaredRustPath(path, ctx)) continue;
+        drafts.push({
+          message: `\`${path}\` is used but not provided by std, a Cargo dependency, or a local module`,
+          start: startOf(node),
+          end: endOf(node),
+          snippet: snippetOf(ctx, node),
+          evidence: ['no matching dependency name in Cargo.toml and no local module'],
+          help: 'Add the crate to Cargo.toml, remove the use, or add the crate name to ignoreModules.',
+        });
+      }
+      return drafts;
+    },
+  };
+}
+
+function rustNoopTestRule(): Rule {
+  return {
+    meta: {
+      id: 'rs/noop-test',
+      title: 'Rust test without a failure path',
+      summary: 'Finds a #[test] function with an empty body and no explanatory comment.',
+      severity: 'warning',
+      confidence: 'high',
+      languages: ['rust'],
+      tags: ['tests'],
+    },
+    run(ctx) {
+      if (isGeneratedRust(ctx)) return [];
+      const drafts: RuleDraft[] = [];
+      for (const fn of functions(ctx.root)) {
+        if (!isTestFunction(fn)) continue;
+        if (hasAttribute(fn, /^#\[\s*(?:ignore|should_panic)\b/)) continue;
+        const body = bodyOf(fn);
+        if (!body || statementsOf(body).length > 0) continue;
+        if (hasCommentBetween(ctx, Math.max(1, startOf(fn).line - 5), endOf(fn).line)) continue;
+        drafts.push({
+          message: `test \`${fn.childForFieldName('name')?.text ?? 'test'}\` has an empty body`,
+          start: startOf(fn),
+          end: endOf(fn),
+          snippet: snippetOf(ctx, fn),
+          evidence: ['the #[test] function body is empty'],
+          help: 'Add an assertion, or annotate the test with #[ignore] and a reason if it is intentionally disabled.',
+        });
+      }
+      return drafts;
+    },
+  };
+}
+
+function rustUnreachableRule(): Rule {
+  return {
+    meta: {
+      id: 'rs/unreachable',
+      title: 'Unreachable Rust code',
+      summary: 'Finds statements after return, break or continue in the same block.',
+      severity: 'error',
+      confidence: 'high',
+      languages: ['rust'],
+      tags: ['dead-code'],
+    },
+    run(ctx) {
+      if (isGeneratedRust(ctx) || isTestPath(ctx.file)) return [];
+      const drafts: RuleDraft[] = [];
+      for (const block of descendantsOfType(ctx.root, ['block'])) {
+        if (hasTestContext(block)) continue;
+        let dead = false;
+        for (const statement of statementsOf(block)) {
+          if (dead) {
+            if (RUST_ITEMS.has(statement.type)) continue;
+            drafts.push({
+              message: 'code after a terminating expression is unreachable',
+              start: startOf(statement),
+              end: endOf(statement),
+              snippet: snippetOf(ctx, statement),
+              evidence: ['the preceding expression always exits this block'],
+              help: 'Delete the unreachable code, or move it before the exit if it was meant to run.',
+            });
+            continue;
+          }
+          if (isTerminator(statement)) dead = true;
+        }
+      }
+      return drafts;
+    },
+  };
+}
+
+function rustStubBodyRule(): Rule {
+  return {
+    meta: {
+      id: 'rs/stub-body',
+      title: 'Rust stub placeholder',
+      summary: 'Finds a function whose body is only todo!(), unimplemented!() or a not-implemented panic.',
+      severity: 'warning',
+      confidence: 'high',
+      languages: ['rust'],
+      tags: ['stubs'],
+    },
+    run(ctx) {
+      if (isGeneratedRust(ctx) || isTestPath(ctx.file)) return [];
+      // `sys/` contains platform backends that intentionally expose
+      // unimplemented operations on unsupported targets.
+      if (/\/sys\//.test(ctx.file)) return [];
+      const drafts: RuleDraft[] = [];
+      for (const fn of functions(ctx.root)) {
+        if (isTestFunction(fn) || hasTestContext(fn)) continue;
+        const body = bodyOf(fn);
+        if (!body) continue;
+        const bodyStatements = statementsOf(body);
+        if (bodyStatements.length !== 1) continue;
+        const statement = bodyStatements[0];
+        if (!statement) continue;
+        const macro =
+          statement.type === 'macro_invocation'
+            ? statement
+            : statement.type === 'expression_statement'
+              ? statement.namedChildren[0]
+              : undefined;
+        if (!macro || macro.type !== 'macro_invocation' || !isStubMacro(macro)) continue;
+        drafts.push({
+          message: 'function is a stub that panics instead of returning a value',
+          start: startOf(fn),
+          end: endOf(fn),
+          snippet: snippetOf(ctx, fn),
+          evidence: ['the entire body is a todo/unimplemented placeholder'],
+          help: 'Implement the function, or return an explicit Result error so callers fail deliberately.',
+        });
+      }
+      return drafts;
+    },
+  };
+}
+
+function rustSwallowedErrorRule(): Rule {
+  return {
+    meta: {
+      id: 'rs/swallowed-error',
+      title: 'Swallowed Rust error',
+      summary: 'Finds an empty `if let Err(_) = ...` block that silently ignores a Result error.',
+      severity: 'warning',
+      confidence: 'high',
+      languages: ['rust'],
+      tags: ['errors'],
+    },
+    run(ctx) {
+      if (isGeneratedRust(ctx) || isTestPath(ctx.file)) return [];
+      const drafts: RuleDraft[] = [];
+      for (const node of descendantsOfType(ctx.root, ['if_expression'])) {
+        if (hasTestContext(node)) continue;
+        const condition = node.childForFieldName('condition');
+        const consequence = node.childForFieldName('consequence');
+        if (!condition || !consequence) continue;
+        if (!/^let\s+Err\s*\(/.test(condition.text)) continue;
+        if (statementsOf(consequence).length > 0) continue;
+        if (hasCommentBetween(ctx, startOf(consequence).line, endOf(consequence).line)) continue;
+        drafts.push({
+          message: 'an Err(_) result is matched but the failure branch is empty',
+          start: startOf(node),
+          end: endOf(node),
+          snippet: snippetOf(ctx, node),
+          evidence: ['the `if let Err(_)` block contains no statement'],
+          help: 'Handle the error with ?, log it, or propagate it; do not silently ignore it.',
+        });
+      }
+      return drafts;
+    },
+  };
+}
+
+export const rustRules: readonly Rule[] = [
+  rustPhantomImportRule(),
+  rustNoopTestRule(),
+  rustUnreachableRule(),
+  rustStubBodyRule(),
+  rustSwallowedErrorRule(),
+];

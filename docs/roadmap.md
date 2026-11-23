@@ -1,6 +1,6 @@
 # Development roadmap
 
-Status: **0.3.0 is the Go release candidate**. 0.2.10 maintenance shipped the encoding contract and release hardening. This roadmap is effort-based, not a promise of dates.
+Status: **0.3.1 is the Rust release candidate**. 0.2.10 maintenance shipped the encoding contract and release hardening; 0.3.0 added Go. This roadmap is effort-based, not a promise of dates.
 
 ## 1. Product thesis
 
@@ -21,13 +21,13 @@ Every roadmap decision should protect those advantages.
 
 | Area | State at 0.2.9 |
 | --- | --- |
-| Languages | Python, TypeScript/JavaScript, Go |
-| Rules | 22, all with negative tests |
+| Languages | Python, TypeScript/JavaScript, Go, Rust |
+| Rules | 28, all with negative tests |
 | Interfaces | CLI, JSON, SARIF, GitHub annotations, MCP, baseline, diff, suppression |
 | Autofix | Safe deletion of unreachable statements after `return` / `raise` / `break` / `continue` |
-| Benchmark | 1,115,270 Python/JS/AI lines: 43 high, 97.7% precision, 30/30 seeded; Go 1.24: 2,455,171 lines, 0 high |
+| Benchmark | 1,115,270 Python/JS/AI lines: 43 high, 97.7% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 635,245 lines, 0 high |
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
-| Release | npm `@voidh4x0r/slopgate`; latest published 0.2.9, 0.3.0 release candidate |
+| Release | npm `@voidh4x0r/slopgate`; latest published 0.2.10, 0.3.1 release candidate |
 
 The current limitations are documented in `README.md`. The biggest product gaps are language coverage, editor integration, semantic duplicate detection, and a benchmark that still under-represents JavaScript test theatre and bundled output.
 
@@ -115,7 +115,7 @@ Exit criteria:
 
 ### 0.3.1 - Rust support
 
-Goal: same bar as Go, with Rust-specific ownership and test idioms. Target: 3 to 5 weeks after 0.3.0.
+Goal: same bar as Go, with Rust-specific ownership and test idioms. **Status: implemented in 0.3.1; pending release validation.**
 
 Initial rules:
 

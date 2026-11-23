@@ -8,6 +8,7 @@ These `.wasm` files are tree-sitter parsers compiled for the [web-tree-sitter](h
 | `tree-sitter-typescript.wasm` | [tree-sitter/tree-sitter-typescript](https://github.com/tree-sitter/tree-sitter-typescript) | MIT |
 | `tree-sitter-tsx.wasm` | [tree-sitter/tree-sitter-typescript](https://github.com/tree-sitter/tree-sitter-typescript) | MIT |
 | `tree-sitter-go.wasm` | [tree-sitter/tree-sitter-go](https://github.com/tree-sitter/tree-sitter-go) | MIT |
+| `tree-sitter-rust.wasm` | [tree-sitter/tree-sitter-rust](https://github.com/tree-sitter/tree-sitter-rust) | MIT |
 
 (Tree-sitter itself is MIT licensed; the grammars carry their own MIT licenses, reproduced by their upstream repositories.)
 
@@ -26,5 +27,6 @@ cp package/out/tree-sitter-python.wasm grammars/
 cp package/out/tree-sitter-typescript.wasm grammars/
 cp package/out/tree-sitter-tsx.wasm grammars/
 cp package/out/tree-sitter-go.wasm grammars/
+cp package/out/tree-sitter-rust.wasm grammars/
 npm test
 ```

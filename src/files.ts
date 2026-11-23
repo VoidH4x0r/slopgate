@@ -20,6 +20,7 @@ export const DEFAULT_INCLUDE: readonly string[] = [
   '**/*.ts', '**/*.mts', '**/*.cts', '**/*.tsx',
   '**/*.js', '**/*.mjs', '**/*.cjs', '**/*.jsx',
   '**/*.go',
+  '**/*.rs',
 ];
 
 const EXTENSIONS: Readonly<
@@ -37,6 +38,7 @@ const EXTENSIONS: Readonly<
   '.mjs': { language: 'tsx', dialect: 'javascript' },
   '.cjs': { language: 'tsx', dialect: 'javascript' },
   '.go': { language: 'go', dialect: 'go' },
+  '.rs': { language: 'rust', dialect: 'rust' },
 };
 
 const MAX_FILE_BYTES = 1024 * 1024;

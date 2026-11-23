@@ -1,7 +1,7 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import type { Dirent } from 'node:fs';
 import * as path from 'node:path';
-import type { GoDeps, NodeDeps, ProjectDeps, PythonDeps } from './types.ts';
+import type { GoDeps, NodeDeps, ProjectDeps, PythonDeps, RustDeps } from './types.ts';
 
 /** PEP 503 normalization: lowercase, runs of `[-_.]` collapse to `-`. */
 export function normalizePythonName(name: string): string {
@@ -302,7 +302,7 @@ const PYTHON_MANIFESTS = [
   'environment.yml', 'environment.yaml',
 ];
 
-export const PROJECT_MARKERS = [...PYTHON_MANIFESTS, 'package.json', 'go.mod'];
+export const PROJECT_MARKERS = [...PYTHON_MANIFESTS, 'package.json', 'go.mod', 'Cargo.toml'];
 
 async function hasProjectMarker(dir: string): Promise<boolean> {
   for (const marker of PROJECT_MARKERS) {
@@ -479,6 +479,52 @@ async function loadGoDeps(root: string): Promise<GoDeps> {
     ...(parsed.module ? { module: parsed.module } : {}),
     requires: new Set(parsed.requires),
     manifests: ['go.mod'],
+  };
+}
+
+/** Parse direct dependency names from Cargo.toml (best effort, no TOML library). */
+export function parseCargoTomlText(text: string): { crateName?: string; dependencies: string[] } {
+  let crateName: string | undefined;
+  const dependencies: string[] = [];
+  let section = '';
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.replace(/#.*$/, '').trim();
+    if (!line) continue;
+    const sectionMatch = /^\[([^\]]+)\]$/.exec(line);
+    if (sectionMatch?.[1]) {
+      section = sectionMatch[1].trim();
+      continue;
+    }
+    if (section === 'package') {
+      const name = /^name\s*=\s*"([^"]+)"/.exec(line);
+      if (name?.[1]) crateName = name[1];
+      continue;
+    }
+    const dependencySection =
+      section === 'dependencies' ||
+      section === 'dev-dependencies' ||
+      section === 'build-dependencies' ||
+      section === 'workspace.dependencies' ||
+      /(?:^|\.)dependencies$/.test(section);
+    if (!dependencySection) continue;
+    const key = /^(?:"([^"]+)"|([A-Za-z0-9_-]+))\s*=/.exec(line);
+    if (key?.[1] ?? key?.[2]) dependencies.push(key[1] ?? key[2] ?? '');
+  }
+  return { ...(crateName ? { crateName } : {}), dependencies };
+}
+
+async function loadRustDeps(root: string): Promise<RustDeps> {
+  const manifest = path.join(root, 'Cargo.toml');
+  const text = await readIfExists(manifest);
+  if (text === undefined) {
+    return { dependencies: new Set<string>(), localModules: new Set<string>(), manifests: [] };
+  }
+  const parsed = parseCargoTomlText(text);
+  return {
+    ...(parsed.crateName ? { crateName: parsed.crateName } : {}),
+    dependencies: new Set(parsed.dependencies),
+    localModules: new Set<string>(),
+    manifests: ['Cargo.toml'],
   };
 }
 
@@ -761,10 +807,11 @@ async function loadNodeDeps(root: string): Promise<NodeDeps> {
 
 export async function loadProjectDeps(root: string): Promise<ProjectDeps> {
   const absRoot = path.resolve(root);
-  const [python, node, go] = await Promise.all([
+  const [python, node, go, rust] = await Promise.all([
     loadPythonDeps(absRoot),
     loadNodeDeps(absRoot),
     loadGoDeps(absRoot),
+    loadRustDeps(absRoot),
   ]);
-  return { root: absRoot, python, node, go, ignoredModules: new Set<string>() };
+  return { root: absRoot, python, node, go, rust, ignoredModules: new Set<string>() };
 }

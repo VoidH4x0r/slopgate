@@ -49,7 +49,7 @@ function parseArgs(argv) {
 }
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'out', 'target', 'venv', '.venv', '__pycache__', '.mypy_cache', 'site-packages', 'coverage']);
-const SOURCE_EXT = /\.(py|pyi|ts|tsx|mts|cts|js|jsx|mjs|cjs|go)$/;
+const SOURCE_EXT = /\.(py|pyi|ts|tsx|mts|cts|js|jsx|mjs|cjs|go|rs)$/;
 
 async function countLines(dir) {
   let files = 0;

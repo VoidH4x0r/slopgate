@@ -6,6 +6,7 @@ import test from 'node:test';
 import {
   loadProjectDeps,
   normalizePythonName,
+  parseCargoTomlText,
   parseGoModText,
   parsePythonManifestText,
   requirementName,
@@ -174,6 +175,32 @@ test('parseGoModText handles single-line and block require directives', () => {
   ].join('\n'));
   assert.equal(parsed.module, 'example.com/x');
   assert.deepEqual(parsed.requires, ['github.com/a/b', 'github.com/c/d', 'github.com/e/f']);
+});
+
+test('loadProjectDeps reads Cargo.toml dependencies', async () => {
+  const deps = await loadProjectDeps(path.join(FIXTURES, 'rust-demo'));
+  assert.equal(deps.rust.crateName, 'rust-demo');
+  assert.deepEqual([...deps.rust.dependencies], ['serde']);
+  assert.deepEqual(deps.rust.manifests, ['Cargo.toml']);
+});
+
+test('parseCargoTomlText handles dependency tables and package-name aliases', () => {
+  const parsed = parseCargoTomlText([
+    '[package]',
+    'name = "demo"',
+    '',
+    '[dependencies]',
+    'serde = { version = "1" }',
+    'tokio = { version = "1", features = ["rt"] }',
+    '',
+    '[dev-dependencies]',
+    'tempfile = "3"',
+    '',
+    '[target.\'cfg(unix)\'.dependencies]',
+    'libc = "0.2"',
+  ].join('\n'));
+  assert.equal(parsed.crateName, 'demo');
+  assert.deepEqual(parsed.dependencies.sort(), ['libc', 'serde', 'tempfile', 'tokio']);
 });
 
 test('loadProjectDeps expands a tsconfig baseUrl into import aliases', async () => {

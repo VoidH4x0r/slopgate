@@ -8,7 +8,7 @@ Thanks for taking the time. This project has one rule above all others: **a find
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test           # 364 tests, ~0.5s, no network, no subprocesses inside the tests
+npm test           # 378 tests, ~0.5s, no network, no subprocesses inside the tests
 npm run typecheck
 npm run verify     # typecheck + links + tests + build + self-scan + package check
 npm run build      # emits dist/ used by the published package
@@ -44,18 +44,19 @@ src/
     python.ts       Python file rules
     typescript.ts   TS/JS file rules
     go.ts            Go file rules
+    rust.ts          Rust file rules
     duplicates.ts   cross-file duplicate-block rules
     fixes.ts        safe statement-deletion edits
     helpers.ts      shared AST utilities
   fix.ts            atomic safe-fix writer
   reporters/        pretty, json, sarif, github annotations
-grammars/           bundled tree-sitter WASM (python, typescript, tsx, go)
+grammars/           bundled tree-sitter WASM (python, typescript, tsx, go, rust)
 fixtures/           small repositories used by the integration tests
 ```
 
 ## Adding a rule
 
-1. Add the rule to `src/rules/python.ts`, `src/rules/typescript.ts` or `src/rules/go.ts`. Cross-file rules use the `ProjectRule` API in `src/rules/duplicates.ts` and must be registered in `PROJECT_RULES` in `src/rules/index.ts`; `ALL_RULE_METAS` must include every rule for `slopgate rules`, config validation and SARIF.
+1. Add the rule to `src/rules/python.ts`, `src/rules/typescript.ts`, `src/rules/go.ts` or `src/rules/rust.ts`. Cross-file rules use the `ProjectRule` API in `src/rules/duplicates.ts` and must be registered in `PROJECT_RULES` in `src/rules/index.ts`; `ALL_RULE_METAS` must include every rule for `slopgate rules`, config validation and SARIF.
 
 ```ts
 const noReturnValue: Rule = {

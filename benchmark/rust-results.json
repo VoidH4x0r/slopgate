@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T02:14:50.287Z",
+  "slopgateVersion": "0.3.1",
+  "nodeVersion": "v24.19.0",
+  "corpora": [
+    {
+      "name": "rust-stdlib",
+      "digest": "fce4df135e171390",
+      "files": 1494,
+      "lines": 635245,
+      "durationMs": 38585,
+      "findings": 481,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 157,
+      "byRule": {
+        "rs/phantom-import": {
+          "high": 0,
+          "medium": 342,
+          "low": 0
+        },
+        "rs/duplicate-block": {
+          "high": 0,
+          "medium": 139,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    }
+  ],
+  "staleLabels": [],
+  "unlabeledHigh": []
+}

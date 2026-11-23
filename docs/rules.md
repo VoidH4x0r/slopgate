@@ -31,6 +31,12 @@ Every rule runs on a real AST (tree-sitter), reports a **confidence**, and has a
 | [`go/stub-body`](#gostub-body) | Go | warning | high |
 | [`go/swallowed-error`](#goswallowed-error) | Go | warning | high |
 | [`go/duplicate-block`](#goduplicate-block) | Go | warning | medium |
+| [`rs/phantom-import`](#rsphantom-import) | Rust | error | medium |
+| [`rs/noop-test`](#rsnoop-test) | Rust | warning | high |
+| [`rs/unreachable`](#rsunreachable) | Rust | error | high |
+| [`rs/stub-body`](#rsstub-body) | Rust | warning | high |
+| [`rs/swallowed-error`](#rsswallowed-error) | Rust | warning | high |
+| [`rs/duplicate-block`](#rsduplicate-block) | Rust | warning | medium |
 
 ---
 
@@ -316,5 +322,57 @@ import (
 **What it catches.** The same normalized function or method body in two or more Go files. Comments and whitespace are ignored; identifiers and literals are preserved. A body must span at least **6 lines** and contain at least **15 leaf tokens**.
 
 **Not reported.** Test files, generated files, platform-specific files, single-file copies, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
+
+**Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations.
+
+---
+
+## rs/phantom-import
+
+**What it catches.** A `use` path whose first segment is neither a Rust standard root (`std`, `core`, `alloc`, `proc_macro`, `test`), `crate`/`self`/`super`, a dependency declared in `Cargo.toml`, nor a local module discovered under the project.
+
+**Confidence is `medium` by design.** Without name resolution, a lowercase first segment can be a local module or enum variant imported through a re-export. Uppercase roots are treated as local types and skipped. No `Cargo.toml` means the rule stays silent rather than guessing.
+
+**Not reported.** `use crate::...`, `use self::...`, `use super::...`, std/core/alloc, dependencies, local modules, uppercase local types, test files, generated files, and ignored modules.
+
+---
+
+## rs/noop-test
+
+**What it catches.** A `#[test]` function with an empty body and no explanatory comment.
+
+**Not reported.** Tests with any statement (including assertions and helper calls), `#[ignore]`, `#[should_panic]`, generated files, and tests with a nearby comment.
+
+---
+
+## rs/unreachable
+
+**What it catches.** Statements after `return`, `break` or `continue` in the same Rust block.
+
+**Not reported.** Test functions and `#[cfg(test)]` modules, generated files, items declared after the exit (Rust hoists function/struct/enum/mod/const/static/use items and they are not executed in source order), and code after `panic!` (not treated as an unconditional terminator).
+
+---
+
+## rs/stub-body
+
+**What it catches.** A function whose entire body is exactly `todo!()`, `unimplemented!()`, or `panic!("not implemented"|"unimplemented"|"TODO")`.
+
+**Not reported.** Empty functions, other panic messages, test functions, generated files, and Rust `sys/` platform backends that intentionally expose unimplemented operations on unsupported targets.
+
+---
+
+## rs/swallowed-error
+
+**What it catches.** An empty `if let Err(_) = ...` block that silently ignores a `Result` error.
+
+**Not reported.** Branches that handle the error, comments in the branch, test functions/`#[cfg(test)]` modules, and generated files. The rule does not flag `let _ = result;`, which is often deliberate destruction.
+
+---
+
+## rs/duplicate-block
+
+**What it catches.** The same normalized function body in two or more Rust files. Comments and whitespace are ignored; identifiers and literals are preserved. A body must span at least **6 lines** and contain at least **15 leaf tokens**.
+
+**Not reported.** Test files, generated files, single-file copies, bodies below the threshold, files with syntax errors, and semantic clones with renamed identifiers.
 
 **Confidence.** `medium`: duplication can be intentional boilerplate. Each file's representative occurrence is reported with the other locations.

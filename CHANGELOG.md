@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-23
+
+### Added
+- Rust support: tree-sitter-rust grammar, `.rs` discovery, `Cargo.toml` dependency/package parsing, Rust project roots, local module indexing, and Rust dependency context.
+- Six Rust rules: `rs/phantom-import`, `rs/noop-test`, `rs/unreachable`, `rs/stub-body`, `rs/swallowed-error`, and `rs/duplicate-block`.
+- 20 Rust fixtures, including generated-file, `#[test]`/`#[cfg(test)]`, macro, async and workspace-adjacent negative cases.
+- Rust benchmark corpus: 1,494 files / 635,245 lines of Rust 1.83 `rust-src`, **0 high findings**, recorded in `benchmark/rust-results.json`.
+
+### Changed
+- 28 rules across Python, TypeScript/JavaScript, Go and Rust; 378 tests.
+- Python/JS benchmark remains **43 high / 97.7% (42/43) / 30/30 seeded**; stale labels and unlabeled high findings remain empty.
+- `rs/phantom-import` is medium confidence because Rust name resolution cannot be reproduced from a single file; uppercase roots and local modules are accepted.
+- Rust precision guards: empty tests with comments/ignore are skipped; unreachable skips test contexts and hoisted items; stub skips test and `sys/` platform backends; swallowed-error only flags empty `if let Err(_)`.
+
 ## [0.3.0] - 2026-11-23
 
 ### Added

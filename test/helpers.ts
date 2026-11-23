@@ -24,6 +24,10 @@ export interface DepsOverrides {
   goModule?: string;
   goRequires?: string[];
   goManifests?: string[];
+  rustCrate?: string;
+  rustDependencies?: string[];
+  rustLocal?: string[];
+  rustManifests?: string[];
   ignored?: string[];
 }
 
@@ -46,6 +50,12 @@ export function makeDeps(overrides: DepsOverrides = {}): ProjectDeps {
       ...(overrides.goModule ? { module: overrides.goModule } : {}),
       requires: new Set(overrides.goRequires ?? []),
       manifests: overrides.goManifests ?? [],
+    },
+    rust: {
+      ...(overrides.rustCrate ? { crateName: overrides.rustCrate } : {}),
+      dependencies: new Set(overrides.rustDependencies ?? []),
+      localModules: new Set(overrides.rustLocal ?? []),
+      manifests: overrides.rustManifests ?? [],
     },
     ignoredModules: new Set(overrides.ignored ?? []),
   };

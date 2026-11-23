@@ -6,6 +6,7 @@ import type { LanguageId, ProjectDeps } from './types.ts';
 
 const MAX_WALK_DEPTH = 12;
 const PYTHON_FILE = /\.pyi?$/;
+const RUST_FILE = /\.rs$/;
 const VALID_MODULE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 async function hasPythonFiles(dir: string, depth = 0): Promise<boolean> {
@@ -62,6 +63,16 @@ function addPythonModule(localModules: Set<string>, relative: string): void {
   if (VALID_MODULE.test(stem)) localModules.add(stem);
 }
 
+function addRustModule(localModules: Set<string>, relative: string): void {
+  const parts = toPosix(relative).split('/');
+  const fileName = parts.pop() ?? '';
+  for (const dir of parts) {
+    if (VALID_MODULE.test(dir)) localModules.add(dir);
+  }
+  const stem = fileName.replace(RUST_FILE, '');
+  if (VALID_MODULE.test(stem)) localModules.add(stem);
+}
+
 /**
  * Indexes project directories and Python module names under one root. Project
  * dependencies are loaded lazily, only for files that actually reach them.
@@ -76,6 +87,7 @@ export async function loadProjectRegistry(
   const excludeRe = (options.exclude ?? []).map(globToRegExp);
   const ignoredModules = new Set(options.ignoreModules ?? []);
   const localModules = new Set<string>();
+  const rustModules = new Set<string>();
   const projectDirs = new Set<string>();
   const projectCheckCache = new Map<string, boolean>();
   const depsCache = new Map<string, Promise<ProjectDeps>>();
@@ -113,6 +125,9 @@ export async function loadProjectRegistry(
       }
       if (entry.isFile() && PYTHON_FILE.test(entry.name) && !isExcluded(abs, false)) {
         addPythonModule(localModules, path.relative(scope, abs));
+      }
+      if (entry.isFile() && RUST_FILE.test(entry.name) && !isExcluded(abs, false)) {
+        addRustModule(rustModules, path.relative(scope, abs));
       }
     }
   }
@@ -159,6 +174,7 @@ export async function loadProjectRegistry(
     if (!pending) {
       pending = loadProjectDeps(dir).then((deps) => {
         deps.python.localModules = localModules;
+        deps.rust.localModules = rustModules;
         deps.ignoredModules = ignoredModules;
         return deps;
       });
@@ -172,7 +188,9 @@ export async function loadProjectRegistry(
       ? deps.python.manifests.length > 0
       : language === 'go'
         ? deps.go.manifests.length > 0
-        : deps.node.hasPackageJson;
+        : language === 'rust'
+          ? deps.rust.manifests.length > 0
+          : deps.node.hasPackageJson;
 
   const fallback = (): Promise<ProjectDeps> => loadProject(fallbackDir);
 
@@ -206,7 +224,7 @@ export async function loadProjectRegistry(
       return fallback();
     },
     async missingPackageJson(fileAbs: string, language: LanguageId): Promise<string | undefined> {
-      if (language === 'python' || language === 'go') return undefined;
+      if (language === 'python' || language === 'go' || language === 'rust') return undefined;
       const deps = await registry.depsFor(fileAbs, language);
       if (deps.node.hasPackageJson) return undefined;
       const project = deps.root;

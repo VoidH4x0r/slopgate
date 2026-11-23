@@ -10,6 +10,7 @@ const GRAMMARS: Readonly<Record<LanguageId, string>> = {
   typescript: 'tree-sitter-typescript.wasm',
   tsx: 'tree-sitter-tsx.wasm',
   go: 'tree-sitter-go.wasm',
+  rust: 'tree-sitter-rust.wasm',
 };
 
 let initPromise: Promise<void> | undefined;
