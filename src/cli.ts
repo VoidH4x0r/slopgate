@@ -448,7 +448,11 @@ async function runMcp(options: Options, cwd: string): Promise<number> {
 function scopeBoundary(scanBase: string, repoRoot: string | undefined, cwd: string): string {
   if (repoRoot) return repoRoot;
   const relative = path.relative(cwd, scanBase);
-  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))
+  return (
+    relative === '' ||
+    (!(relative === '..' || relative.startsWith('../') || relative.startsWith('..\\')) &&
+      !path.isAbsolute(relative))
+  )
     ? cwd
     : scanBase;
 }

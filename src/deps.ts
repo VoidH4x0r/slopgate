@@ -410,7 +410,7 @@ export async function resolveProjectRoot(
   const stop = repoRoot ? path.resolve(repoRoot) : dir;
   if (repoRoot) {
     const relative = path.relative(stop, dir);
-    if (relative.startsWith('..') || path.isAbsolute(relative)) return dir;
+    if ((relative === '..' || relative.startsWith('../') || relative.startsWith('..\\') || path.isAbsolute(relative))) return dir;
   }
 
   for (;;) {
@@ -483,7 +483,7 @@ async function loadPythonDeps(root: string): Promise<PythonDeps> {
     if (manifestsSeen.has(normalized)) return;
     const abs = path.resolve(root, normalized);
     const relative = path.relative(root, abs);
-    if (relative.startsWith('..') || path.isAbsolute(relative)) return;
+    if ((relative === '..' || relative.startsWith('../') || relative.startsWith('..\\') || path.isAbsolute(relative))) return;
     const text = await readIfExists(abs);
     if (text === undefined) return;
     manifestsSeen.add(normalized);
@@ -494,7 +494,10 @@ async function loadPythonDeps(root: string): Promise<PythonDeps> {
     for (const include of requirementsIncludes(text)) {
       const child = path.resolve(path.dirname(abs), include);
       const childRel = path.relative(root, child).replace(/\\/g, '/');
-      if (!childRel.startsWith('..') && !path.isAbsolute(childRel)) {
+      if (
+        !(childRel === '..' || childRel.startsWith('../') || childRel.startsWith('..\\')) &&
+        !path.isAbsolute(childRel)
+      ) {
         await readRequirementsFile(childRel, stack);
       }
     }

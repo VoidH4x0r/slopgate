@@ -95,7 +95,7 @@ export async function loadProjectRegistry(
 
   const relativeToExcludeRoot = (abs: string): string => {
     const relative = toPosix(path.relative(excludeRoot, abs));
-    return relative.startsWith('..') || path.isAbsolute(relative) ? '' : relative;
+    return (relative === '..' || relative.startsWith('../') || relative.startsWith('..\\') || path.isAbsolute(relative)) ? '' : relative;
   };
   const isExcluded = (abs: string, directory: boolean): boolean => {
     const relative = relativeToExcludeRoot(abs);
@@ -164,7 +164,7 @@ export async function loadProjectRegistry(
       const parent = path.dirname(dir);
       if (parent === dir) break;
       const relative = path.relative(lookup, parent);
-      if (relative.startsWith('..') || path.isAbsolute(relative)) break;
+      if ((relative === '..' || relative.startsWith('../') || relative.startsWith('..\\') || path.isAbsolute(relative))) break;
       dir = parent;
     }
   }

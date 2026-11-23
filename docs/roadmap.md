@@ -27,7 +27,7 @@ Every roadmap decision should protect those advantages.
 | Autofix | Safe deletion of unreachable statements after `return` / `raise` / `break` / `continue` |
 | Benchmark | 1,115,270 Python/JS/AI lines: 42 high, 97.6% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 635,245 lines, 0 high |
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
-| Release | npm `@voidh4x0r/slopgate`; latest published 1.0.1, 1.0.2 review-hardened candidate; VS Code extension 0.1.0 |
+| Release | npm `@voidh4x0r/slopgate`; latest published 1.0.1, 1.0.2 review-hardened candidate; VS Code extension 0.1.1 |
 
 The current limitations are documented in `README.md`. The biggest product gaps are language coverage, editor integration, semantic duplicate detection, and a benchmark that still under-represents JavaScript test theatre and bundled output.
 

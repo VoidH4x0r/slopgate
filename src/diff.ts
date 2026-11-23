@@ -202,7 +202,7 @@ export function isInDiff(finding: Finding, set: DiffSet): boolean {
  */
 export function isInDiffWithPrefix(finding: Finding, set: DiffSet, prefix: string): boolean {
   const clean = prefix.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, '');
-  if (clean.length === 0 || clean.startsWith('..')) return isInDiff(finding, set);
+  if (clean.length === 0 || (clean === '..' || clean.startsWith('../') || clean.startsWith('..\\'))) return isInDiff(finding, set);
   const prefixed = { ...finding, file: `${clean}/${finding.file}` };
   if (isInDiff(prefixed, set)) return true;
   // A caller that already passes repo-relative findings must not be

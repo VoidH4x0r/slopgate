@@ -2,7 +2,7 @@
   "name": "slopgate-vscode",
   "displayName": "slopgate",
   "description": "Precision-first structural diagnostics for AI-written Python, TypeScript, Go and Rust.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "voidh4x0r",
   "type": "commonjs",
   "license": "MIT",

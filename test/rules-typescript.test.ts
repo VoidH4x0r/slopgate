@@ -130,6 +130,25 @@ test('ts/noop-test recognizes t.assert, tape members and bare assert imports', a
   }
 });
 
+test('ts/noop-test recognizes destructuring require aliases', async () => {
+  const source = [
+    "const { strictEqual: eq } = require('assert');",
+    "test('x', () => { eq(1, 1); });",
+    '',
+  ].join('\n');
+  assert.deepEqual(await runRule('ts/noop-test', source, 'typescript'), []);
+});
+
+test('ts/noop-test accepts Tape subtests as a test structure', async () => {
+  const source = [
+    "test('parent', (t) => {",
+    "  t.test('child', (st) => { st.equal(1, 1); });",
+    '});',
+    '',
+  ].join('\n');
+  assert.deepEqual(await runRule('ts/noop-test', source, 'typescript'), []);
+});
+
 test('ts/noop-test skips a todo reason string', async () => {
   assert.deepEqual(
     await runRule('ts/noop-test', "test('x', { todo: 'later' }, () => {});\n", 'typescript'),

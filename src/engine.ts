@@ -171,7 +171,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
     byLanguage[file.dialect] += 1;
     const reportRelative = toPosix(path.relative(reportRoot, file.abs));
     const findingFile =
-      reportRelative.startsWith('..') || path.isAbsolute(reportRelative)
+      (reportRelative === '..' || reportRelative.startsWith('../') || reportRelative.startsWith('..\\')) || path.isAbsolute(reportRelative)
         ? file.rel
         : reportRelative;
     scannedFiles.push(findingFile);

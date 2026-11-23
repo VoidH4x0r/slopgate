@@ -107,6 +107,11 @@ const NODE_ASSERT_SPECIFIERS = new Set([
 ]);
 
 function addAssertBinding(aliases: Set<string>, part: string): void {
+  const colon = /^\s*([A-Za-z_$][\w$]*)\s*:\s*([A-Za-z_$][\w$]*)/.exec(part);
+  if (colon?.[2]) {
+    aliases.add(colon[2]);
+    return;
+  }
   const match = /^\s*(?:type\s+)?([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?\s*$/.exec(part);
   if (match?.[1]) aliases.add(match[2] ?? match[1]);
 }
@@ -181,6 +186,9 @@ const T_ASSERTION_MEMBERS = new Set([
   'doesNotMatch',
   'notSame',
   'assertion',
+  'test',
+  'run',
+  'teardown',
 ]);
 
 /**
