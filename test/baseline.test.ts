@@ -141,11 +141,17 @@ test('mergeBaseline preserves entries outside the scanned files and rules', asyn
   }
 });
 
+test('fingerprint includes the finding message when snippets share a first line', () => {
+  const one = makeFinding({ snippet: 'import {', message: '`ghost-one` is not declared' });
+  const two = makeFinding({ snippet: 'import {', message: '`ghost-two` is not declared' });
+  assert.notEqual(findingFingerprint(one), findingFingerprint(two));
+});
+
 test('loadBaseline rejects a malformed file', async () => {
   const dir = await mkdtemp(path.join(HERE, '.tmp-bad-'));
   try {
     const file = path.join(dir, 'bad.json');
-    await writeFile(file, '{"version":2,"entries":[]}', 'utf8');
+    await writeFile(file, '{"version":99,"entries":[]}', 'utf8');
     await assert.rejects(() => loadBaseline(file), /not a valid baseline/);
   } finally {
     await rm(dir, { recursive: true, force: true });

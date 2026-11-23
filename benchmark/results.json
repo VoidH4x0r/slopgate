@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:48:48.880Z",
+  "generatedAt": "2026-11-23T08:16:36.457Z",
   "slopgateVersion": "1.0.2",
   "nodeVersion": "v24.19.0",
   "labelsFile": "benchmark/labels.json",
@@ -10,7 +10,7 @@
       "digest": "027f952580cd6622",
       "files": 1845,
       "lines": 991705,
-      "durationMs": 12478,
+      "durationMs": 12473,
       "findings": 6556,
       "high": 29,
       "suppressed": 0,
@@ -78,7 +78,7 @@
       },
       "findingsList": [
         {
-          "fingerprint": "d8e897c1e58a4ae6",
+          "fingerprint": "e99df4770a40837b",
           "ruleId": "py/swallowed-exception",
           "file": "_pyrepl/reader.py",
           "line": 692,
@@ -86,7 +86,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "d8e897c1e58a4ae6",
+          "fingerprint": "e99df4770a40837b",
           "ruleId": "py/swallowed-exception",
           "file": "_pyrepl/reader.py",
           "line": 699,
@@ -94,7 +94,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "b38c94da5e487d08",
+          "fingerprint": "be3e308027263ba8",
           "ruleId": "py/swallowed-exception",
           "file": "_pyrepl/simple_interact.py",
           "line": 137,
@@ -102,7 +102,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "d5a26a54eb9e9312",
+          "fingerprint": "ea3703d98cb12ae1",
           "ruleId": "py/swallowed-exception",
           "file": "_sitebuiltins.py",
           "line": 24,
@@ -110,7 +110,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "94bb1860c88c8c10",
+          "fingerprint": "97a27d39cc5d36ee",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/debugger.py",
           "line": 266,
@@ -118,7 +118,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "815c91cc58f96bae",
+          "fingerprint": "d22ee63f0257719d",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/debugobj.py",
           "line": 102,
@@ -126,7 +126,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "e598848ed8006a4c",
+          "fingerprint": "aff32e3a24f5b921",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/pyshell.py",
           "line": 200,
@@ -134,7 +134,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "e598848ed8006a4c",
+          "fingerprint": "aff32e3a24f5b921",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/pyshell.py",
           "line": 207,
@@ -142,7 +142,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "e598848ed8006a4c",
+          "fingerprint": "aff32e3a24f5b921",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/pyshell.py",
           "line": 222,
@@ -150,7 +150,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "e598848ed8006a4c",
+          "fingerprint": "aff32e3a24f5b921",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/pyshell.py",
           "line": 509,
@@ -158,7 +158,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "e598848ed8006a4c",
+          "fingerprint": "aff32e3a24f5b921",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/pyshell.py",
           "line": 1217,
@@ -166,7 +166,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "e598848ed8006a4c",
+          "fingerprint": "aff32e3a24f5b921",
           "ruleId": "py/swallowed-exception",
           "file": "idlelib/pyshell.py",
           "line": 1270,
@@ -174,7 +174,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "a2466de075c3bb04",
+          "fingerprint": "ddef68b7622cfbf9",
           "ruleId": "py/swallowed-exception",
           "file": "imaplib.py",
           "line": 1535,
@@ -182,7 +182,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "c0b8395fe4e0d495",
+          "fingerprint": "dce9b39f0b7a3ba5",
           "ruleId": "py/swallowed-exception",
           "file": "logging/__init__.py",
           "line": 384,
@@ -190,7 +190,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "6dbead5f4586824b",
+          "fingerprint": "c5eea2c9a90152fb",
           "ruleId": "py/swallowed-exception",
           "file": "multiprocessing/managers.py",
           "line": 224,
@@ -198,7 +198,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "6dbead5f4586824b",
+          "fingerprint": "c5eea2c9a90152fb",
           "ruleId": "py/swallowed-exception",
           "file": "multiprocessing/managers.py",
           "line": 676,
@@ -206,7 +206,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "04f955297bbd0003",
+          "fingerprint": "3b6c028a6e8d8645",
           "ruleId": "py/swallowed-exception",
           "file": "multiprocessing/resource_tracker.py",
           "line": 240,
@@ -214,7 +214,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "04f955297bbd0003",
+          "fingerprint": "3b6c028a6e8d8645",
           "ruleId": "py/swallowed-exception",
           "file": "multiprocessing/resource_tracker.py",
           "line": 432,
@@ -222,7 +222,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "15781f099d869458",
+          "fingerprint": "b8f3fd3ad9dc9060",
           "ruleId": "py/swallowed-exception",
           "file": "multiprocessing/resource_tracker.py",
           "line": 462,
@@ -230,7 +230,7 @@
           "snippet": "except:"
         },
         {
-          "fingerprint": "04f955297bbd0003",
+          "fingerprint": "3b6c028a6e8d8645",
           "ruleId": "py/swallowed-exception",
           "file": "multiprocessing/resource_tracker.py",
           "line": 480,
@@ -238,7 +238,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "43215991ab4b349e",
+          "fingerprint": "a0c5fd7c8e0fb7b6",
           "ruleId": "py/swallowed-exception",
           "file": "pdb.py",
           "line": 633,
@@ -246,7 +246,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "43215991ab4b349e",
+          "fingerprint": "a0c5fd7c8e0fb7b6",
           "ruleId": "py/swallowed-exception",
           "file": "pdb.py",
           "line": 2272,
@@ -254,7 +254,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "43215991ab4b349e",
+          "fingerprint": "a0c5fd7c8e0fb7b6",
           "ruleId": "py/swallowed-exception",
           "file": "pdb.py",
           "line": 2280,
@@ -262,7 +262,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "209edb6a378f76c2",
+          "fingerprint": "e713b9e295e2b17a",
           "ruleId": "py/phantom-import",
           "file": "platform.py",
           "line": 544,
@@ -270,7 +270,7 @@
           "snippet": "from java.lang import System"
         },
         {
-          "fingerprint": "7bbe6aa7dfe2aa6f",
+          "fingerprint": "9ec8bb73160bf9b4",
           "ruleId": "py/tautological-assert",
           "file": "test/_code_definitions.py",
           "line": 3,
@@ -278,7 +278,7 @@
           "snippet": "assert True"
         },
         {
-          "fingerprint": "4a3eacd0bab8df74",
+          "fingerprint": "4059fe3dd4e25593",
           "ruleId": "py/tautological-assert",
           "file": "test/test_import/__init__.py",
           "line": 2813,
@@ -286,7 +286,7 @@
           "snippet": "assert mod.__dict__ == mod.__dict__"
         },
         {
-          "fingerprint": "61ab19eec2f04703",
+          "fingerprint": "a99742aa5dc6e21d",
           "ruleId": "py/tautological-assert",
           "file": "test/test_zipfile/_path/test_path.py",
           "line": 543,
@@ -294,7 +294,7 @@
           "snippet": "assert (root / \"a.txt\") == (root / \"a.txt\")"
         },
         {
-          "fingerprint": "67061844d588a19a",
+          "fingerprint": "e73dd15911dab3a8",
           "ruleId": "py/swallowed-exception",
           "file": "turtle.py",
           "line": 658,
@@ -302,7 +302,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "c8ca13215b952bce",
+          "fingerprint": "017b04e2ef41ac1c",
           "ruleId": "py/swallowed-exception",
           "file": "turtledemo/lindenmayer.py",
           "line": 42,
@@ -320,7 +320,7 @@
       "digest": "d2b720bf4294881f",
       "files": 7,
       "lines": 2783,
-      "durationMs": 45,
+      "durationMs": 43,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -370,7 +370,7 @@
       "digest": "4c7472ad58bd8a01",
       "files": 111,
       "lines": 8363,
-      "durationMs": 193,
+      "durationMs": 192,
       "findings": 13,
       "high": 0,
       "suppressed": 0,
@@ -431,7 +431,7 @@
       "digest": "a1904525101c27be",
       "files": 7,
       "lines": 4225,
-      "durationMs": 69,
+      "durationMs": 72,
       "findings": 4,
       "high": 0,
       "suppressed": 0,
@@ -493,7 +493,7 @@
       "digest": "8d19ccdb8205985c",
       "files": 409,
       "lines": 100880,
-      "durationMs": 1574,
+      "durationMs": 1540,
       "findings": 63,
       "high": 0,
       "suppressed": 0,
@@ -534,7 +534,7 @@
       "digest": "dc4dc56c06b64fb8",
       "files": 7,
       "lines": 2217,
-      "durationMs": 54,
+      "durationMs": 46,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -559,7 +559,7 @@
       "digest": "53ba47a2d90b26ae",
       "files": 5,
       "lines": 198,
-      "durationMs": 8,
+      "durationMs": 7,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -584,7 +584,7 @@
       "digest": "95d85ff450c21ede",
       "files": 20,
       "lines": 93,
-      "durationMs": 11,
+      "durationMs": 12,
       "findings": 16,
       "high": 13,
       "suppressed": 0,
@@ -732,7 +732,7 @@
       },
       "findingsList": [
         {
-          "fingerprint": "dd9e5a523805b94d",
+          "fingerprint": "64865e3937d15c61",
           "ruleId": "py/dead-branch",
           "file": "python/dead_branch.py",
           "line": 2,
@@ -740,7 +740,7 @@
           "snippet": "if False:"
         },
         {
-          "fingerprint": "620b3321c117c8cf",
+          "fingerprint": "c990c2430d4fb356",
           "ruleId": "py/stub-body",
           "file": "python/decorated_route.py",
           "line": 2,
@@ -748,7 +748,7 @@
           "snippet": "def health():"
         },
         {
-          "fingerprint": "eb5795ab2bf3312b",
+          "fingerprint": "dde717299d077791",
           "ruleId": "py/phantom-import",
           "file": "python/phantom_import.py",
           "line": 1,
@@ -756,7 +756,7 @@
           "snippet": "import ai_sdk"
         },
         {
-          "fingerprint": "7df5892d92b16181",
+          "fingerprint": "46587a231bfc8a29",
           "ruleId": "py/stub-body",
           "file": "python/stub_service.py",
           "line": 1,
@@ -764,7 +764,7 @@
           "snippet": "def persist_invoice(invoice):"
         },
         {
-          "fingerprint": "8b6186944f16ac79",
+          "fingerprint": "e710243451115ca0",
           "ruleId": "py/swallowed-exception",
           "file": "python/swallow.py",
           "line": 4,
@@ -772,7 +772,7 @@
           "snippet": "except Exception as error:"
         },
         {
-          "fingerprint": "f4eb059290dee024",
+          "fingerprint": "03a39810b38af50e",
           "ruleId": "py/tautological-assert",
           "file": "python/tautology.py",
           "line": 2,
@@ -780,7 +780,7 @@
           "snippet": "assert True"
         },
         {
-          "fingerprint": "e8de419045b8e3a2",
+          "fingerprint": "3e67e8f094aac486",
           "ruleId": "py/noop-test",
           "file": "python/tests/test_checkout.py",
           "line": 1,
@@ -788,7 +788,7 @@
           "snippet": "def test_checkout():"
         },
         {
-          "fingerprint": "4ce581e39f9a294e",
+          "fingerprint": "4db39e36d692944c",
           "ruleId": "py/unreachable",
           "file": "python/unreachable.py",
           "line": 3,
@@ -796,7 +796,7 @@
           "snippet": "print(\"never\")"
         },
         {
-          "fingerprint": "3f1ba12eebc89d64",
+          "fingerprint": "e9bf4229dfe4ca2b",
           "ruleId": "ts/dead-branch",
           "file": "typescript/dead.ts",
           "line": 2,
@@ -804,7 +804,7 @@
           "snippet": "if (false) {"
         },
         {
-          "fingerprint": "4575c02e91cee80d",
+          "fingerprint": "1b4274f5086cb730",
           "ruleId": "ts/phantom-import",
           "file": "typescript/phantom.ts",
           "line": 1,
@@ -812,7 +812,7 @@
           "snippet": "import { z } from \"zod\";"
         },
         {
-          "fingerprint": "ee0409375fb59da9",
+          "fingerprint": "9687261ca0b3528d",
           "ruleId": "ts/stub-function",
           "file": "typescript/stub.ts",
           "line": 1,
@@ -820,7 +820,7 @@
           "snippet": "function saveInvoice(): void {"
         },
         {
-          "fingerprint": "7be5af4842822528",
+          "fingerprint": "7998404196301a6f",
           "ruleId": "ts/tautological-assert",
           "file": "typescript/tautology.test.ts",
           "line": 2,
@@ -828,7 +828,7 @@
           "snippet": "expect(value).toEqual(value)"
         },
         {
-          "fingerprint": "d268fb701221476c",
+          "fingerprint": "386d072414602b66",
           "ruleId": "ts/unreachable",
           "file": "typescript/unreachable.ts",
           "line": 3,

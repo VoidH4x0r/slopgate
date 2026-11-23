@@ -140,6 +140,7 @@ export function parsePythonManifestText(fileName: string, text: string): string[
   const normalizedPath = fileName.replace(/\\/g, '/').toLowerCase();
   const requirementsFile =
     (base.startsWith('requirements') ||
+      /(?:^|-)(?:requirements|requirements-[^/]+)\.(?:txt|in)$/i.test(base) ||
       normalizedPath.startsWith('requirements/') ||
       normalizedPath.includes('/requirements/')) &&
     (base.endsWith('.txt') || base.endsWith('.in'));
@@ -249,7 +250,7 @@ export function parsePythonManifestText(fileName: string, text: string): string[
   }
 
   if (base === 'setup.py') {
-    const blocks = [...text.matchAll(/install_requires\s*=\s*\[([\s\S]*?)\]/g)];
+    const blocks = [...text.matchAll(/install_requires\s*=\s*\[([\s\S]*?)\](?=\s*[,)])/g)];
     for (const block of blocks) {
       for (const value of quotedStrings(block[1] ?? '')) {
         const name = requirementName(value);
@@ -317,6 +318,7 @@ const PYTHON_MANIFESTS = [
   'requirements.in', 'requirements-dev.txt', 'requirements_dev.txt', 'dev-requirements.txt',
   'requirements/all.txt', 'requirements/base.txt', 'requirements/dev.txt', 'requirements/prod.txt',
   'requirements/main.txt', 'requirements/test.txt', 'requirements/tests.txt',
+  'dev-requirements.txt', 'test-requirements.txt', 'prod-requirements.txt',
   'environment.yml', 'environment.yaml',
 ];
 
@@ -469,7 +471,7 @@ async function loadPythonDeps(root: string): Promise<PythonDeps> {
     for (const entry of rootEntries) {
       if (
         entry.isFile() &&
-        /^requirements.*\.(?:txt|in)$/i.test(entry.name)
+        /^(?:requirements.*|(?:dev|test|prod)-requirements)\.(?:txt|in)$/i.test(entry.name)
       ) {
         candidates.add(entry.name);
       }
@@ -500,7 +502,7 @@ async function loadPythonDeps(root: string): Promise<PythonDeps> {
   };
 
   for (const rel of candidates) {
-    if (rel.includes('/') || /^requirements.*\.(?:txt|in)$/i.test(rel)) {
+    if (rel.includes('/') || /^(?:requirements.*|(?:dev|test|prod)-requirements)\.(?:txt|in)$/i.test(rel)) {
       await readRequirementsFile(rel, new Set());
       continue;
     }
@@ -611,6 +613,7 @@ async function loadGoDeps(root: string): Promise<GoDeps> {
         if (moduleText === undefined) continue;
         const parsed = parseGoModText(moduleText);
         if (parsed.module) requires.add(parsed.module);
+        for (const required of parsed.requires) requires.add(required);
       }
     }
   }
@@ -835,8 +838,8 @@ async function readTsconfig(
   };
 
   const extendsList = Array.isArray(parsed.extends)
-    ? parsed.extends
-    : parsed.extends
+    ? parsed.extends.filter((extension): extension is string => typeof extension === 'string')
+    : typeof parsed.extends === 'string'
       ? [parsed.extends]
       : [];
   for (const extension of extendsList) {
@@ -852,12 +855,15 @@ async function readTsconfig(
   }
 
   const own = parsed.compilerOptions ?? {};
-  if (own.paths && typeof own.paths === 'object') paths = { ...paths, ...own.paths };
+  if (own.paths && typeof own.paths === 'object' && !Array.isArray(own.paths)) {
+    paths = { ...paths, ...(own.paths as Record<string, unknown>) };
+  }
   if (typeof own.baseUrl === 'string') baseUrl = path.resolve(dir, own.baseUrl);
   else if (baseUrl && !path.isAbsolute(baseUrl)) baseUrl = path.resolve(dir, baseUrl);
 
-  for (const reference of parsed.references ?? []) {
-    if (typeof reference.path !== 'string') continue;
+  const references = Array.isArray(parsed.references) ? parsed.references : [];
+  for (const reference of references) {
+    if (!reference || typeof reference !== 'object' || typeof reference.path !== 'string') continue;
     let refPath = path.resolve(dir, reference.path);
     try {
       if ((await stat(refPath)).isDirectory()) refPath = path.join(refPath, 'tsconfig.json');

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:50:22.042Z",
+  "generatedAt": "2026-11-23T08:17:00.754Z",
   "slopgateVersion": "1.0.2",
   "nodeVersion": "v24.19.0",
   "labelsFile": "benchmark/heldout-labels.json",
@@ -10,7 +10,7 @@
       "digest": "2404daae29252116",
       "files": 10,
       "lines": 39,
-      "durationMs": 51,
+      "durationMs": 64,
       "findings": 8,
       "high": 8,
       "suppressed": 0,
@@ -108,7 +108,7 @@
       },
       "findingsList": [
         {
-          "fingerprint": "68034c90ae8bf542",
+          "fingerprint": "b1eddf23fa9627c6",
           "ruleId": "py/noop-test",
           "file": "python/noop_test.py",
           "line": 1,
@@ -116,7 +116,7 @@
           "snippet": "def test_nothing():"
         },
         {
-          "fingerprint": "0dabf0785b8d959f",
+          "fingerprint": "9f75c6b67868d503",
           "ruleId": "py/phantom-import",
           "file": "python/phantom.py",
           "line": 1,
@@ -124,7 +124,7 @@
           "snippet": "import heldout_missing_dependency"
         },
         {
-          "fingerprint": "915eb867e04c0bbe",
+          "fingerprint": "6de52dc6cacf7fbf",
           "ruleId": "py/stub-body",
           "file": "python/stub.py",
           "line": 1,
@@ -132,7 +132,7 @@
           "snippet": "def save_user(user):"
         },
         {
-          "fingerprint": "e184a569ff2a0353",
+          "fingerprint": "02cfc543a12611e0",
           "ruleId": "py/swallowed-exception",
           "file": "python/swallowed.py",
           "line": 4,
@@ -140,7 +140,7 @@
           "snippet": "except Exception:"
         },
         {
-          "fingerprint": "0815f6f9482dbf76",
+          "fingerprint": "c610d435e334e0a3",
           "ruleId": "py/unreachable",
           "file": "python/unreachable.py",
           "line": 3,
@@ -148,7 +148,7 @@
           "snippet": "print(\"dead\")"
         },
         {
-          "fingerprint": "ad4f0af6c9d902df",
+          "fingerprint": "d8b21f17ef02b733",
           "ruleId": "ts/noop-test",
           "file": "typescript/noop.test.ts",
           "line": 1,
@@ -156,7 +156,7 @@
           "snippet": "test(\"nothing\", () => {})"
         },
         {
-          "fingerprint": "e3922db34576e743",
+          "fingerprint": "509d502c0d184876",
           "ruleId": "ts/phantom-import",
           "file": "typescript/phantom.ts",
           "line": 1,
@@ -164,7 +164,7 @@
           "snippet": "import { missing } from \"heldout-missing-package\";"
         },
         {
-          "fingerprint": "fc8ca3371d8022ec",
+          "fingerprint": "efb9ee57698f1fbf",
           "ruleId": "ts/stub-function",
           "file": "typescript/stub.ts",
           "line": 1,

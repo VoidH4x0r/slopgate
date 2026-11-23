@@ -110,10 +110,11 @@ export function isTestPath(file: string): boolean {
   const parts = lower.split('/');
   const base = parts[parts.length - 1] ?? '';
   if (/^test_.*\.pyi?$/.test(base) || /_tests?\.pyi?$/.test(base)) return true;
-  if (/\.(test|spec)\.(ts|tsx|js|jsx|mts|cts|mjs|cjs)$/.test(base)) return true;
+  if (/\.(test|spec|e2e-spec)\.(ts|tsx|js|jsx|mts|cts|mjs|cjs)$/.test(base)) return true;
   if (base.endsWith('_test.go')) return true;
   if (base === 'tests.rs' || base.endsWith('_tests.rs')) return true;
   if (parts.some((part) => part === 'testdata')) return true;
+  if (parts.some((part) => ['__mocks__', 'e2e', 'spec'].includes(part))) return true;
   // Test/build infrastructure that pytest, nox and Sphinx import directly.
   if (base === 'conftest.py' || base === 'noxfile.py') return true;
   if (lower === 'docs/conf.py' || lower.endsWith('/docs/conf.py')) return true;

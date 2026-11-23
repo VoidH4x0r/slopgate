@@ -360,6 +360,24 @@ test('Go/Rust exact duplicate keeps whitespace inside string literals', async ()
   }
 });
 
+test('semantic-duplicate keeps a renamed clone after an exact clone in the same file', async () => {
+  const renamed = BODY.replaceAll('total', 'acc').replace('compute', 'compute_renamed');
+  const result = await scanFiles(
+    [
+      { name: 'pkg/a.py', source: BODY },
+      { name: 'pkg/b.py', source: `${BODY}\n${renamed}` },
+      { name: 'pkg/c.py', source: BODY },
+    ],
+    {
+      onlyRules: ['py/semantic-duplicate'],
+      confidence: 'medium',
+    },
+  );
+  const semantic = result.findings.filter((finding) => finding.ruleId === 'py/semantic-duplicate');
+  assert.equal(semantic.length, 1);
+  assert.equal(semantic[0]?.file, 'pkg/b.py');
+});
+
 test('duplicate-block ignores short bodies, same-file copies and test paths', async () => {
   const short = 'def f():\n    return 1\n';
   assert.equal(

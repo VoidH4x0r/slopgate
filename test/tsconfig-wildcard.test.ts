@@ -6,6 +6,29 @@ import test from 'node:test';
 import { DEFAULT_CONFIG } from '../src/config.ts';
 import { scanProject } from '../src/engine.ts';
 
+test('malformed tsconfig types do not abort scanning', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-tsconfig-bad-'));
+  try {
+    await writeFile(
+      path.join(dir, 'tsconfig.json'),
+      JSON.stringify({ extends: 42, references: [null] }),
+      'utf8',
+    );
+    await writeFile(path.join(dir, 'package.json'), '{"name":"bad","version":"0.0.0"}\n', 'utf8');
+    await writeFile(path.join(dir, 'app.ts'), "import leftPad from 'left-pad';\nvoid leftPad;\n", 'utf8');
+    const result = await scanProject({
+      root: dir,
+      config: { ...DEFAULT_CONFIG, include: ['**/*.ts'], exclude: [] },
+    });
+    assert.equal(
+      result.findings.filter((finding) => finding.ruleId === 'ts/phantom-import').length,
+      1,
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('tsconfig exact paths keys are not treated as prefixes', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-tsconfig-exact-'));
   try {

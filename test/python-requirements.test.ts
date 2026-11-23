@@ -23,6 +23,18 @@ async function scan(files: Record<string, string>) {
   }
 }
 
+test('dev-requirements and setup.py extras are parsed', async () => {
+  const result = await scan({
+    'dev-requirements.txt': 'requests[socks]>=2\nclick\n',
+    'setup.py': 'from setuptools import setup\nsetup(install_requires=["requests[socks]>=2.0", "click"])\n',
+    'app.py': 'import requests\nimport click\n',
+  });
+  assert.deepEqual(
+    result.findings.filter((finding) => finding.ruleId === 'py/phantom-import'),
+    [],
+  );
+});
+
 test('requirements subdirectories and -r includes are parsed', async () => {
   const result = await scan({
     'requirements/base.txt': 'requests>=2\n',

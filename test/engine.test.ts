@@ -4,7 +4,15 @@ import * as path from 'node:path';
 import test from 'node:test';
 import { DEFAULT_CONFIG } from '../src/config.ts';
 import { scanProject } from '../src/engine.ts';
+import { isTestPath } from '../src/rules/helpers.ts';
 import { FIXTURES, ROOT, scanFixture } from './helpers.ts';
+
+test('test-path classification covers e2e specs, mocks and spec directories', () => {
+  assert.equal(isTestPath('src/app.e2e-spec.ts'), true);
+  assert.equal(isTestPath('src/__mocks__/fs.ts'), true);
+  assert.equal(isTestPath('spec/helpers.ts'), true);
+  assert.equal(isTestPath('src/app.ts'), false);
+});
 
 test('scanProject strips a UTF-8 BOM before computing positions', async () => {
   const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-bom-src-'));

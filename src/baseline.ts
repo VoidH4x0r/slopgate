@@ -15,7 +15,7 @@ export interface BaselineEntry {
 }
 
 export interface BaselineFile {
-  version: 1;
+  version: 1 | 2;
   createdAt: string;
   entries: BaselineEntry[];
 }
@@ -29,6 +29,12 @@ function normalizeSnippet(snippet: string): string {
  * offending source text, not from the line number.
  */
 export function findingFingerprint(finding: Finding): string {
+  const material = `${finding.ruleId}\n${finding.file}\n${normalizeSnippet(finding.snippet)}\n${finding.message}`;
+  return createHash('sha1').update(material).digest('hex').slice(0, 16);
+}
+
+/** Fingerprint used by baseline version 1, before messages were included. */
+export function legacyFindingFingerprint(finding: Finding): string {
   const material = `${finding.ruleId}\n${finding.file}\n${normalizeSnippet(finding.snippet)}`;
   return createHash('sha1').update(material).digest('hex').slice(0, 16);
 }
@@ -43,11 +49,11 @@ export async function loadBaseline(file: string): Promise<BaselineFile | undefin
   }
   try {
     const parsed = JSON.parse(text) as Partial<BaselineFile>;
-    if (parsed.version !== 1 || !Array.isArray(parsed.entries)) {
+    if ((parsed.version !== 1 && parsed.version !== 2) || !Array.isArray(parsed.entries)) {
       throw new Error('unexpected shape');
     }
     return {
-      version: 1,
+      version: parsed.version === 2 ? 2 : 1,
       createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : new Date(0).toISOString(),
       entries: parsed.entries
         .filter(
@@ -93,7 +99,7 @@ async function writeBaselineEntries(
   entries: readonly BaselineEntry[],
 ): Promise<BaselineFile> {
   const baseline: BaselineFile = {
-    version: 1,
+    version: 2,
     createdAt: new Date().toISOString(),
     entries: [...entries],
   };
@@ -185,11 +191,20 @@ export function partitionByBaseline(
   const fresh: Finding[] = [];
   const known: Finding[] = [];
   for (const finding of ordered(findings)) {
-    const fingerprint = findingFingerprint(finding);
-    const left = remaining.get(fingerprint) ?? 0;
-    if (left > 0) {
+    const candidates =
+      baseline.version === 1
+        ? [findingFingerprint(finding), legacyFindingFingerprint(finding)]
+        : [findingFingerprint(finding)];
+    let matched: string | undefined;
+    for (const fingerprint of candidates) {
+      if ((remaining.get(fingerprint) ?? 0) > 0) {
+        matched = fingerprint;
+        break;
+      }
+    }
+    if (matched) {
       known.push(finding);
-      remaining.set(fingerprint, left - 1);
+      remaining.set(matched, (remaining.get(matched) ?? 0) - 1);
     } else {
       fresh.push(finding);
     }

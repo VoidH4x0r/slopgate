@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T07:48:48.880Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
+Generated 2026-11-23T08:16:36.457Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
 
 ## Summary
 
@@ -24,7 +24,7 @@ Detected **30/30** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 12478 ms; parse errors: **9**.
+Scanned **1845** files (**991705** lines) in 12473 ms; parse errors: **9**.
 
 Corpus digest: `027f952580cd6622`.
 
@@ -40,7 +40,7 @@ Corpus digest: `027f952580cd6622`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 45 ms; parse errors: **0**.
+Scanned **7** files (**2783** lines) in 43 ms; parse errors: **0**.
 
 Package: `express@5.3.0`.
 
@@ -62,7 +62,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 193 ms; parse errors: **0**.
+Scanned **111** files (**8363** lines) in 192 ms; parse errors: **0**.
 
 Package: `execa@10.2.1`.
 
@@ -86,7 +86,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 69 ms; parse errors: **0**.
+Scanned **7** files (**4225** lines) in 72 ms; parse errors: **0**.
 
 Package: `commander@15.1.0`.
 
@@ -110,7 +110,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 1574 ms; parse errors: **0**.
+Scanned **409** files (**100880** lines) in 1540 ms; parse errors: **0**.
 
 Package: `eslint@10.15.0`.
 
@@ -124,7 +124,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 54 ms; parse errors: **0**.
+Scanned **7** files (**2217** lines) in 46 ms; parse errors: **0**.
 
 Package: `glob@14.0.6`.
 
@@ -135,7 +135,7 @@ Corpus digest: `dc4dc56c06b64fb8`.
 
 ## yargs
 
-Scanned **5** files (**198** lines) in 8 ms; parse errors: **0**.
+Scanned **5** files (**198** lines) in 7 ms; parse errors: **0**.
 
 Package: `yargs@18.2.0`.
 
@@ -146,7 +146,7 @@ Corpus digest: `53ba47a2d90b26ae`.
 
 ## ai-generated
 
-Scanned **20** files (**93** lines) in 11 ms; parse errors: **0**.
+Scanned **20** files (**93** lines) in 12 ms; parse errors: **0**.
 
 Package: `ai-generated-corpus@0.0.0`.
 

@@ -273,7 +273,16 @@ function collectRule(
         });
         const byFile = new Map<string, Candidate>();
         for (const candidate of eligible) {
-          if (!byFile.has(candidate.file)) byFile.set(candidate.file, candidate);
+          const existing = byFile.get(candidate.file);
+          if (!existing) {
+            byFile.set(candidate.file, candidate);
+          } else if (
+            mode === 'semantic' &&
+            exactDuplicated.has(existing) &&
+            !exactDuplicated.has(candidate)
+          ) {
+            byFile.set(candidate.file, candidate);
+          }
         }
         if (byFile.size < 2) continue;
         const allRepresentatives = [...byFile.values()].sort(
