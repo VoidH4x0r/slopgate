@@ -345,7 +345,9 @@ export function createMcpServer(deps: McpDeps) {
             return reply(ok(id, { tools: TOOLS }));
           case 'tools/call': {
             const params = (request.params ?? {}) as { name?: unknown; arguments?: unknown };
-            if (typeof params.name !== 'string') return fail(id, -32602, 'tools/call requires a tool name');
+            if (typeof params.name !== 'string') {
+              return isNotification ? null : fail(id, -32602, 'tools/call requires a tool name');
+            }
             const args =
               params.arguments !== null && typeof params.arguments === 'object'
                 ? (params.arguments as Record<string, unknown>)

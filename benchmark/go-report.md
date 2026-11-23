@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T03:24:42.329Z by `scripts/benchmark.mjs` (slopgate 1.0.1, Node v24.19.0).
+Generated 2026-11-23T06:40:53.941Z by `scripts/benchmark.mjs` (slopgate 1.0.1, Node v24.19.0).
 
 ## Summary
 
@@ -10,13 +10,13 @@ Generated 2026-11-23T03:24:42.329Z by `scripts/benchmark.mjs` (slopgate 1.0.1, N
 
 ## go-stdlib
 
-Scanned **6090** files (**2455171** lines) in 18760 ms.
+Scanned **6090** files (**2455171** lines) in 109934 ms.
 
 Corpus digest: `3970b1f25e424815`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `go/duplicate-block` | 0 | 439 | 0 | 0 | — |
+| `go/duplicate-block` | 0 | 441 | 0 | 0 | — |
 
 ## Method
 

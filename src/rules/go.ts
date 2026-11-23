@@ -34,9 +34,9 @@ export function goHeader(ctx: RuleContext): string {
 }
 
 export function isGeneratedGo(ctx: RuleContext): boolean {
-  // The canonical marker may follow a long license header. Scan the whole
-  // file so a marker at line 22+ is not missed; the regex is line-anchored.
-  return /^\/\/ Code generated .* DO NOT EDIT\.$/m.test(ctx.source);
+  // The canonical marker must precede the package clause; scanning the whole
+  // source would let a normal code comment disable high rules.
+  return /^\/\/ Code generated .* DO NOT EDIT\.$/m.test(goHeader(ctx));
 }
 
 export function hasBuildConstraint(ctx: RuleContext): boolean {

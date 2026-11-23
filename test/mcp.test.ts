@@ -132,6 +132,16 @@ test('mcp: invalid jsonrpc and unknown protocol versions are rejected/fallback',
   );
 });
 
+test('mcp: malformed tools/call notifications return no response', async () => {
+  const server = makeServer();
+  assert.equal(
+    await server.handle(
+      JSON.stringify({ jsonrpc: '2.0', method: 'tools/call', params: { arguments: {} } }),
+    ),
+    null,
+  );
+});
+
 test('mcp: tools/list exposes scan_diff, scan_path, list_rules, explain_rule and preview_fix', async () => {
   const server = makeServer();
   const response = await call(server, { jsonrpc: '2.0', id: 2, method: 'tools/list' });

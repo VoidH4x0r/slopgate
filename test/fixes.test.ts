@@ -165,6 +165,35 @@ test('fix removes a Python statement semicolon without corrupting the file', asy
   }
 });
 
+test('dry-run validates that the rewritten file would parse', async () => {
+  const dir = await fixture({ 'app.py': 'x = 1\n' });
+  try {
+    const fake = {
+      finding: {
+        ruleId: 'py/unreachable',
+        message: 'x',
+        severity: 'error' as const,
+        confidence: 'high' as const,
+        file: 'app.py',
+        start: { line: 1, column: 1 },
+        end: { line: 1, column: 2 },
+        snippet: 'x',
+        evidence: [],
+      },
+      fileAbs: path.join(dir, 'app.py'),
+      sourceHash: createHash('sha1').update('x = 1\n').digest('hex'),
+      edits: [{ start: 0, end: 1, replacement: '' }],
+    };
+    const result = await applyFixes([fake], { write: false });
+    assert.equal(result.fixedFindings, 0);
+    assert.equal(result.skippedFindings, 1);
+    assert.match(result.warnings.join('\n'), /would not parse/);
+    assert.equal(await readFile(path.join(dir, 'app.py'), 'utf8'), 'x = 1\n');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('fix drops a nested edit covered by an outer deletion', async () => {
   const dir = await fixture({
     'app.py': 'def f(x):\n    return 1\n    if x:\n        return 2\n        print("dead")\n',

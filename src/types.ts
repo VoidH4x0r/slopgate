@@ -102,6 +102,8 @@ export interface GoDeps {
 export interface RustDeps {
   /** Crate name from Cargo.toml, when present. */
   crateName?: string;
+  /** `[lib] name`, when it differs from the package name. */
+  libraryName?: string;
   /** Direct dependency names from Cargo.toml. */
   dependencies: Set<string>;
   /** Local module names discovered under the project root. */

@@ -483,8 +483,9 @@ async function loadGoDeps(root: string): Promise<GoDeps> {
 }
 
 /** Parse direct dependency names from Cargo.toml (best effort, no TOML library). */
-export function parseCargoTomlText(text: string): { crateName?: string; dependencies: string[] } {
+export function parseCargoTomlText(text: string): { crateName?: string; libraryName?: string; dependencies: string[] } {
   let crateName: string | undefined;
+  let libraryName: string | undefined;
   const dependencies = new Set<string>();
   let section = '';
   let sectionDependency: string | undefined;
@@ -519,6 +520,11 @@ export function parseCargoTomlText(text: string): { crateName?: string; dependen
       if (name?.[1]) crateName = name[1];
       continue;
     }
+    if (section === 'lib') {
+      const name = /^name\s*=\s*["']([^"']+)["']/.exec(line);
+      if (name?.[1]) libraryName = name[1];
+      continue;
+    }
     if (sectionDependency) {
       // [dependencies.foo] package = "bar" is an alias for the real crate bar.
       const pkg = /^package\s*=\s*["']([^"']+)["']/.exec(line);
@@ -533,8 +539,15 @@ export function parseCargoTomlText(text: string): { crateName?: string; dependen
     const key = /^(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_-]+))(?:\.[A-Za-z0-9_-]+)*\s*=/.exec(line);
     const name = key?.[1] ?? key?.[2] ?? key?.[3];
     if (name) addDependency(name);
+    // Inline alias: foo = { package = "real-crate", version = "1" }
+    const inlinePackage = /\bpackage\s*=\s*["']([^"']+)["']/.exec(line);
+    if (inlinePackage?.[1]) addDependency(inlinePackage[1]);
   }
-  return { ...(crateName ? { crateName } : {}), dependencies: [...dependencies] };
+  return {
+    ...(crateName ? { crateName } : {}),
+    ...(libraryName ? { libraryName } : {}),
+    dependencies: [...dependencies],
+  };
 }
 
 async function loadRustDeps(root: string): Promise<RustDeps> {
@@ -546,6 +559,7 @@ async function loadRustDeps(root: string): Promise<RustDeps> {
   const parsed = parseCargoTomlText(text);
   return {
     ...(parsed.crateName ? { crateName: parsed.crateName } : {}),
+    ...(parsed.libraryName ? { libraryName: parsed.libraryName } : {}),
     dependencies: new Set(parsed.dependencies),
     localModules: new Set<string>(),
     manifests: ['Cargo.toml'],

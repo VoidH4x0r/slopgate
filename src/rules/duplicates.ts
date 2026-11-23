@@ -8,6 +8,7 @@ import type {
 } from '../types.ts';
 import { collapseWhitespace, endOf, isComment, isTestPath, snippetOf, startOf, walk } from './helpers.ts';
 import { hasBuildConstraint, isGeneratedGo } from './go.ts';
+import { isGeneratedRust } from './rust.ts';
 
 const MIN_DUPLICATE_LINES = 6;
 const MIN_DUPLICATE_TOKENS = 15;
@@ -191,7 +192,7 @@ function collectRule(
       }
       if (
         language === 'rust' &&
-        /^(?:\/\/\s*@generated|\/\/ Code generated .* DO NOT EDIT\.)$/m.test(ctx.source)
+        isGeneratedRust(ctx)
       ) {
         return;
       }

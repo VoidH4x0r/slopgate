@@ -71,6 +71,45 @@ test('rs/stub-body skips cfg(all(test, ...)) and root sys/', async () => {
   );
 });
 
+test('rs/phantom-import accepts inline modules', async () => {
+  const source = [
+    'mod helper {',
+    '    pub fn value() -> i32 { 1 }',
+    '}',
+    'use helper::value;',
+    '',
+  ].join('\n');
+  assert.deepEqual(
+    await runRule('rs/phantom-import', source, 'rust', makeDeps({ rustManifests: ['Cargo.toml'] })),
+    [],
+  );
+});
+
+test('rs/phantom-import accepts the Cargo [lib] name', async () => {
+  const deps = makeDeps({
+    rustManifests: ['Cargo.toml'],
+    rustCrate: 'package-name',
+    rustLibrary: 'my-lib',
+  });
+  assert.deepEqual(await runRule('rs/phantom-import', 'use my_lib::helper;\n', 'rust', deps), []);
+});
+
+test('rs/stub-body treats cfg(not(test)) and feature="test" as production', async () => {
+  for (const attribute of [
+    '#[cfg(not(test))]',
+    '#[cfg(feature = "test")]',
+    '#[cfg(all(not(test), unix))]',
+    '#[cfg(not(all(test)))]',
+  ]) {
+    const source = `${attribute}\nfn helper() {\n    todo!()\n}\n`;
+    assert.equal(
+      (await runRule('rs/stub-body', source, 'rust')).length,
+      1,
+      attribute,
+    );
+  }
+});
+
 test('rs/noop-test flags an empty #[test]', async () => {
   const source = '#[test]\nfn t() {}\n';
   const drafts = await runRuleOnFile('rs/noop-test', source, 'rust', 'src/lib.rs');

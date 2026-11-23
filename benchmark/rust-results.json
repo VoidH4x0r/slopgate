@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T03:20:41.592Z",
+  "generatedAt": "2026-11-23T06:43:00.248Z",
   "slopgateVersion": "1.0.1",
   "nodeVersion": "v24.19.0",
   "corpora": [
@@ -9,20 +9,20 @@
       "digest": "fce4df135e171390",
       "files": 1494,
       "lines": 635245,
-      "durationMs": 41001,
-      "findings": 246,
+      "durationMs": 71674,
+      "findings": 229,
       "high": 0,
       "suppressed": 0,
       "parseErrors": 157,
       "byRule": {
-        "rs/phantom-import": {
-          "high": 0,
-          "medium": 107,
-          "low": 0
-        },
         "rs/duplicate-block": {
           "high": 0,
           "medium": 139,
+          "low": 0
+        },
+        "rs/phantom-import": {
+          "high": 0,
+          "medium": 90,
           "low": 0
         }
       },

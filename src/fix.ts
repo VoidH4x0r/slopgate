@@ -100,12 +100,6 @@ export async function applyFixes(
     }
     if (updated === source) continue;
 
-    if (!options.write) {
-      result.fixedFindings += plan.findings;
-      result.fixedFiles.push(plan.file);
-      continue;
-    }
-
     const language = languageFor(plan.file);
     if (language) {
       const parser = await getParser(language);
@@ -117,6 +111,12 @@ export async function applyFixes(
         continue;
       }
       tree.delete();
+    }
+
+    if (!options.write) {
+      result.fixedFindings += plan.findings;
+      result.fixedFiles.push(plan.file);
+      continue;
     }
 
     const info = await stat(plan.file).catch(() => undefined);
