@@ -96,6 +96,67 @@ test('child paths replace inherited paths instead of merging', async () => {
   }
 });
 
+test('@* wildcard does not accept a missing scoped package', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-tsconfig-at-missing-'));
+  try {
+    await mkdir(path.join(dir, 'src'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'tsconfig.json'),
+      JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@*': ['src/*'] } } }),
+      'utf8',
+    );
+    await writeFile(path.join(dir, 'package.json'), '{"name":"at-missing","version":"0.0.0"}\n', 'utf8');
+    await writeFile(path.join(dir, 'src', 'foo.ts'), 'export const foo = 1;\n', 'utf8');
+    await writeFile(
+      path.join(dir, 'app.ts'),
+      "import { foo } from '@foo';\nimport { pkg } from '@scope/pkg';\nvoid foo; void pkg;\n",
+      'utf8',
+    );
+    const result = await scanProject({
+      root: dir,
+      config: { ...DEFAULT_CONFIG, include: ['**/*.ts'], exclude: [] },
+    });
+    const phantom = result.findings.filter((finding) => finding.ruleId === 'ts/phantom-import');
+    assert.equal(phantom.length, 1);
+    assert.match(phantom[0]?.message ?? '', /@scope\/pkg/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('referenced project paths are not inherited', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-tsconfig-ref-'));
+  try {
+    await mkdir(path.join(dir, 'src', 'old'), { recursive: true });
+    await writeFile(
+      path.join(dir, 'tsconfig.lib.json'),
+      JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@old/*': ['src/old/*'] } } }),
+      'utf8',
+    );
+    await writeFile(
+      path.join(dir, 'tsconfig.json'),
+      JSON.stringify({ references: [{ path: './tsconfig.lib.json' }] }),
+      'utf8',
+    );
+    await writeFile(path.join(dir, 'package.json'), '{"name":"ref","version":"0.0.0"}\n', 'utf8');
+    await writeFile(path.join(dir, 'src', 'old', 'foo.ts'), 'export const foo = 1;\n', 'utf8');
+    await writeFile(
+      path.join(dir, 'app.ts'),
+      "import { foo } from '@old/foo';\nvoid foo;\n",
+      'utf8',
+    );
+    const result = await scanProject({
+      root: dir,
+      config: { ...DEFAULT_CONFIG, include: ['**/*.ts'], exclude: [] },
+    });
+    const phantom = result.findings.filter((finding) => finding.ruleId === 'ts/phantom-import');
+    assert.equal(phantom.length, 1);
+    assert.match(phantom[0]?.message ?? '', /@old\/foo/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('tsconfig exact paths keys are not treated as prefixes', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'slopgate-tsconfig-exact-'));
   try {

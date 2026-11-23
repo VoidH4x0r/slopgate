@@ -866,19 +866,29 @@ async function readTsconfig(
   if (typeof own.baseUrl === 'string') baseUrl = path.resolve(dir, own.baseUrl);
   else if (baseUrl && !path.isAbsolute(baseUrl)) baseUrl = path.resolve(dir, baseUrl);
 
-  const references = Array.isArray(parsed.references) ? parsed.references : [];
-  for (const reference of references) {
-    if (!reference || typeof reference !== 'object' || typeof reference.path !== 'string') continue;
-    let refPath = path.resolve(dir, reference.path);
-    try {
-      if ((await stat(refPath)).isDirectory()) refPath = path.join(refPath, 'tsconfig.json');
-    } catch {
-      // let readIfExists decide
-    }
-    merge(await readTsconfig(refPath, seen));
-  }
-
   return { paths, baseDir: dir, ...(baseUrl ? { baseUrl } : {}) };
+}
+
+async function localWildcardPaths(base: string): Promise<string[]> {
+  const out: string[] = [];
+  const walk = async (dir: string, prefix: string, depth: number): Promise<void> => {
+    if (depth > 8 || out.length >= 2000) return;
+    const entries = await readDirSafe(dir);
+    for (const entry of entries ?? []) {
+      if (entry.name.startsWith('.')) continue;
+      const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        out.push(relative);
+        await walk(path.join(dir, entry.name), relative, depth + 1);
+      } else if (entry.isFile()) {
+        const stem = relative.replace(/\.(?:[cm]?[jt]sx?)$/, '');
+        if (stem !== relative) out.push(stem);
+      }
+      if (out.length >= 2000) return;
+    }
+  };
+  await walk(base, '', 0);
+  return out;
 }
 
 async function loadTsconfigAliases(root: string): Promise<string[]> {
@@ -909,8 +919,18 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
         continue;
       }
       if (key.endsWith('*')) {
-        const prefix = key.endsWith('/*') ? key.slice(0, -1) : key.slice(0, -1);
-        if (prefix) aliases.add(`*${prefix}`);
+        const targets = Array.isArray(config.paths[key])
+          ? (config.paths[key] as unknown[]).filter(
+              (target): target is string => typeof target === 'string',
+            )
+          : [];
+        for (const target of targets) {
+          if (!target.endsWith('/*')) continue;
+          const base = path.resolve(config.baseUrl ?? config.baseDir, target.slice(0, -2));
+          for (const local of await localWildcardPaths(base)) {
+            aliases.add(key.replace('*', local));
+          }
+        }
       } else {
         // Exact paths key: TypeScript does not treat it as a prefix.
         aliases.add(`=${key}`);
