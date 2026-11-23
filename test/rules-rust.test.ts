@@ -168,6 +168,17 @@ test('rs/stub-body skips bindgen block headers', async () => {
   );
 });
 
+test('rs/noop-test recognizes rstest and namespaced test attributes', async () => {
+  for (const attribute of ['#[rstest]', '#[tokio::test]', '#[test_case(1)]']) {
+    assert.equal(
+      (await runRuleOnFile('rs/noop-test', `${attribute}\nfn t() {}\n`, 'rust', 'src/lib.rs'))
+        .length,
+      1,
+      attribute,
+    );
+  }
+});
+
 test('rs/noop-test flags an empty #[test]', async () => {
   const source = '#[test]\nfn t() {}\n';
   const drafts = await runRuleOnFile('rs/noop-test', source, 'rust', 'src/lib.rs');

@@ -24,8 +24,8 @@ const diagnosticsByUri = new Map<string, vscode.Diagnostic[]>();
 let scanEpoch = 0;
 const output = vscode.window.createOutputChannel('slopgate');
 
-function configured(): { executable: string; confidence: string; failOn: string } {
-  const config = vscode.workspace.getConfiguration('slopgate');
+function configured(resource?: vscode.Uri): { executable: string; confidence: string; failOn: string } {
+  const config = vscode.workspace.getConfiguration('slopgate', resource);
   return {
     executable: config.get<string>('path', 'slopgate') || 'slopgate',
     confidence: config.get<string>('confidence', 'high'),
@@ -102,9 +102,10 @@ async function scan(
   target: string,
   replaceAll: boolean,
   targetFile?: string,
+  resource?: vscode.Uri,
 ): Promise<void> {
   const epoch = ++scanEpoch;
-  const settings = configured();
+  const settings = configured(resource);
   output.appendLine(`scan ${target} (${settings.confidence})`);
   const payload = await runSlopgate(
     settings.executable,
@@ -121,7 +122,7 @@ async function scan(
 async function scanActiveDocument(document?: vscode.TextDocument): Promise<void> {
   if (!document || document.isUntitled || !SUPPORTED.has(document.languageId)) return;
   const root = workspaceRoot(document) ?? path.dirname(document.uri.fsPath);
-  await scan(root, document.uri.fsPath, false, document.uri.fsPath);
+  await scan(root, document.uri.fsPath, false, document.uri.fsPath, document.uri);
 }
 
 async function fixActiveDocument(document?: vscode.TextDocument): Promise<void> {
@@ -129,7 +130,7 @@ async function fixActiveDocument(document?: vscode.TextDocument): Promise<void> 
   try {
     if (document.isDirty && !(await document.save())) return;
     const root = workspaceRoot(document) ?? path.dirname(document.uri.fsPath);
-    const settings = configured();
+    const settings = configured(document.uri);
     const payload = await runSlopgate(
       settings.executable,
       buildScanArgs(document.uri.fsPath, settings, 'fix'),
@@ -199,6 +200,11 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.workspace.onDidRenameFiles((event) => {
       for (const file of event.files) removeUri(file.oldUri);
     }),
+    vscode.workspace.onDidChangeWorkspaceFolders(() => {
+      diagnosticsByUri.clear();
+      collection.clear();
+      void vscode.commands.executeCommand('slopgate.scanWorkspace');
+    }),
   );
 
   context.subscriptions.push(
@@ -213,7 +219,7 @@ export function activate(context: vscode.ExtensionContext): void {
       collection.clear();
       for (const folder of folders) {
         try {
-          await scan(folder.uri.fsPath, folder.uri.fsPath, false);
+          await scan(folder.uri.fsPath, folder.uri.fsPath, false, undefined, folder.uri);
         } catch (error) {
           vscode.window.showWarningMessage(
             `slopgate scan failed for ${folder.name}: ${(error as Error).message}`,

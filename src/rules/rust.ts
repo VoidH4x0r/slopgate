@@ -154,7 +154,10 @@ function hasAttribute(node: AstNode, pattern: RegExp): boolean {
 }
 
 function isTestFunction(node: AstNode): boolean {
-  return hasAttribute(node, /^#\[\s*(?:tokio::)?test\b/);
+  return hasAttribute(
+    node,
+    /^#\[\s*(?:[A-Za-z_]\w*::)*(?:test|rstest|test_case)\b/,
+  );
 }
 
 function hasTestContext(node: AstNode): boolean {
