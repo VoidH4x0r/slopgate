@@ -66,9 +66,11 @@ function pythonImports(root: AstNode): Array<{ node: AstNode; module: string; ro
 function isOptionalImport(node: AstNode): boolean {
   const tryNode = ancestorOfType(node, ['try_statement']);
   if (!tryNode) return false;
-  return descendantsOfType(tryNode, ['except_clause']).some((clause) => {
-    const head = (clause.text.split(':')[0] ?? '').trim();
-    return /^except\b[\s\S]*?\b(?:ImportError|ModuleNotFoundError)\b/.test(head);
+  const body = tryNode.childForFieldName('body');
+  if (!body || node.startIndex < body.startIndex || node.startIndex >= body.endIndex) return false;
+  return descendantsOfType(tryNode, ['except_clause', 'except_group_clause']).some((clause) => {
+    const head = (clause.text.split(':')[0] ?? '').replace(/\s+as\s+\w+\s*$/, '').trim();
+    return /^except\*?(?:\s+)?[\s\S]*?\b(?:ImportError|ModuleNotFoundError)\b/.test(head);
   });
 }
 
@@ -157,7 +159,7 @@ function bodyCallsSelf(body: AstNode): boolean {
   return found;
 }
 
-/** Lightweight name → node index; assertion checks happen on demand. */
+/** Lightweight name-to-node index; assertion checks happen on demand. */
 function localFunctionDefinitions(functions: readonly AstNode[]): Map<string, AstNode> {
   const definitions = new Map<string, AstNode>();
   for (const fn of functions) {
@@ -279,13 +281,25 @@ function insideAbstractMethod(node: AstNode): boolean {
 }
 
 /** Platform/version guards make the import conditional on the host. */
+function insideTypeChecking(node: AstNode): boolean {
+  let current = node.parent;
+  while (current) {
+    if (current.type === 'if_statement') {
+      const condition = current.childForFieldName('condition')?.text ?? '';
+      if (/TYPE_CHECKING/.test(condition)) return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
 function insidePlatformGuard(node: AstNode): boolean {
   let current = node.parent;
   while (current) {
     if (current.type === 'if_statement') {
       const condition = current.childForFieldName('condition')?.text ?? '';
       if (
-        /sys\.platform|platform\.system\s*\(|sys\.version_info|platform\.python_version\s*\(|six\.PY2|\bPY2\b/.test(
+        /sys\.platform|os\.name|platform\.system\s*\(|sys\.version_info|platform\.python_version\s*\(|six\.PY2|\bPY2\b/.test(
           condition,
         )
       ) {
@@ -323,7 +337,7 @@ const phantomImport: Rule = {
       if (isDeclaredPython(module, ctx)) continue;
       if (ctx.deps.python.localModules.has(root)) continue;
       if (isOptionalImport(node)) continue;
-      if (insidePlatformGuard(node)) continue;
+      if (insideTypeChecking(node) || insidePlatformGuard(node)) continue;
 
       drafts.push({
         message: `\`${module}\` is imported but not declared in any manifest and not present in this repository`,
@@ -331,7 +345,7 @@ const phantomImport: Rule = {
         end: endOf(node),
         snippet: snippetOf(ctx, node),
         // Test suites monkey-patch sys.path; keep the fact but do not fail CI.
-        ...(isTestPath(ctx.file) ? { confidence: 'medium' as const } : {}),
+        ...(isTestPath(ctx.classificationFile) ? { confidence: 'medium' as const } : {}),
         evidence: [
           `import: ${truncate(node.text, 100)}`,
           manifests.length > 0
@@ -359,7 +373,7 @@ const noopTest: Rule = {
   },
   run(ctx) {
     if (ctx.language !== 'python') return [];
-    if (isStubFile(ctx.file)) return [];
+    if (isStubFile(ctx.classificationFile)) return [];
     const drafts: RuleDraft[] = [];
     // A test-dense file may have thousands of assertion-free tests. Reuse the
     // function list the rule already collected; build the name index once, and
@@ -379,7 +393,7 @@ const noopTest: Rule = {
       const inClass = ancestorOfType(fn, ['class_definition']) !== undefined;
       // `test_*` helpers exist in test-support tooling; only trust real test
       // modules, or methods of a test class.
-      if (!looksLikeTestModule(ctx.file) && !inClass) continue;
+      if (!looksLikeTestModule(ctx.classificationFile) && !inClass) continue;
       const body = fn.childForFieldName('body');
       if (!body) continue;
       const parent = fn.parent;
@@ -548,9 +562,9 @@ const stubBody: Rule = {
   },
   run(ctx) {
     if (ctx.language !== 'python') return [];
-    if (isTestPath(ctx.file)) return [];
+    if (isTestPath(ctx.classificationFile)) return [];
     // Type stubs and deliberate no-op shims are made of `pass`/`...`.
-    if (isStubFile(ctx.file) || isNoopModulePath(ctx.file) || isDocumentedNoopDirectory(ctx)) return [];
+    if (isStubFile(ctx.classificationFile) || isNoopModulePath(ctx.classificationFile) || isDocumentedNoopDirectory(ctx)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const fn of descendantsOfType(ctx.root, ['function_definition'])) {
@@ -659,7 +673,7 @@ const NOOP_MODULE_DOC =
 
 /** A prefixed directory is only a shim when its module docstring says so. */
 function isDocumentedNoopDirectory(ctx: RuleContext): boolean {
-  const dirs = ctx.file.toLowerCase().split('/').slice(0, -1);
+  const dirs = ctx.classificationFile.toLowerCase().split('/').slice(0, -1);
   if (!dirs.some((dir) => NOOP_DIR_PREFIX.test(dir))) return false;
   return NOOP_MODULE_DOC.test(moduleDocstring(ctx.root) ?? '');
 }
@@ -690,7 +704,7 @@ const swallowedException: Rule = {
   },
   run(ctx) {
     if (ctx.language !== 'python') return [];
-    if (isTestPath(ctx.file)) return [];
+    if (isTestPath(ctx.classificationFile)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const tryNode of descendantsOfType(ctx.root, ['try_statement'])) {
@@ -776,7 +790,7 @@ const deadBranch: Rule = {
   },
   run(ctx) {
     if (ctx.language !== 'python') return [];
-    if (isTestPath(ctx.file)) return [];
+    if (isTestPath(ctx.classificationFile)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const node of descendantsOfType(ctx.root, ['if_statement', 'while_statement', 'elif_clause'])) {
@@ -837,7 +851,7 @@ const unreachable: Rule = {
   },
   run(ctx) {
     if (ctx.language !== 'python') return [];
-    if (isTestPath(ctx.file)) return [];
+    if (isTestPath(ctx.classificationFile)) return [];
     const drafts: RuleDraft[] = [];
     const seen = new Set<AstNode>();
 

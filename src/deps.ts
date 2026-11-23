@@ -12,7 +12,7 @@ export function normalizePythonName(name: string): string {
 export function requirementName(spec: string): string | undefined {
   const trimmed = spec.trim().replace(/^['"]|['"]$/g, '').trim();
   if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('-')) return undefined;
-  const direct = /^([A-Za-z0-9][A-Za-z0-9._-]*)\s*@\s*[A-Za-z][A-Za-z0-9+.-]*:\/\//.exec(trimmed);
+  const direct = /^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])?\s*@\s*[A-Za-z][A-Za-z0-9+.-]*:\/\//.exec(trimmed);
   if (direct?.[1]) return normalizePythonName(direct[1]);
   if (trimmed.includes('://')) return undefined;
   const match = /^([A-Za-z0-9][A-Za-z0-9._-]*)/.exec(trimmed);

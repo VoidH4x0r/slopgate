@@ -38,7 +38,7 @@ test('rs/phantom-import handles aliases, group imports and raw crate names', asy
   for (const source of [
     'use serde as s;\n',
     'use {serde, std::fmt};\n',
-    'use { // comment\n serde, std::fmt };\n',
+    'use { // serde, tokio\n serde, std::fmt };\n',
     'use {serde as s, std::fmt};\n',
     'use r#serde::Serialize;\n',
   ]) {

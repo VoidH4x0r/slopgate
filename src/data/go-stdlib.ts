@@ -64,13 +64,15 @@ import { GO_STDLIB_PACKAGES } from './go-stdlib-packages.ts';
 
 export function isGoStdlib(importPath: string): boolean {
   if (importPath === 'C') return true;
-  if (
-    importPath === 'internal' ||
-    importPath.startsWith('internal/') ||
-    importPath.includes('/internal/') ||
-    importPath.endsWith('/internal')
-  ) {
-    return true;
+  if (importPath === 'internal' || importPath.startsWith('internal/')) return true;
+  const marker = importPath.indexOf('/internal/');
+  const suffixMarker = importPath.endsWith('/internal')
+    ? importPath.length - '/internal'.length
+    : -1;
+  const split = marker >= 0 ? marker : suffixMarker;
+  if (split > 0) {
+    const prefix = importPath.slice(0, split);
+    if (GO_STDLIB_PACKAGES.has(prefix) || GO_STDLIB_ROOTS.has(prefix)) return true;
   }
   return GO_STDLIB_PACKAGES.has(importPath);
 }

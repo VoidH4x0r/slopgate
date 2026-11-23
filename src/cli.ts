@@ -521,13 +521,9 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
   const explicitWrite = options.writeBaseline;
   if (explicitWrite) {
     const writeTarget = path.resolve(baselineRoot, explicitWrite);
-    const baselineDisplay: Confidence =
-      merged.failOn === 'none' || confidenceRank(merged.confidence) <= confidenceRank(merged.failOn)
-        ? merged.confidence
-        : merged.failOn;
-    const baselineFindings = result.findings.filter((finding) =>
-      meetsConfidence(finding.confidence, baselineDisplay),
-    );
+    // Write every finding: replacing a baseline must not silently delete
+    // lower-confidence entries that the current display threshold hides.
+    const baselineFindings = result.findings;
     // Only replace entries covered by this scan; a subdirectory or --rule run
     // must not discard the rest of the root baseline.
     const baseline = await mergeBaseline(
@@ -652,9 +648,11 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
     }
   }
 
-  if (merged.failOn === 'none') return 0;
+  const crashed = result.warnings.some((warning) => / crashed(?: |$)/.test(warning));
+  if (merged.failOn === 'none') return crashed ? 2 : 0;
   const failing = visible.some((finding) => meetsConfidence(finding.confidence, merged.failOn as Confidence));
-  return failing ? 1 : 0;
+  if (failing) return 1;
+  return crashed ? 2 : 0;
 }
 
 export async function main(argv: readonly string[], io: CliIo = defaultIo()): Promise<number> {

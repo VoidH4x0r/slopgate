@@ -190,7 +190,7 @@ function collectRule(
         language === 'typescript'
           ? ctx.language === 'typescript' || ctx.language === 'tsx'
           : ctx.language === language;
-      if (!matchesLanguage || isTestPath(ctx.file)) return;
+      if (!matchesLanguage || isTestPath(ctx.classificationFile)) return;
       if (
         language === 'go' &&
         (isGeneratedGo(ctx) || hasBuildConstraint(ctx))

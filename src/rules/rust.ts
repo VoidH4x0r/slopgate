@@ -179,7 +179,8 @@ function hasTestContext(node: AstNode): boolean {
 
 function pathsOfUse(node: AstNode): string[] {
   const raw = node.childForFieldName('argument')?.text ?? '';
-  const trimmed = raw.trim();
+  const cleaned = raw.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const trimmed = cleaned.trim();
   if (!trimmed) return [];
   if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
     const inner = trimmed.slice(1, -1);
@@ -198,7 +199,7 @@ function pathsOfUse(node: AstNode): string[] {
     parts.push(inner.slice(start));
     return parts.flatMap((part) => pathsOfUseText(part));
   }
-  return pathsOfUseText(raw);
+  return pathsOfUseText(cleaned);
 }
 
 function pathsOfUseText(raw: string): string[] {
@@ -279,7 +280,7 @@ function rustPhantomImportRule(): Rule {
       tags: ['imports', 'dependencies'],
     },
     run(ctx) {
-      if (isGeneratedRust(ctx) || isTestPath(ctx.file)) return [];
+      if (isGeneratedRust(ctx) || isTestPath(ctx.classificationFile)) return [];
       if (ctx.deps.rust.manifests.length === 0) return [];
       const drafts: RuleDraft[] = [];
       const seen = new Set<string>();
@@ -362,7 +363,7 @@ function rustUnreachableRule(): Rule {
       tags: ['dead-code'],
     },
     run(ctx) {
-      if (isGeneratedRust(ctx) || isTestPath(ctx.file)) return [];
+      if (isGeneratedRust(ctx) || isTestPath(ctx.classificationFile)) return [];
       const drafts: RuleDraft[] = [];
       for (const block of descendantsOfType(ctx.root, ['block'])) {
         if (hasTestContext(block)) continue;
@@ -400,10 +401,10 @@ function rustStubBodyRule(): Rule {
       tags: ['stubs'],
     },
     run(ctx) {
-      if (isGeneratedRust(ctx) || isTestPath(ctx.file)) return [];
+      if (isGeneratedRust(ctx) || isTestPath(ctx.classificationFile)) return [];
       // `sys/` contains platform backends that intentionally expose
       // unimplemented operations on unsupported targets.
-      if (/(?:^|\/)sys\//.test(ctx.file)) return [];
+      if (/(?:^|\/)sys\//.test(ctx.classificationFile)) return [];
       const drafts: RuleDraft[] = [];
       for (const fn of functions(ctx.root)) {
         if (isTestFunction(fn) || hasTestContext(fn)) continue;
@@ -446,7 +447,7 @@ function rustSwallowedErrorRule(): Rule {
       tags: ['errors'],
     },
     run(ctx) {
-      if (isGeneratedRust(ctx) || isTestPath(ctx.file)) return [];
+      if (isGeneratedRust(ctx) || isTestPath(ctx.classificationFile)) return [];
       const drafts: RuleDraft[] = [];
       for (const node of descendantsOfType(ctx.root, ['if_expression'])) {
         if (hasTestContext(node)) continue;

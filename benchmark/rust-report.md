@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T07:49:28.346Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
+Generated 2026-11-23T08:22:05.985Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
 
 ## Summary
 
@@ -10,7 +10,7 @@ Generated 2026-11-23T07:49:28.346Z by `scripts/benchmark.mjs` (slopgate 1.0.2, N
 
 ## rust-stdlib
 
-Scanned **1494** files (**635245** lines) in 51723 ms; parse errors: **157**.
+Scanned **1494** files (**635245** lines) in 51551 ms; parse errors: **157**.
 
 Corpus digest: `fce4df135e171390`.
 

@@ -5,8 +5,9 @@ import { asAst, type AstNode } from './ast.ts';
 import { discoverFiles, toPosix } from './files.ts';
 import { getParser } from './parser.ts';
 import { loadProjectRegistry, type ProjectRegistry } from './projects.ts';
+import { resolveProjectRoot } from './deps.ts';
 import { ALL_RULE_BY_ID, ALL_RULE_METAS, FILE_RULES, createProjectRules } from './rules/index.ts';
-import { confidenceRank } from './config.ts';
+import { confidenceRank, findGitRoot } from './config.ts';
 import { collectCommentRanges } from './rules/helpers.ts';
 import { isSuppressed, readSuppressions, type Suppressions } from './suppress.ts';
 import type { Config } from './config.ts';
@@ -75,13 +76,20 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
   // Scanning a single file still resolves manifests and local modules from the
   // project root, not just the file's directory.
   const root = targetInfo?.isFile() ? path.dirname(target) : target;
-  const projectRoot = options.projectRoot ? path.resolve(options.projectRoot) : root;
+  const projectRoot = options.projectRoot
+    ? path.resolve(options.projectRoot)
+    : await resolveProjectRoot(root, await findGitRoot(root));
   const indexRoot = options.indexRoot ? path.resolve(options.indexRoot) : projectRoot;
   const lookupRoot = options.lookupRoot ? path.resolve(options.lookupRoot) : indexRoot;
   const reportRoot = options.reportRoot ? path.resolve(options.reportRoot) : root;
   const warnings: string[] = [];
   const { config } = options;
 
+  for (const ruleId of options.onlyRules ?? []) {
+    if (!ALL_RULE_BY_ID.has(ruleId)) {
+      throw new Error(`unknown rule in onlyRules: ${ruleId}`);
+    }
+  }
   for (const ruleId of Object.keys(config.rules)) {
     if (!ALL_RULE_BY_ID.has(ruleId)) {
       throw new Error(
@@ -187,8 +195,12 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
       const missing = await registry.missingPackageJson(file.abs, file.language);
       if (missing) warnings.push(missing);
     }
+    // Use an absolute POSIX path for classification so scanning a directory
+    // named `tests/` does not erase the test-path segment from the finding path.
+    const classificationFile = toPosix(file.abs);
     const ctx: RuleContext = {
       file: findingFile,
+      classificationFile,
       source,
       lines: source.split(/\r?\n/),
       root,

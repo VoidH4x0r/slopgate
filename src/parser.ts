@@ -17,7 +17,12 @@ let initPromise: Promise<void> | undefined;
 const parserCache = new Map<LanguageId, Promise<Parser>>();
 
 async function ensureRuntime(): Promise<void> {
-  initPromise ??= Parser.init();
+  if (!initPromise) {
+    initPromise = Parser.init().catch((error) => {
+      initPromise = undefined;
+      throw error;
+    });
+  }
   await initPromise;
 }
 

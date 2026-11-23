@@ -108,7 +108,7 @@ function goPhantomImportRule(): Rule {
       tags: ['imports', 'dependencies'],
     },
     run(ctx) {
-      if (isGeneratedGo(ctx) || isTestPath(ctx.file)) return [];
+      if (isGeneratedGo(ctx) || isTestPath(ctx.classificationFile)) return [];
       if (ctx.deps.go.manifests.length === 0) return [];
       const drafts: RuleDraft[] = [];
       const seen = new Set<string>();
@@ -145,7 +145,7 @@ function goUnreachableRule(): Rule {
       tags: ['dead-code'],
     },
     run(ctx) {
-      if (isGeneratedGo(ctx) || isTestPath(ctx.file) || hasBuildConstraint(ctx)) return [];
+      if (isGeneratedGo(ctx) || isTestPath(ctx.classificationFile) || hasBuildConstraint(ctx)) return [];
       const drafts: RuleDraft[] = [];
       const checkStatements = (statements: AstNode[], owner: AstNode): void => {
         // Labels and goto make a linear "statement after return" analysis
@@ -196,7 +196,7 @@ function goStubBodyRule(): Rule {
       tags: ['stubs'],
     },
     run(ctx) {
-      if (isGeneratedGo(ctx) || isTestPath(ctx.file)) return [];
+      if (isGeneratedGo(ctx) || isTestPath(ctx.classificationFile)) return [];
       if (hasBuildConstraint(ctx)) return [];
       const drafts: RuleDraft[] = [];
       for (const fn of functions(ctx.root)) {
@@ -280,7 +280,7 @@ function goSwallowedErrorRule(): Rule {
       tags: ['errors'],
     },
     run(ctx) {
-      if (isGeneratedGo(ctx) || isTestPath(ctx.file)) return [];
+      if (isGeneratedGo(ctx) || isTestPath(ctx.classificationFile)) return [];
       const drafts: RuleDraft[] = [];
       for (const node of descendantsOfType(ctx.root, ['if_statement'])) {
         const condition = node.childForFieldName('condition');

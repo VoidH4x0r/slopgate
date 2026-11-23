@@ -35,6 +35,64 @@ test('dev-requirements and setup.py extras are parsed', async () => {
   );
 });
 
+test('common import/distribution mappings and PEP 508 extras are parsed', async () => {
+  const result = await scan({
+    'requirements.txt': [
+      'dnspython',
+      'discord.py',
+      'PyGithub',
+      'python-multipart',
+      'kafka-python',
+      'mysql-connector-python',
+      'faiss-cpu',
+      'pdfminer.six',
+      'imbalanced-learn',
+      'argon2-cffi',
+      'python-telegram-bot',
+      'mypkg[extra] @ https://example.test/mypkg.whl',
+      '',
+    ].join('\n'),
+    'app.py': [
+      'import dns',
+      'import discord',
+      'import github',
+      'import multipart',
+      'import kafka',
+      'import mysql.connector',
+      'import faiss',
+      'import pdfminer',
+      'import imblearn',
+      'import argon2',
+      'import telegram',
+      'import mypkg',
+      '',
+    ].join('\n'),
+  });
+  assert.deepEqual(
+    result.findings.filter((finding) => finding.ruleId === 'py/phantom-import'),
+    [],
+  );
+});
+
+test('TYPE_CHECKING and os.name guards are not phantom imports', async () => {
+  const result = await scan({
+    'pyproject.toml': '[project]\nname = "guards"\nversion = "0.0.0"\n',
+    'app.py': [
+      'from typing import TYPE_CHECKING',
+      'if TYPE_CHECKING:',
+      '    import missing_type_only',
+      'import os',
+      'if os.name == "nt":',
+      '    import win32api',
+      '',
+    ].join('\n'),
+  });
+  assert.deepEqual(
+    result.findings.filter((finding) => finding.ruleId === 'py/phantom-import'),
+    [],
+  );
+});
+
 test('requirements subdirectories and -r includes are parsed', async () => {
   const result = await scan({
     'requirements/base.txt': 'requests>=2\n',

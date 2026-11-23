@@ -120,6 +120,23 @@ test('ts/phantom-import handles import = require source fields', async () => {
   assert.match(drafts[0]?.message ?? '', /bar/);
 });
 
+test('ts/noop-test recognizes t.assert, tape members and bare assert imports', async () => {
+  for (const source of [
+    "test('x', (t) => { t.assert.strictEqual(1, 1); });\n",
+    "test('x', (t) => { t.doesNotMatch('a', /b/); });\n",
+    "import { strictEqual } from 'assert';\ntest('x', () => { strictEqual(1, 1); });\n",
+  ]) {
+    assert.deepEqual(await runRule('ts/noop-test', source, 'typescript'), [], source);
+  }
+});
+
+test('ts/noop-test skips a todo reason string', async () => {
+  assert.deepEqual(
+    await runRule('ts/noop-test', "test('x', { todo: 'later' }, () => {});\n", 'typescript'),
+    [],
+  );
+});
+
 test('ts/noop-test flags empty and assertion-free tests', async () => {
   const empty = await runRule('ts/noop-test', "test('a', () => {});\n", 'typescript');
   assert.equal(empty.length, 1);

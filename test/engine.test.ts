@@ -14,6 +14,24 @@ test('test-path classification covers e2e specs, mocks and spec directories', ()
   assert.equal(isTestPath('src/app.ts'), false);
 });
 
+test('test-path classification survives scanning the tests directory itself', async () => {
+  const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-tests-root-'));
+  try {
+    await mkdir(path.join(dir, 'tests'), { recursive: true });
+    await writeFile(path.join(dir, 'tests', 'helper.py'), 'def helper():\n    pass\n', 'utf8');
+    const result = await scanProject({
+      root: path.join(dir, 'tests'),
+      config: { ...DEFAULT_CONFIG, include: ['**/*.py'], exclude: [] },
+    });
+    assert.deepEqual(
+      result.findings.filter((finding) => finding.ruleId === 'py/stub-body'),
+      [],
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('scanProject strips a UTF-8 BOM before computing positions', async () => {
   const dir = await mkdtemp(path.join(ROOT, 'test', '.tmp-bom-src-'));
   try {

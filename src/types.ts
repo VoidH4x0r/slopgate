@@ -136,6 +136,8 @@ export interface ProjectDeps {
 export interface RuleContext {
   /** Report-root-relative POSIX path. */
   file: string;
+  /** Project-relative POSIX path used only for test/generated classification. */
+  classificationFile: string;
   /** Full BOM-stripped source; offsets in fixes are UTF-16 code units. */
   source: string;
   lines: string[];

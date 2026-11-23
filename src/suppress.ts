@@ -1,8 +1,8 @@
 import type { CommentRange, Finding } from './types.ts';
 
-const NEXT_LINE = /slopgate-ignore-next-line\b(.*)$/;
-const SAME_LINE = /slopgate-ignore-line\b(.*)$/;
-const FILE = /slopgate-disable-file\b/;
+const NEXT_LINE = /(?:^|#|\/\/|\/\*|\*)\s*slopgate-ignore-next-line\b(.*)$/;
+const SAME_LINE = /(?:^|#|\/\/|\/\*|\*)\s*slopgate-ignore-line\b(.*)$/;
+const FILE = /(?:^|#|\/\/|\/\*|\*)\s*slopgate-disable-file\b/;
 
 export interface Suppressions {
   fileDisabled: boolean;

@@ -36,6 +36,13 @@ test('readSuppressions supports slopgate-disable-file', () => {
   assert.equal(suppressions.fileDisabled, true);
 });
 
+test('prose containing a directive name does not suppress', () => {
+  const suppressions = readSuppressions(
+    '# add slopgate-disable-file at the top when needed\ndef stub():\n    pass\n',
+  );
+  assert.equal(suppressions.fileDisabled, false);
+});
+
 test('isSuppressed respects rule-specific directives', () => {
   const source = '# slopgate-ignore-next-line py/noop-test\ndef test_a(): pass\n';
   const suppressions = readSuppressions(source);

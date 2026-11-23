@@ -4,23 +4,167 @@
   "title": "slopgate JSON output",
   "type": "object",
   "additionalProperties": false,
-  "required": ["tool", "version", "reportRoot", "stats", "summary", "findings"],
+  "required": [
+    "tool",
+    "version",
+    "reportRoot",
+    "stats",
+    "summary",
+    "findings"
+  ],
   "properties": {
-    "tool": { "const": "slopgate" },
-    "version": { "type": "string" },
-    "reportRoot": { "type": "string" },
+    "tool": {
+      "const": "slopgate"
+    },
+    "version": {
+      "type": "string"
+    },
+    "reportRoot": {
+      "type": "string"
+    },
     "stats": {
       "type": "object",
       "additionalProperties": true,
-      "required": ["files", "byLanguage", "skipped", "parseErrors", "durationMs"],
+      "required": [
+        "files",
+        "byLanguage",
+        "skipped",
+        "parseErrors",
+        "durationMs"
+      ],
       "properties": {
-        "files": { "type": "integer", "minimum": 0 },
-        "skipped": { "type": "integer", "minimum": 0 },
-        "parseErrors": { "type": "integer", "minimum": 0 },
-        "durationMs": { "type": "number", "minimum": 0 }
+        "files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parseErrors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 0
+        },
+        "byLanguage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "python",
+            "javascript",
+            "typescript",
+            "tsx",
+            "go",
+            "rust"
+          ],
+          "properties": {
+            "python": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "javascript": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "typescript": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "tsx": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "go": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rust": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
       }
     },
-    "summary": { "type": "object", "additionalProperties": true },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "findings",
+        "bySeverity",
+        "byConfidence",
+        "suppressedByComment",
+        "baselined",
+        "hiddenByConfidence"
+      ],
+      "properties": {
+        "findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bySeverity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "error",
+            "warning",
+            "info"
+          ],
+          "properties": {
+            "error": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "warning": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "info": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "byConfidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "properties": {
+            "high": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "medium": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "low": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "suppressedByComment": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "baselined": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hiddenByConfidence": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "findings": {
       "type": "array",
       "items": {
@@ -39,17 +183,51 @@
           "fingerprint"
         ],
         "properties": {
-          "ruleId": { "type": "string" },
-          "severity": { "enum": ["error", "warning", "info"] },
-          "confidence": { "enum": ["high", "medium", "low"] },
-          "file": { "type": "string" },
-          "start": { "$ref": "#/$defs/position" },
-          "end": { "$ref": "#/$defs/position" },
-          "message": { "type": "string" },
-          "snippet": { "type": "string" },
-          "evidence": { "type": "array", "items": { "type": "string" } },
-          "help": { "type": "string" },
-          "fingerprint": { "type": "string", "pattern": "^[a-f0-9]{16}$" }
+          "ruleId": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "file": {
+            "type": "string"
+          },
+          "start": {
+            "$ref": "#/$defs/position"
+          },
+          "end": {
+            "$ref": "#/$defs/position"
+          },
+          "message": {
+            "type": "string"
+          },
+          "snippet": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "help": {
+            "type": "string"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{16}$"
+          }
         }
       }
     }
@@ -58,10 +236,19 @@
     "position": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["line", "column"],
+      "required": [
+        "line",
+        "column"
+      ],
       "properties": {
-        "line": { "type": "integer", "minimum": 1 },
-        "column": { "type": "integer", "minimum": 1 }
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     }
   }

@@ -30,9 +30,12 @@ All notable changes to this project are documented here. The format follows [Kee
 - MCP now requires `jsonrpc: "2.0"`, validates id/params/arguments types and integer `maxFindings`; stacked suppression directives merge instead of overwriting; Python `except (ValueError, ImportError)` is optional; Rust bindgen block headers and `git+https://`/`file://` PEP 508 references are handled.
 - VS Code clears deleted/renamed diagnostics and reports remaining findings after fix; benchmark reports use each corpus's labels file, show parse errors and omit the CPython footer for Go/Rust; schema exports provide a `default` condition.
 - Baseline fingerprints include the full finding message (version 2), preventing distinct multi-line imports with the same first line from being absorbed by one baseline entry; Python setup.py extras, `dev-/test-requirements`, TS e2e/mocks/spec paths, malformed tsconfig values, `go.work` sibling `require` sets and same-file semantic representatives are fixed.
+- Baseline writes keep findings below the display threshold; MCP subdirectory scans map findings onto the repository-root baseline; suppression directives must start a comment; Python TYPE_CHECKING/os.name guards, common import-to-distribution mappings, PEP 508 extras and except*/handler boundaries are covered.
+- TS assertions (`t.assert.*`, Tape members, bare `assert` imports) and `todo: "reason"` options are recognized; Go `/internal/` is only standard-library when the prefix is a stdlib package root; Rust grouped-use comments are stripped before comma splitting.
+- RuleContext carries an absolute classification path so scanning a `tests/` directory still treats its files as tests; public `scanProject()` resolves ancestor manifests; parser init retries after failure; unknown `onlyRules` ids fail fast; rule crashes make the CLI exit 2; schema output defines `byLanguage` and `summary`.
 
 ### Changed
-- 455 tests.
+- 462 tests.
 - Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.

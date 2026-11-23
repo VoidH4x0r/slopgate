@@ -99,7 +99,12 @@ function matchesAlias(specifier: string, aliases: readonly string[]): boolean {
   });
 }
 
-const NODE_ASSERT_SPECIFIERS = new Set(['node:assert', 'node:assert/strict']);
+const NODE_ASSERT_SPECIFIERS = new Set([
+  'node:assert',
+  'node:assert/strict',
+  'assert',
+  'assert/strict',
+]);
 
 function addAssertBinding(aliases: Set<string>, part: string): void {
   const match = /^\s*(?:type\s+)?([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?\s*$/.exec(part);
@@ -173,6 +178,9 @@ const T_ASSERTION_MEMBERS = new Set([
   'notOk',
   'doesNotThrow',
   'notMatch',
+  'doesNotMatch',
+  'notSame',
+  'assertion',
 ]);
 
 /**
@@ -201,6 +209,7 @@ function isAssertionCallee(
   if (text === 'should' || text.startsWith('should.') || text.startsWith('should(')) return true;
   if (text.startsWith('chai.')) return true;
   // Tape/TAP callback parameter may be named tt/st/myself, not just t.
+  if (contextParam && text.startsWith(`${contextParam}.assert.`)) return true;
   if (contextParam && text.startsWith(`${contextParam}.`)) {
     return T_ASSERTION_MEMBERS.has(text.slice(contextParam.length + 1));
   }
@@ -317,7 +326,7 @@ const phantomImport: Rule = {
         start: startOf(node),
         end: endOf(node),
         snippet: snippetOf(ctx, node),
-        confidence: isInstalled || isTestPath(ctx.file) ? 'medium' : 'high',
+        confidence: isInstalled || isTestPath(ctx.classificationFile) ? 'medium' : 'high',
         evidence: [
           `specifier: ${specifier}`,
           isInstalled ? `found in node_modules/${pkg}` : `not found in node_modules/${pkg}`,
@@ -393,7 +402,9 @@ function callOptionsSkip(call: AstNode): boolean {
     args?.namedChildren.some(
       (child) =>
         child.type === 'object' &&
-        /(?:^|[,{])\s*(?:skip|todo|fixme)\s*:\s*true\b/.test(child.text),
+        /(?:^|[,{])\s*(?:(?:skip|fixme)\s*:\s*true\b|todo\s*:\s*(?:true\b|['"][^'"]+['"]))/.test(
+          child.text,
+        ),
     ),
   );
 }
@@ -666,7 +677,7 @@ const stubFunction: Rule = {
   },
   run(ctx) {
     if (ctx.language === 'python') return [];
-    if (isTestPath(ctx.file)) return [];
+    if (isTestPath(ctx.classificationFile)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const node of descendantsOfType(ctx.root, ['function_declaration', 'method_definition'])) {
@@ -733,7 +744,7 @@ const swallowedException: Rule = {
   },
   run(ctx) {
     if (ctx.language === 'python') return [];
-    if (isTestPath(ctx.file)) return [];
+    if (isTestPath(ctx.classificationFile)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const clause of descendantsOfType(ctx.root, ['catch_clause'])) {
@@ -772,7 +783,7 @@ const deadBranch: Rule = {
   },
   run(ctx) {
     if (ctx.language === 'python') return [];
-    if (isTestPath(ctx.file)) return [];
+    if (isTestPath(ctx.classificationFile)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const node of descendantsOfType(ctx.root, ['if_statement', 'while_statement'])) {
@@ -848,7 +859,7 @@ const unreachable: Rule = {
   },
   run(ctx) {
     if (ctx.language === 'python') return [];
-    if (isTestPath(ctx.file)) return [];
+    if (isTestPath(ctx.classificationFile)) return [];
     const drafts: RuleDraft[] = [];
 
     for (const block of descendantsOfType(ctx.root, ['statement_block'])) {

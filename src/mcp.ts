@@ -464,7 +464,15 @@ export function defaultMcpDeps(root: string, version: string): Omit<McpDeps, 'co
       const baselineRoot = (await findGitRoot(root)) ?? root;
       const baseline = await loadBaseline(path.join(baselineRoot, '.slopgate-baseline.json'));
       if (baseline) {
-        return { ...result, findings: partitionByBaseline(result.findings, baseline).fresh };
+        const prefix = path.relative(baselineRoot, root).replace(/\\/g, '/').replace(/\/+$/, '');
+        const normalized = result.findings.map((finding) =>
+          prefix ? { ...finding, file: `${prefix}/${finding.file}` } : finding,
+        );
+        const originals = new Map(normalized.map((finding, index) => [finding, result.findings[index]!]));
+        const fresh = partitionByBaseline(normalized, baseline).fresh.map(
+          (finding) => originals.get(finding) ?? finding,
+        );
+        return { ...result, findings: fresh };
       }
       return result;
     },

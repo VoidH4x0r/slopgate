@@ -28,6 +28,21 @@ test('go/phantom-import rejects fabricated children of stdlib roots', async () =
   );
 });
 
+test('go/phantom-import rejects arbitrary third-party /internal/ paths', async () => {
+  const deps = makeDeps({ goModule: 'example.com/demo', goManifests: ['go.mod'] });
+  assert.equal(
+    (
+      await runRule(
+        'go/phantom-import',
+        'package main\n\nimport "github.com/nope/internal/x"\n',
+        'go',
+        deps,
+      )
+    ).length,
+    1,
+  );
+});
+
 test('go/phantom-import accepts stdlib, module and required paths', async () => {
   const source = [
     'package main',
