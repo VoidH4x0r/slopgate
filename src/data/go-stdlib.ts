@@ -60,8 +60,17 @@ export const GO_STDLIB_ROOTS: ReadonlySet<string> = new Set([
   'weak',
 ]);
 
+import { GO_STDLIB_PACKAGES } from './go-stdlib-packages.ts';
+
 export function isGoStdlib(importPath: string): boolean {
   if (importPath === 'C') return true;
-  const root = importPath.split('/')[0] ?? '';
-  return GO_STDLIB_ROOTS.has(root);
+  if (
+    importPath === 'internal' ||
+    importPath.startsWith('internal/') ||
+    importPath.includes('/internal/') ||
+    importPath.endsWith('/internal')
+  ) {
+    return true;
+  }
+  return GO_STDLIB_PACKAGES.has(importPath);
 }

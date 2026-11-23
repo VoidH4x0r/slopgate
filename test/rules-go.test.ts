@@ -9,6 +9,25 @@ test('go/phantom-import reports unresolved external modules', async () => {
   assert.match(drafts[0]?.message ?? '', /github.com\/nope\/pkg/);
 });
 
+test('go/phantom-import rejects fabricated children of stdlib roots', async () => {
+  const deps = makeDeps({ goModule: 'example.com/demo', goManifests: ['go.mod'] });
+  assert.equal(
+    (
+      await runRule(
+        'go/phantom-import',
+        'package main\n\nimport "crypto/bcrypt"\n',
+        'go',
+        deps,
+      )
+    ).length,
+    1,
+  );
+  assert.deepEqual(
+    await runRule('go/phantom-import', 'package main\n\nimport "crypto/tls"\n', 'go', deps),
+    [],
+  );
+});
+
 test('go/phantom-import accepts stdlib, module and required paths', async () => {
   const source = [
     'package main',

@@ -287,7 +287,7 @@ import (
 )
 ```
 
-**Precision controls.** `C` (cgo) is accepted; test files and `// Code generated ... DO NOT EDIT.` files are skipped; no go.mod means the rule stays silent rather than guessing. The reserved `internal/...` root is accepted because the standard library and its modules use it; local package existence inside the module is not checked yet, which intentionally avoids flagging module-internal packages that are resolved by the Go toolchain. The standard-library check is root-based, so a fabricated child under a real root (for example `crypto/bcrypt`) is accepted; this is a deliberate false-negative tradeoff.
+**Precision controls.** `C` (cgo) is accepted; test files and `// Code generated ... DO NOT EDIT.` files are skipped; no go.mod means the rule stays silent rather than guessing. The reserved `internal/...` root is accepted because the standard library and its modules use it; local package existence inside the module is not checked yet, which intentionally avoids flagging module-internal packages that are resolved by the Go toolchain. The standard-library check uses an exact Go 1.24 package table (plus `internal/` packages), so a fabricated child under a real root such as `crypto/bcrypt` is reported.
 
 ---
 

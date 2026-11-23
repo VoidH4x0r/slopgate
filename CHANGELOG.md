@@ -23,13 +23,13 @@ All notable changes to this project are documented here. The format follows [Kee
 - Suppression directives are matched against actual comment text, so string literals cannot disable a file or line.
 - Python requirements files under `requirements/`, `requirements-*.txt`, `-r` includes and PEP 508 direct references are parsed.
 - TS `export default 'string'` is no longer a phantom import; `node:test` options-object skip/todo is honored; `expect(true).toBeTruthy()`, `import = require` and switch-case unreachable are covered.
-- Go `go.work` modules are accepted; parenthesized/initializer `err != nil`, type switch cases and raw-string panic stubs are covered.
+- Go `go.work` modules are accepted; parenthesized/initializer `err != nil`, type switch cases, raw-string panic stubs and the exact Go 1.24 stdlib package table are covered.
 - Rust inline modules, `use` comments, `#[cfg(test)]` impl blocks, attribute-comment adjacency and Go/Rust exact string whitespace are covered.
 - Baseline entries for `rules: { ...: "off" }` are preserved; encoding checks cover Go/Rust/Pyi/MTS/CTS/JSX; release check rejects a tag/version mismatch.
 - tsconfig wildcard paths, Python Poetry dependency subtables and optional-import handler typing, MCP root-prefix/`..data`, VS Code multi-root selection, `ScanResult.reportRoot`, TS empty statements and Rust `todo!("...")` are covered.
 
 ### Changed
-- 445 tests.
+- 446 tests.
 - Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.
