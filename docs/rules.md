@@ -287,7 +287,7 @@ import (
 )
 ```
 
-**Precision controls.** `C` (cgo) is accepted; test files and `// Code generated ... DO NOT EDIT.` files are skipped; no go.mod means the rule stays silent rather than guessing. The reserved `internal/...` root is accepted because the standard library and its modules use it; local package existence inside the module is not checked yet, which intentionally avoids flagging module-internal packages that are resolved by the Go toolchain.
+**Precision controls.** `C` (cgo) is accepted; test files and `// Code generated ... DO NOT EDIT.` files are skipped; no go.mod means the rule stays silent rather than guessing. The reserved `internal/...` root is accepted because the standard library and its modules use it; local package existence inside the module is not checked yet, which intentionally avoids flagging module-internal packages that are resolved by the Go toolchain. The standard-library check is root-based, so a fabricated child under a real root (for example `crypto/bcrypt`) is accepted; this is a deliberate false-negative tradeoff.
 
 ---
 
@@ -319,7 +319,7 @@ import (
 
 **What it catches.** An `if err != nil` (or `*Err`) block with no statements and no comment, which silently discards a returned error.
 
-**Not reported.** Branches that return, log, panic or otherwise handle the error; comments in the branch are treated as intentional and skip the finding; test and generated files are skipped. The rule handles the simple condition form, not `if err := f(); err != nil`.
+**Not reported.** Branches that return, log, panic or otherwise handle the error; comments in the branch are treated as intentional and skip the finding; test and generated files are skipped. Parenthesized conditions and `if err := f(); err != nil` initializers are handled.
 
 ---
 
