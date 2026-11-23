@@ -1,15 +1,16 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:37:17.701Z",
+  "generatedAt": "2026-11-23T07:50:22.042Z",
   "slopgateVersion": "1.0.2",
   "nodeVersion": "v24.19.0",
+  "labelsFile": "benchmark/heldout-labels.json",
   "corpora": [
     {
       "name": "heldout-ai",
       "digest": "2404daae29252116",
       "files": 10,
       "lines": 39,
-      "durationMs": 46,
+      "durationMs": 51,
       "findings": 8,
       "high": 8,
       "suppressed": 0,

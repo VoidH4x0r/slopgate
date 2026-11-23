@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T07:35:37.509Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
+Generated 2026-11-23T07:48:48.880Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
 
 ## Summary
 
@@ -24,7 +24,7 @@ Detected **30/30** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 12548 ms.
+Scanned **1845** files (**991705** lines) in 12478 ms; parse errors: **9**.
 
 Corpus digest: `027f952580cd6622`.
 
@@ -40,7 +40,7 @@ Corpus digest: `027f952580cd6622`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 46 ms.
+Scanned **7** files (**2783** lines) in 45 ms; parse errors: **0**.
 
 Package: `express@5.3.0`.
 
@@ -51,7 +51,7 @@ Corpus digest: `d2b720bf4294881f`.
 
 ## chalk
 
-Scanned **2** files (**799** lines) in 10 ms.
+Scanned **2** files (**799** lines) in 9 ms; parse errors: **0**.
 
 Package: `chalk@6.0.1`.
 
@@ -62,7 +62,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 199 ms.
+Scanned **111** files (**8363** lines) in 193 ms; parse errors: **0**.
 
 Package: `execa@10.2.1`.
 
@@ -75,7 +75,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 73 ms.
+Scanned **49** files (**3166** lines) in 72 ms; parse errors: **0**.
 
 Package: `semver@7.8.6`.
 
@@ -86,7 +86,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 71 ms.
+Scanned **7** files (**4225** lines) in 69 ms; parse errors: **0**.
 
 Package: `commander@15.1.0`.
 
@@ -98,7 +98,7 @@ Corpus digest: `a1904525101c27be`.
 
 ## debug
 
-Scanned **4** files (**841** lines) in 19 ms.
+Scanned **4** files (**841** lines) in 18 ms; parse errors: **0**.
 
 Package: `debug@4.4.3`.
 
@@ -110,7 +110,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 1571 ms.
+Scanned **409** files (**100880** lines) in 1574 ms; parse errors: **0**.
 
 Package: `eslint@10.15.0`.
 
@@ -124,7 +124,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 50 ms.
+Scanned **7** files (**2217** lines) in 54 ms; parse errors: **0**.
 
 Package: `glob@14.0.6`.
 
@@ -135,7 +135,7 @@ Corpus digest: `dc4dc56c06b64fb8`.
 
 ## yargs
 
-Scanned **5** files (**198** lines) in 9 ms.
+Scanned **5** files (**198** lines) in 8 ms; parse errors: **0**.
 
 Package: `yargs@18.2.0`.
 
@@ -146,7 +146,7 @@ Corpus digest: `53ba47a2d90b26ae`.
 
 ## ai-generated
 
-Scanned **20** files (**93** lines) in 11 ms.
+Scanned **20** files (**93** lines) in 11 ms; parse errors: **0**.
 
 Package: `ai-generated-corpus@0.0.0`.
 

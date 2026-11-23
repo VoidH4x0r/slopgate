@@ -78,6 +78,14 @@ export function readSuppressions(
       }
     }
   }
+  const addRules = (target: number, rules: Set<string> | 'all'): void => {
+    const existing = suppressions.lineRules.get(target);
+    if (!existing || existing === 'all' || rules === 'all') {
+      suppressions.lineRules.set(target, existing === 'all' || rules === 'all' ? 'all' : rules);
+      return;
+    }
+    for (const rule of rules) existing.add(rule);
+  };
   const commentText = (lineNumber: number, line: string): string => {
     if (!comments || comments.length === 0) return line;
     return (commentByLine.get(lineNumber) ?? []).join('\n');
@@ -94,12 +102,12 @@ export function readSuppressions(
     const next = NEXT_LINE.exec(line);
     if (next) {
       const target = nextCodeLine(lines, index + 1) ?? index + 2;
-      suppressions.lineRules.set(target, ruleList(next[1] ?? ''));
+      addRules(target, ruleList(next[1] ?? ''));
       continue;
     }
     const same = SAME_LINE.exec(line);
     if (same && !next) {
-      suppressions.lineRules.set(index + 1, ruleList(same[1] ?? ''));
+      addRules(index + 1, ruleList(same[1] ?? ''));
     }
   }
   return suppressions;

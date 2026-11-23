@@ -68,6 +68,17 @@ test('ignore-next-line skips a multi-line decorator', () => {
   assert.equal(isSuppressed(finding(5, 'py/noop-test'), suppressions), true);
 });
 
+test('stacked ignore-next-line directives all apply to the target', () => {
+  const source = [
+    '# slopgate-ignore-next-line py/noop-test',
+    '# slopgate-ignore-next-line py/stub-body',
+    'def test_a(): pass',
+  ].join('\n');
+  const suppressions = readSuppressions(source);
+  assert.equal(isSuppressed(finding(3, 'py/noop-test'), suppressions), true);
+  assert.equal(isSuppressed(finding(3, 'py/stub-body'), suppressions), true);
+});
+
 test('ignore-next-line works inside a block comment and across decorators', () => {
   const block = [
     '/*',

@@ -1,15 +1,16 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:39:23.771Z",
+  "generatedAt": "2026-11-23T07:49:04.734Z",
   "slopgateVersion": "1.0.2",
   "nodeVersion": "v24.19.0",
+  "labelsFile": "benchmark/go-labels.json",
   "corpora": [
     {
       "name": "go-stdlib",
       "digest": "3970b1f25e424815",
       "files": 6090,
       "lines": 2455171,
-      "durationMs": 22006,
+      "durationMs": 21547,
       "findings": 427,
       "high": 0,
       "suppressed": 0,

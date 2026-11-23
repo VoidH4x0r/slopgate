@@ -68,9 +68,7 @@ function isOptionalImport(node: AstNode): boolean {
   if (!tryNode) return false;
   return descendantsOfType(tryNode, ['except_clause']).some((clause) => {
     const head = (clause.text.split(':')[0] ?? '').trim();
-    return /^except\s+(?:\(\s*)?(?:[A-Za-z_]\w*\.)?(?:ImportError|ModuleNotFoundError)\b/.test(
-      head,
-    );
+    return /^except\b[\s\S]*?\b(?:ImportError|ModuleNotFoundError)\b/.test(head);
   });
 }
 

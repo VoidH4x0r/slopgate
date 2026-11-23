@@ -76,8 +76,12 @@
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json",
-    "./schema/slopgate.schema.json": "./schema/slopgate.schema.json",
-    "./schema/scan-output.schema.json": "./schema/scan-output.schema.json"
+    "./schema/slopgate.schema.json": {
+      "default": "./schema/slopgate.schema.json"
+    },
+    "./schema/scan-output.schema.json": {
+      "default": "./schema/scan-output.schema.json"
+    }
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts"

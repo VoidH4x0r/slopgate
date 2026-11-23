@@ -50,6 +50,13 @@ function resolveFindingUri(root: string, file: string): vscode.Uri {
   return path.isAbsolute(file) ? vscode.Uri.file(file) : vscode.Uri.file(path.join(root, file));
 }
 
+function removeUri(uri: vscode.Uri): void {
+  const key = uri.toString();
+  if (!diagnosticsByUri.has(key)) return;
+  diagnosticsByUri.delete(key);
+  collection.delete(uri);
+}
+
 function publish(
   root: string,
   findings: readonly ScanFinding[],
@@ -120,12 +127,14 @@ async function fixActiveDocument(document?: vscode.TextDocument): Promise<void> 
   const root = workspaceRoot(document) ?? path.dirname(document.uri.fsPath);
   const settings = configured();
   try {
-    await runSlopgate(
+    const payload = await runSlopgate(
       settings.executable,
       buildScanArgs(document.uri.fsPath, settings, 'fix'),
       root,
     );
-    vscode.window.showInformationMessage('slopgate fix completed; remaining diagnostics were refreshed.');
+    vscode.window.showInformationMessage(
+      `slopgate fix completed; ${payload.findings.length} finding(s) remain.`,
+    );
     await scanActiveDocument(document);
   } catch (error) {
     vscode.window.showWarningMessage(`slopgate fix failed: ${(error as Error).message}`);
@@ -176,6 +185,12 @@ export function activate(context: vscode.ExtensionContext): void {
       if (event.affectsConfiguration('slopgate')) {
         void vscode.commands.executeCommand('slopgate.scanWorkspace');
       }
+    }),
+    vscode.workspace.onDidDeleteFiles((event) => {
+      for (const uri of event.files) removeUri(uri);
+    }),
+    vscode.workspace.onDidRenameFiles((event) => {
+      for (const file of event.files) removeUri(file.oldUri);
     }),
   );
 

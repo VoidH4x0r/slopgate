@@ -178,6 +178,7 @@ async function main() {
     generatedAt: new Date().toISOString(),
     slopgateVersion: packageJson.version,
     nodeVersion: process.version,
+    labelsFile: path.relative(ROOT, path.resolve(options.labels)).replaceAll('\\', '/'),
     corpora: [],
   };
 
@@ -298,7 +299,9 @@ function renderMarkdown(report) {
   }
   for (const corpus of report.corpora) {
     lines.push(`## ${corpus.name}`, '');
-    lines.push(`Scanned **${corpus.files}** files (**${corpus.lines}** lines) in ${corpus.durationMs} ms.`);
+    lines.push(
+      `Scanned **${corpus.files}** files (**${corpus.lines}** lines) in ${corpus.durationMs} ms; parse errors: **${corpus.parseErrors ?? 0}**.`,
+    );
     if (corpus.package) lines.push('', `Package: \`${corpus.package.name}@${corpus.package.version}\`.`);
     lines.push('', `Corpus digest: \`${corpus.digest}\`.`);
     lines.push('');
@@ -319,17 +322,19 @@ function renderMarkdown(report) {
   );
   lines.push('');
   lines.push(
-    'Every distinct `high` fingerprint is labeled in `benchmark/labels.json` as `tp` (the described pattern is present in the code as written) or `fp` (the report is misleading). Labels are per fingerprint, not per occurrence: identical snippets in one file share a label. Precision is `tp / (tp + fp)` over labeled findings; the report also states how many high findings are unlabeled and how many labels are stale.',
+    `Every distinct \`high\` fingerprint is labeled in \`${report.labelsFile ?? 'benchmark/labels.json'}\` as \`tp\` (the described pattern is present in the code as written) or \`fp\` (the report is misleading). Labels are per fingerprint, not per occurrence: identical snippets in one file share a label. Precision is \`tp / (tp + fp)\` over labeled findings; the report also states how many high findings are unlabeled and how many labels are stale.`,
   );
   lines.push('');
   lines.push(
     'These labels were produced while iterating on the same corpus, so precision is a development-set measurement, not a held-out estimate. The labels and the harness are published so a reviewer can dispute any of them; label removals and additions are recorded in the changelog.',
   );
   lines.push('');
-  lines.push(
-    'The corpus is deliberately adversarial: CPython\'s own test suite is full of helper functions named `test_*` and intentional no-op implementations, which is where the `noop-test` false positives come from.',
-  );
-  lines.push('');
+  if (report.corpora.some((corpus) => corpus.name.includes('cpython'))) {
+    lines.push(
+      'The corpus is deliberately adversarial: CPython\'s own test suite is full of helper functions named `test_*` and intentional no-op implementations, which is where the `noop-test` false positives come from.',
+    );
+    lines.push('');
+  }
   return lines.join('\n');
 }
 

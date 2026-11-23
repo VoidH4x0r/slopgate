@@ -1,8 +1,9 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:37:16.908Z",
+  "generatedAt": "2026-11-23T07:50:21.236Z",
   "slopgateVersion": "1.0.2",
   "nodeVersion": "v24.19.0",
+  "labelsFile": "benchmark/bundled-labels.json",
   "corpora": [
     {
       "name": "bundled-app",
@@ -13,7 +14,7 @@
       "digest": "c4478600ed4e4f39",
       "files": 6,
       "lines": 332,
-      "durationMs": 708,
+      "durationMs": 717,
       "findings": 48,
       "high": 0,
       "suppressed": 0,

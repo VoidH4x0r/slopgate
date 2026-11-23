@@ -319,7 +319,15 @@ export function createMcpServer(deps: McpDeps) {
         request === null ||
         typeof request !== 'object' ||
         typeof request.method !== 'string' ||
-        (request.jsonrpc !== undefined && request.jsonrpc !== '2.0')
+        request.jsonrpc !== '2.0' ||
+        (request.id !== undefined &&
+          request.id !== null &&
+          typeof request.id !== 'string' &&
+          typeof request.id !== 'number') ||
+        (request.params !== undefined &&
+          (request.params === null ||
+            typeof request.params !== 'object' ||
+            Array.isArray(request.params)))
       ) {
         return fail(null, -32600, 'Invalid request');
       }
@@ -351,6 +359,14 @@ export function createMcpServer(deps: McpDeps) {
             const params = (request.params ?? {}) as { name?: unknown; arguments?: unknown };
             if (typeof params.name !== 'string') {
               return isNotification ? null : fail(id, -32602, 'tools/call requires a tool name');
+            }
+            if (
+              params.arguments !== undefined &&
+              (params.arguments === null ||
+                typeof params.arguments !== 'object' ||
+                Array.isArray(params.arguments))
+            ) {
+              return isNotification ? null : fail(id, -32602, 'tools/call arguments must be an object');
             }
             const args =
               params.arguments !== null && typeof params.arguments === 'object'

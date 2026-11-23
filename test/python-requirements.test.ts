@@ -37,8 +37,8 @@ test('requirements subdirectories and -r includes are parsed', async () => {
 
 test('requirements-*.txt and PEP 508 direct references are parsed', async () => {
   const result = await scan({
-    'requirements-api.txt': 'fastapi\nmypkg @ https://example.test/mypkg.whl\n',
-    'app.py': 'import fastapi\nimport mypkg\n',
+    'requirements-api.txt': 'fastapi\nmypkg @ https://example.test/mypkg.whl\nother @ git+https://example.test/other.git\n',
+    'app.py': 'import fastapi\nimport mypkg\nimport other\n',
   });
   assert.deepEqual(
     result.findings.filter((finding) => finding.ruleId === 'py/phantom-import'),

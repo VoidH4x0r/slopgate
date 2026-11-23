@@ -143,6 +143,21 @@ test('mcp: malformed tools/call notifications return no response', async () => {
   );
 });
 
+test('mcp: strict JSON-RPC validation rejects missing jsonrpc and bad id types', async () => {
+  const server = makeServer();
+  const missing = await call(server, { id: 1, method: 'tools/list' });
+  assert.equal(missing.error?.code, -32600);
+  const badId = await call(server, { jsonrpc: '2.0', id: true, method: 'tools/list' });
+  assert.equal(badId.error?.code, -32600);
+  const badArgs = await call(server, {
+    jsonrpc: '2.0',
+    id: 2,
+    method: 'tools/call',
+    params: { name: 'scan_path', arguments: [] },
+  });
+  assert.equal(badArgs.error?.code, -32602);
+});
+
 test('mcp: tools/list exposes scan_diff, scan_path, list_rules, explain_rule and preview_fix', async () => {
   const server = makeServer();
   const response = await call(server, { jsonrpc: '2.0', id: 2, method: 'tools/list' });

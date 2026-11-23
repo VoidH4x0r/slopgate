@@ -566,6 +566,28 @@ test('py/phantom-import ignores ImportError text outside the handler type', asyn
   assert.equal(drafts.length, 1);
 });
 
+test('py/phantom-import accepts ImportError anywhere in a tuple handler', async () => {
+  for (const handler of ['except (ValueError, ImportError):', 'except (ImportError, ValueError):']) {
+    const source = [
+      'try:',
+      '    import optional_dependency',
+      handler,
+      '    optional_dependency = None',
+      '',
+    ].join('\n');
+    assert.deepEqual(
+      await runRule(
+        'py/phantom-import',
+        source,
+        'python',
+        makeDeps({ pythonManifests: ['pyproject.toml'] }),
+      ),
+      [],
+      handler,
+    );
+  }
+});
+
 test('py/phantom-import accepts a real ImportError optional import', async () => {
   const source = [
     'try:',
