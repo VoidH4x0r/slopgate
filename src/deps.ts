@@ -859,7 +859,9 @@ async function readTsconfig(
 
   const own = parsed.compilerOptions ?? {};
   if (own.paths && typeof own.paths === 'object' && !Array.isArray(own.paths)) {
-    paths = { ...paths, ...(own.paths as Record<string, unknown>) };
+    // TypeScript replaces the inherited paths table when the child declares
+    // its own compilerOptions.paths; it does not merge the two tables.
+    paths = own.paths as Record<string, unknown>;
   }
   if (typeof own.baseUrl === 'string') baseUrl = path.resolve(dir, own.baseUrl);
   else if (baseUrl && !path.isAbsolute(baseUrl)) baseUrl = path.resolve(dir, baseUrl);
@@ -907,8 +909,8 @@ async function loadTsconfigAliases(root: string): Promise<string[]> {
         continue;
       }
       if (key.endsWith('*')) {
-        const cleaned = key.replace(/\/\*$/, '').replace(/\*$/, '');
-        if (cleaned) aliases.add(cleaned);
+        const prefix = key.endsWith('/*') ? key.slice(0, -1) : key.slice(0, -1);
+        if (prefix) aliases.add(`*${prefix}`);
       } else {
         // Exact paths key: TypeScript does not treat it as a prefix.
         aliases.add(`=${key}`);

@@ -94,6 +94,7 @@ function matchesAlias(specifier: string, aliases: readonly string[]): boolean {
   if (aliases.includes(`=${specifier}`)) return true;
   return aliases.some((alias) => {
     if (alias.startsWith('=')) return false;
+    if (alias.startsWith('*')) return specifier.startsWith(alias.slice(1));
     const clean = alias.replace(/\/+$/, '');
     return specifier === clean || specifier.startsWith(`${clean}/`);
   });

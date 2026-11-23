@@ -34,9 +34,10 @@ All notable changes to this project are documented here. The format follows [Kee
 - TS assertions (`t.assert.*`, Tape members, bare `assert` imports) and `todo: "reason"` options are recognized; Go `/internal/` is only standard-library when the prefix is a stdlib package root; Rust grouped-use comments are stripped before comma splitting.
 - RuleContext carries an absolute classification path so scanning a `tests/` directory still treats its files as tests; public `scanProject()` resolves ancestor manifests; parser init retries after failure; unknown `onlyRules` ids fail fast; rule crashes make the CLI exit 2; schema output defines `byLanguage` and `summary`.
 - Unborn git repositories treat untracked files as new; conditional `pytest.skip` branches no longer exempt a test; Rust generated headers only match real generated markers; TS destructuring `require` aliases and Tape subtests count as assertion structure; VS Code settings resolve per workspace folder and extension version is 0.1.1.
+- Baseline v1 entries preserved by a v2 rewrite are marked legacy and still match; tsconfig `@*`/`~*` wildcards match their prefix; a child `paths` table replaces inherited entries instead of merging them.
 
 ### Changed
-- 469 tests.
+- 472 tests.
 - Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.

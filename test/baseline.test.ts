@@ -5,6 +5,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
   findingFingerprint,
+  legacyFindingFingerprint,
   loadBaseline,
   mergeBaseline,
   partitionByBaseline,
@@ -145,6 +146,34 @@ test('fingerprint includes the finding message when snippets share a first line'
   const one = makeFinding({ snippet: 'import {', message: '`ghost-one` is not declared' });
   const two = makeFinding({ snippet: 'import {', message: '`ghost-two` is not declared' });
   assert.notEqual(findingFingerprint(one), findingFingerprint(two));
+});
+
+test('mergeBaseline marks preserved v1 entries as legacy and keeps them matching', async () => {
+  const dir = await mkdtemp(path.join(HERE, '.tmp-baseline-legacy-'));
+  try {
+    const file = path.join(dir, 'baseline.json');
+    const old = makeFinding({ file: 'old.py' });
+    const fresh = makeFinding({ file: 'new.py' });
+    const baseline: BaselineFile = {
+      version: 1,
+      createdAt: new Date(0).toISOString(),
+      entries: [
+        {
+          fingerprint: legacyFindingFingerprint(old),
+          ruleId: old.ruleId,
+          file: old.file,
+        },
+      ],
+    };
+    await writeFile(file, JSON.stringify(baseline), 'utf8');
+    const merged = await mergeBaseline(file, [fresh], ['new.py']);
+    assert.equal(merged.version, 2);
+    assert.equal(merged.entries.find((entry) => entry.file === 'old.py')?.legacy, true);
+    assert.equal(partitionByBaseline([old], merged).known.length, 1);
+    assert.equal(partitionByBaseline([fresh], merged).known.length, 1);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test('loadBaseline rejects a malformed file', async () => {

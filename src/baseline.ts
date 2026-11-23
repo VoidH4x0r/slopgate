@@ -12,6 +12,8 @@ export interface BaselineEntry {
    * Optional for backwards compatibility: older baselines implied 1.
    */
   count?: number;
+  /** Entry carries a version-1 fingerprint that cannot be recomputed. */
+  legacy?: boolean;
 }
 
 export interface BaselineFile {
@@ -70,6 +72,7 @@ export async function loadBaseline(file: string): Promise<BaselineFile | undefin
           ruleId: entry.ruleId,
           file: entry.file,
           ...(typeof entry.count === 'number' && entry.count > 0 ? { count: entry.count } : {}),
+          ...(entry.legacy === true ? { legacy: true } : {}),
         })),
     };
   } catch (error) {
@@ -145,6 +148,9 @@ export async function mergeBaseline(
       Boolean(disabledRules?.has(entry.ruleId));
     if (!outsideScope && !ruleNotSelected) continue;
     if (currentFingerprints.has(entry.fingerprint)) continue;
+    const preservedEntry = existing?.version === 1 && entry.legacy !== true
+      ? { ...entry, legacy: true }
+      : entry;
     // A baseline kept for a deleted file grows forever. When the caller gives
     // us the baseline root, prune entries whose file no longer exists; entries
     // for files outside the scan scope but still present are preserved.
@@ -155,7 +161,7 @@ export async function mergeBaseline(
       );
       if (!exists) continue;
     }
-    preserved.push(entry);
+    preserved.push(preservedEntry);
   }
   return writeBaselineEntries(file, [...preserved, ...current]);
 }
@@ -187,27 +193,28 @@ export function partitionByBaseline(
   if (!baseline) return { fresh: [...findings], known: [] };
 
   const remaining = new Map<string, number>();
+  const legacyRemaining = new Map<string, number>();
   for (const entry of baseline.entries) {
-    remaining.set(entry.fingerprint, (remaining.get(entry.fingerprint) ?? 0) + (entry.count ?? 1));
+    const target = entry.legacy || baseline.version === 1 ? legacyRemaining : remaining;
+    target.set(entry.fingerprint, (target.get(entry.fingerprint) ?? 0) + (entry.count ?? 1));
   }
 
   const fresh: Finding[] = [];
   const known: Finding[] = [];
   for (const finding of ordered(findings)) {
-    const candidates =
-      baseline.version === 1
-        ? [findingFingerprint(finding), legacyFindingFingerprint(finding)]
-        : [findingFingerprint(finding)];
-    let matched: string | undefined;
-    for (const fingerprint of candidates) {
-      if ((remaining.get(fingerprint) ?? 0) > 0) {
-        matched = fingerprint;
-        break;
-      }
-    }
-    if (matched) {
+    const current = findingFingerprint(finding);
+    const legacy = legacyFindingFingerprint(finding);
+    const candidate =
+      (remaining.get(current) ?? 0) > 0
+        ? { fingerprint: current, map: remaining }
+        : (legacyRemaining.get(current) ?? 0) > 0
+          ? { fingerprint: current, map: legacyRemaining }
+          : (legacyRemaining.get(legacy) ?? 0) > 0
+            ? { fingerprint: legacy, map: legacyRemaining }
+            : undefined;
+    if (candidate) {
       known.push(finding);
-      remaining.set(matched, (remaining.get(matched) ?? 0) - 1);
+      candidate.map.set(candidate.fingerprint, (candidate.map.get(candidate.fingerprint) ?? 0) - 1);
     } else {
       fresh.push(finding);
     }
