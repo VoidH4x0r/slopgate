@@ -19,7 +19,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Added `@types/emscripten` so clean consumers can typecheck the published declarations with `skipLibCheck: false`.
 
 ### Changed
-- 412 tests.
+- 414 tests.
+- Added `fixtures/go-review` and `fixtures/rust-review` covering switch cases, build tags, generated files, Testhelper/methods, `src/bin`, Cargo aliases/workspace/target dependencies, `cfg(all(test, ...))` and `use ... as`/group/raw roots.
 - Benchmarks remain **42 high / 97.6% (41/42) / 30/30 seeded** on the main corpus; Go/Rust/Tape/bundled are **0 high among parsed files**, held-out AI is **8/8 labeled high**.
 - Documentation correction: the 20-file Go/Rust fixture directories are `valueNN` smoke fixtures; build-tag, Testhelper, `cfg(test)`, macro, async and workspace negative cases live in the rule regression tests, not those directories.
 - MCP now treats only a missing `id` as a notification, responds to `id: null`, rejects invalid `jsonrpc`, and negotiates only known protocol versions.

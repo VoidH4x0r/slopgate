@@ -1,0 +1,15 @@
+[package]
+name = 'rust-review'
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = "0.1"
+serde.workspace = true
+
+[target.'cfg(unix)'.dev-dependencies]
+libc = "0.2"
+
+[[bin]]
+name = "tool"
+path = "src/bin/tool.rs"
