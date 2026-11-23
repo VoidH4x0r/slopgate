@@ -316,6 +316,50 @@ test('Go duplicate-block skips platform and generated files', async () => {
   );
 });
 
+test('Go/Rust exact duplicate keeps whitespace inside string literals', async () => {
+  const goLeft = [
+    'package main',
+    '',
+    'func alpha() {',
+    '  x := "hello   world"',
+    '  println(x)',
+    '  x = "a"',
+    '  x = "b"',
+    '  x = "c"',
+    '  println(x)',
+    '}',
+    '',
+  ].join('\n');
+  const goRight = goLeft.replace('hello   world', 'hello world');
+  const rustLeft = [
+    'fn alpha() {',
+    '    let x = "hello   world";',
+    '    println!("{}", x);',
+    '    let x = "a";',
+    '    let x = "b";',
+    '    let x = "c";',
+    '    println!("{}", x);',
+    '}',
+    '',
+  ].join('\n');
+  const rustRight = rustLeft.replace('hello   world', 'hello world');
+  for (const [left, right, name, rule] of [
+    [goLeft, goRight, ['pkg/a.go', 'pkg/b.go'], 'go/duplicate-block'],
+    [rustLeft, rustRight, ['pkg/a.rs', 'pkg/b.rs'], 'rs/duplicate-block'],
+  ] as Array<[string, string, [string, string], string]>) {
+    const result = await scanTwoFiles(left, right, {
+      names: name,
+      onlyRules: [rule],
+      confidence: 'medium',
+    });
+    assert.equal(
+      result.findings.filter((finding) => finding.ruleId === rule).length,
+      0,
+      rule,
+    );
+  }
+});
+
 test('duplicate-block ignores short bodies, same-file copies and test paths', async () => {
   const short = 'def f():\n    return 1\n';
   assert.equal(

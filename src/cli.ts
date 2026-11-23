@@ -529,6 +529,11 @@ async function runScan(options: Options, io: CliIo): Promise<number> {
       result.files,
       options.rules.length > 0 ? new Set(options.rules) : undefined,
       baselineRoot,
+      new Set(
+        Object.entries(merged.rules)
+          .filter(([, value]) => value === 'off')
+          .map(([ruleId]) => ruleId),
+      ),
     );
     writeOut(
       io,

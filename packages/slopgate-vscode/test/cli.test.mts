@@ -4,6 +4,7 @@ import {
   buildScanArgs,
   isFixableRule,
   parseScanPayload,
+  runSlopgate,
   toDiagnostic,
 } from '../dist/cli.js';
 
@@ -55,6 +56,15 @@ test('buildScanArgs asks for JSON and disables color', () => {
     ['src', '--format', 'json', '--confidence', 'medium', '--fail-on', 'none', '--no-color'],
   );
   assert.ok(buildScanArgs('src', { confidence: 'high', failOn: 'none' }, 'fix').includes('--fix'));
+});
+
+test('runSlopgate spawns an executable without a shell', async () => {
+  const payload = await runSlopgate(
+    process.execPath,
+    ['-e', 'process.stdout.write(JSON.stringify({tool:"slopgate",findings:[]}))'],
+    process.cwd(),
+  );
+  assert.equal(payload.findings.length, 0);
 });
 
 test('only the safe autofix rules are offered as quick fixes', () => {

@@ -175,6 +175,7 @@ function goUnreachableRule(): Rule {
         'expression_case',
         'communication_case',
         'default_case',
+        'type_case',
       ])) {
         checkStatements(statementsOf(caseNode), caseNode);
       }

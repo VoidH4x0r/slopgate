@@ -4,6 +4,7 @@ import {
   descendantsOfType,
   endOf,
   hasCommentBetween,
+  isComment,
   isTestPath,
   snippetOf,
   startOf,
@@ -138,7 +139,9 @@ function previousAttributes(node: AstNode): AstNode[] {
   const attributes: AstNode[] = [];
   for (let i = index - 1; i >= 0; i -= 1) {
     const sibling = siblings[i];
-    if (!sibling || sibling.type !== 'attribute_item') break;
+    if (!sibling) break;
+    if (isComment(sibling)) continue;
+    if (sibling.type !== 'attribute_item') break;
     attributes.push(sibling);
   }
   return attributes;
@@ -158,7 +161,13 @@ function hasTestContext(node: AstNode): boolean {
     if (current.type === 'function_item' && (isTestFunction(current) || hasTestCfg(current))) {
       return true;
     }
-    if (current.type === 'mod_item' && (hasTestCfg(current) || hasAttribute(current, /^#\[\s*cfg\s*\(\s*test\s*\)/))) {
+    if (
+      current.type === 'mod_item' &&
+      (hasTestCfg(current) || hasAttribute(current, /^#\[\s*cfg\s*\(\s*test\s*\)/))
+    ) {
+      return true;
+    }
+    if ((current.type === 'impl_item' || current.type === 'trait_item') && hasTestCfg(current)) {
       return true;
     }
     current = current.parent;
@@ -192,8 +201,9 @@ function pathsOfUse(node: AstNode): string[] {
 
 function pathsOfUseText(raw: string): string[] {
   // Remove the alias before stripping whitespace: `serde as s` must become
-  // `serde`, not `serdeass`.
-  const withoutAlias = raw.replace(/\s+as\s+.*$/, '');
+  // `serde`, not `serdeass`. Comments inside grouped imports are also ignored.
+  const withoutComments = raw.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const withoutAlias = withoutComments.replace(/\s+as\s+.*$/, '');
   const text = withoutAlias.replace(/\s+/g, '').replace(/^::/, '').replace(/^r#/, '');
   if (!text) return [];
   if (text.startsWith('{') && text.endsWith('}')) {

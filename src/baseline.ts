@@ -122,6 +122,7 @@ export async function mergeBaseline(
   scannedFiles: readonly string[],
   onlyRules?: ReadonlySet<string>,
   root?: string,
+  disabledRules?: ReadonlySet<string>,
 ): Promise<BaselineFile> {
   const existing = await loadBaseline(file);
   const scanned = new Set(scannedFiles);
@@ -130,7 +131,9 @@ export async function mergeBaseline(
   const preserved: BaselineEntry[] = [];
   for (const entry of existing?.entries ?? []) {
     const outsideScope = !scanned.has(entry.file);
-    const ruleNotSelected = onlyRules !== undefined && !onlyRules.has(entry.ruleId);
+    const ruleNotSelected =
+      (onlyRules !== undefined && !onlyRules.has(entry.ruleId)) ||
+      Boolean(disabledRules?.has(entry.ruleId));
     if (!outsideScope && !ruleNotSelected) continue;
     if (currentFingerprints.has(entry.fingerprint)) continue;
     // A baseline kept for a deleted file grows forever. When the caller gives

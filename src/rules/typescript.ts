@@ -41,6 +41,14 @@ function sourceString(node: AstNode): string | undefined {
   const field = node.childForFieldName('source');
   const fromField = stringLiteralValue(field);
   if (fromField !== undefined) return fromField;
+  // Only imports may use the fallback; `export default 'hello'` has a string
+  // child but no module source.
+  if (node.type !== 'import_statement') return undefined;
+  const requireClause = descendantsOfType(node, ['import_require_clause'])[0];
+  if (requireClause) {
+    const requireSource = stringLiteralValue(requireClause.childForFieldName('source'));
+    if (requireSource !== undefined) return requireSource;
+  }
   for (let i = node.namedChildren.length - 1; i >= 0; i -= 1) {
     const child = node.namedChildren[i];
     const value = stringLiteralValue(child);
@@ -377,6 +385,17 @@ function hasImplicitFrameworkAction(body: AstNode): boolean {
 }
 
 /** Tests nested inside describe.skip/context.skip/suite.skip are disabled too. */
+function callOptionsSkip(call: AstNode): boolean {
+  const args = call.childForFieldName('arguments');
+  return Boolean(
+    args?.namedChildren.some(
+      (child) =>
+        child.type === 'object' &&
+        /(?:^|[,{])\s*(?:skip|todo|fixme)\s*:\s*true\b/.test(child.text),
+    ),
+  );
+}
+
 function insideSkippedDescribe(call: AstNode): boolean {
   let node = call.parent;
   while (node) {
@@ -386,6 +405,7 @@ function insideSkippedDescribe(call: AstNode): boolean {
       const descriptors = /(?:^|\.)(?:describe|context|suite)(?:\.|$)/.test(fn);
       const xDescriptor = /(?:^|\.)x(?:describe|context|suite)(?:\.|$)/.test(fn);
       if (xDescriptor) return true;
+      if (callOptionsSkip(node)) return true;
       if (
         (['describe', 'context', 'suite'].includes(root) || descriptors) &&
         testModifiers(node).some((name) => ['skip', 'todo', 'fixme'].includes(name))
@@ -416,7 +436,7 @@ const noopTest: Rule = {
     for (const call of descendantsOfType(ctx.root, ['call_expression'])) {
       const fn = call.childForFieldName('function');
       if (!fn || !isTestCall(fn)) continue;
-      if (insideSkippedDescribe(call)) continue;
+      if (insideSkippedDescribe(call) || callOptionsSkip(call)) continue;
       if (testModifiers(fn).some((name) => ['skip', 'todo', 'fixme'].includes(name))) continue;
 
       const args = call.childForFieldName('arguments');
@@ -557,13 +577,29 @@ const tautologicalAssert: Rule = {
       const args = call.childForFieldName('arguments');
       const actualNode = args?.namedChildren[0];
       const actual = actualNode?.text;
-      if (actual === undefined) continue;
 
       let expectedNode: AstNode | undefined;
       if (object?.type === 'call_expression' && collapseWhitespace(object.childForFieldName('function')?.text ?? '') === 'expect') {
         expectedNode = object.childForFieldName('arguments')?.namedChildren[0];
       }
       const expected = expectedNode?.text;
+
+      if (
+        expected !== undefined &&
+        ((property === 'toBeTruthy' && collapseWhitespace(expected) === 'true') ||
+          (property === 'toBeFalsy' && collapseWhitespace(expected) === 'false'))
+      ) {
+        drafts.push({
+          message: `assertion can never fail: \`${truncate(collapseWhitespace(call.text), 80)}\``,
+          start: startOf(call),
+          end: endOf(call),
+          snippet: snippetOf(ctx, call),
+          evidence: ['the expected literal is asserted through a boolean matcher'],
+          help: 'Assert on the behaviour under test: a return value, a thrown error, or a call.',
+        });
+        continue;
+      }
+      if (actual === undefined) continue;
 
       const isSelf =
         expected !== undefined &&
@@ -591,7 +627,7 @@ function stubForm(body: AstNode): string | undefined {
   const statements = body.namedChildren.filter((child) => !isComment(child));
   if (statements.length === 0) return 'empty body';
   if (statements.length === 1 && statements[0]?.type === 'throw_statement') {
-    if (/not[\s_-]*(?:yet[\s_-]*)?implemented|unimplemented|todo/i.test(statements[0].text)) {
+    if (/\b(?:not[\s_-]*(?:yet[\s_-]*)?implemented|unimplemented|todo)\b/i.test(statements[0].text)) {
       return 'throws "not implemented"';
     }
   }
@@ -831,6 +867,27 @@ const unreachable: Rule = {
         end: endOf(firstUnreachable),
         snippet: snippetOf(ctx, firstUnreachable),
         evidence: [`${count} statement(s) follow the \`${keyword}\` at line ${terminator.startPosition.row + 1}`],
+        help: 'Delete the unreachable code, or move it before the exit if it was meant to run.',
+        fix: { edits: statementDeletionEdits(ctx.source, trailing) },
+      });
+    }
+
+    for (const caseNode of descendantsOfType(ctx.root, ['switch_case', 'switch_default'])) {
+      const statements = caseNode.namedChildren.filter((child) => !isComment(child));
+      const index = statements.findIndex((statement) => TERMINATORS.has(statement.type));
+      if (index === -1) continue;
+      const terminator = statements[index];
+      if (!terminator) continue;
+      const trailing = statements.slice(index + 1).filter((statement) => !isErasedOrHoisted(statement));
+      const firstUnreachable = trailing[0];
+      if (!firstUnreachable) continue;
+      const keyword = terminator.type.replace('_statement', '');
+      drafts.push({
+        message: `code after \`${keyword}\` is unreachable`,
+        start: startOf(firstUnreachable),
+        end: endOf(firstUnreachable),
+        snippet: snippetOf(ctx, firstUnreachable),
+        evidence: [`${trailing.length} statement(s) follow the \`${keyword}\` at line ${terminator.startPosition.row + 1}`],
         help: 'Delete the unreachable code, or move it before the exit if it was meant to run.',
         fix: { edits: statementDeletionEdits(ctx.source, trailing) },
       });

@@ -23,6 +23,8 @@ export interface CommentRange {
   endLine: number;
   /** 1-based column of the comment marker, for standalone-comment checks. */
   startColumn: number;
+  /** 1-based exclusive end column of the comment. */
+  endColumn: number;
 }
 
 export interface Finding {

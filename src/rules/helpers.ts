@@ -76,6 +76,7 @@ export function collectCommentRanges(root: AstNode): CommentRange[] {
     startLine: node.startPosition.row + 1,
     endLine: node.endPosition.row + 1,
     startColumn: node.startPosition.column + 1,
+    endColumn: node.endPosition.column + 1,
   }));
 }
 

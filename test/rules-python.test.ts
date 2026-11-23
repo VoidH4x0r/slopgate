@@ -528,6 +528,32 @@ test('py/dead-branch flags constant conditions but keeps while True', async () =
   assert.deepEqual(await runRule('py/dead-branch', 'def f(flag):\n    if flag:\n        x = 1\n', 'python'), []);
 });
 
+test('py/noop-test skips pytest skip markers and pytest.skip calls', async () => {
+  for (const source of [
+    '@pytest.mark.skip(reason="later")\ndef test_later():\n    pass\n',
+    'def test_later():\n    pytest.skip("later")\n',
+  ]) {
+    assert.deepEqual(await runRule('py/noop-test', source, 'python'), [], source);
+  }
+});
+
+test('py/dead-branch handles elif and parenthesized constants', async () => {
+  assert.equal(
+    (await runRule('py/dead-branch', 'if True:\n    pass\nelif False:\n    pass\n', 'python')).some(
+      (draft) => /elif|dead/.test(draft.message),
+    ),
+    true,
+  );
+  assert.equal(
+    (await runRule('py/dead-branch', 'if (False):\n    run()\n', 'python')).length,
+    1,
+  );
+  assert.equal(
+    (await runRule('py/dead-branch', 'if True:\n    import os\n', 'python')).length,
+    1,
+  );
+});
+
 test('py/unreachable flags statements after exits', async () => {
   assert.equal((await runRule('py/unreachable', 'def f():\n    return 1\n    x = 2\n', 'python')).length, 1);
   assert.equal((await runRule('py/unreachable', 'def f():\n    raise RuntimeError()\n    x = 2\n', 'python')).length, 1);

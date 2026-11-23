@@ -115,11 +115,18 @@ function signaturePair(body: AstNode): {
     exact.update('\u0000');
     semantic.update(node.type);
     semantic.update('\u0000');
-    if (node.children.length === 0) {
+    const opaqueLiteral =
+      /(?:^|_)(?:string|string_literal|interpreted_string_literal|raw_string_literal|char_literal)$/.test(
+        node.type,
+      ) || node.type === 'regex_pattern';
+    if (opaqueLiteral || node.children.length === 0) {
       const raw = node.text;
-      const exactText = /(?:string_content|string_fragment|regex_pattern|comment)$/.test(node.type)
-        ? raw
-        : collapseWhitespace(raw);
+      const exactText =
+        /(?:string_content|string_fragment|regex_pattern|interpreted_string_literal|raw_string_literal|string_literal|char_literal|string)$/.test(
+          node.type,
+        )
+          ? raw
+          : collapseWhitespace(raw);
       if (exactText.length > 0) {
         exact.update(exactText);
         exact.update('\u0000');

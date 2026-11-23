@@ -1,4 +1,4 @@
-import type { Finding } from './types.ts';
+import type { CommentRange, Finding } from './types.ts';
 
 const NEXT_LINE = /slopgate-ignore-next-line\b(.*)$/;
 const SAME_LINE = /slopgate-ignore-line\b(.*)$/;
@@ -52,16 +52,41 @@ function nextCodeLine(lines: readonly string[], startIndex: number): number | un
 
 /**
  * @param commentLines 1-based lines that actually contain a comment node.
- *   When supplied, directives inside string literals or docs are ignored.
+ * @param comments AST comment ranges. When supplied, directives are matched
+ *   against the comment text only, so a string literal cannot disable a file.
  */
-export function readSuppressions(source: string, commentLines?: ReadonlySet<number>): Suppressions {
+export function readSuppressions(
+  source: string,
+  commentLines?: ReadonlySet<number>,
+  comments?: readonly CommentRange[],
+): Suppressions {
   const suppressions: Suppressions = { fileDisabled: false, lineRules: new Map() };
+  // Most files contain no directives; avoid splitting and indexing comments.
+  if (!source.includes('slopgate-')) return suppressions;
   const lines = source.split(/\r?\n/);
+
+  const commentByLine = new Map<number, string[]>();
+  if (comments && comments.length > 0) {
+    for (const comment of comments) {
+      for (let lineNumber = comment.startLine; lineNumber <= comment.endLine; lineNumber += 1) {
+        const raw = lines[lineNumber - 1] ?? '';
+        const start = lineNumber === comment.startLine ? comment.startColumn - 1 : 0;
+        const end = lineNumber === comment.endLine ? comment.endColumn - 1 : raw.length;
+        const bucket = commentByLine.get(lineNumber) ?? [];
+        bucket.push(raw.slice(start, Math.max(start, end)));
+        commentByLine.set(lineNumber, bucket);
+      }
+    }
+  }
+  const commentText = (lineNumber: number, line: string): string => {
+    if (!comments || comments.length === 0) return line;
+    return (commentByLine.get(lineNumber) ?? []).join('\n');
+  };
 
   for (let index = 0; index < lines.length; index += 1) {
     const lineNumber = index + 1;
     if (commentLines && !commentLines.has(lineNumber)) continue;
-    const line = lines[index] ?? '';
+    const line = commentText(lineNumber, lines[index] ?? '');
     if (FILE.test(line)) {
       suppressions.fileDisabled = true;
       continue;

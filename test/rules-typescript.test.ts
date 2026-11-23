@@ -55,6 +55,71 @@ test('ts/phantom-import ignores URL imports and optional requires', async () => 
   assert.deepEqual(await runRule('ts/phantom-import', source, 'typescript'), []);
 });
 
+test('ts/phantom-import ignores export default strings', async () => {
+  assert.deepEqual(
+    await runRule('ts/phantom-import', "export default 'hello';\n", 'typescript'),
+    [],
+  );
+});
+
+test('ts/noop-test skips node:test options-object skip/todo', async () => {
+  for (const source of [
+    "test('x', { skip: true }, () => {});\n",
+    "test('x', { todo: true }, () => {});\n",
+    "describe('g', { skip: true }, () => { test('x', () => {}); });\n",
+  ]) {
+    assert.deepEqual(await runRule('ts/noop-test', source, 'typescript'), [], source);
+  }
+  assert.equal(
+    (await runRule('ts/noop-test', "test('x', { skip: false }, () => {});\n", 'typescript')).length,
+    1,
+  );
+});
+
+test('ts/unreachable flags statements after return in switch cases', async () => {
+  const source = [
+    'function f(x: number) {',
+    '  switch (x) {',
+    '    case 1:',
+    '      return 1;',
+    '      console.log("dead");',
+    '    default:',
+    '      return 0;',
+    '  }',
+    '}',
+    '',
+  ].join('\n');
+  assert.equal((await runRule('ts/unreachable', source, 'typescript')).length, 1);
+});
+
+test('ts/stub-function does not treat ordinary todo words as placeholders', async () => {
+  assert.deepEqual(
+    await runRule(
+      'ts/stub-function',
+      "function f() { throw new Error('no todos found'); }\n",
+      'typescript',
+    ),
+    [],
+  );
+});
+
+test('ts/tautological-assert flags expect(true).toBeTruthy()', async () => {
+  assert.equal(
+    (await runRule('ts/tautological-assert', 'expect(true).toBeTruthy();\n', 'typescript')).length,
+    1,
+  );
+});
+
+test('ts/phantom-import handles import = require source fields', async () => {
+  const drafts = await runRule(
+    'ts/phantom-import',
+    "import foo = require('bar');\nvoid foo;\n",
+    'typescript',
+  );
+  assert.equal(drafts.length, 1);
+  assert.match(drafts[0]?.message ?? '', /bar/);
+});
+
 test('ts/noop-test flags empty and assertion-free tests', async () => {
   const empty = await runRule('ts/noop-test', "test('a', () => {});\n", 'typescript');
   assert.equal(empty.length, 1);

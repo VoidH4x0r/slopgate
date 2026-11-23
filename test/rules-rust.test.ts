@@ -38,6 +38,7 @@ test('rs/phantom-import handles aliases, group imports and raw crate names', asy
   for (const source of [
     'use serde as s;\n',
     'use {serde, std::fmt};\n',
+    'use { // comment\n serde, std::fmt };\n',
     'use {serde as s, std::fmt};\n',
     'use r#serde::Serialize;\n',
   ]) {
@@ -94,6 +95,20 @@ test('rs/phantom-import accepts the Cargo [lib] name', async () => {
   assert.deepEqual(await runRule('rs/phantom-import', 'use my_lib::helper;\n', 'rust', deps), []);
 });
 
+test('rs/unreachable skips cfg(test) impl blocks', async () => {
+  const source = [
+    '#[cfg(test)]',
+    'impl Thing {',
+    '    fn helper() {',
+    '        return;',
+    '        println!("dead");',
+    '    }',
+    '}',
+    '',
+  ].join('\n');
+  assert.deepEqual(await runRule('rs/unreachable', source, 'rust'), []);
+});
+
 test('rs/stub-body treats cfg(not(test)) and feature="test" as production', async () => {
   for (const attribute of [
     '#[cfg(not(test))]',
@@ -108,6 +123,20 @@ test('rs/stub-body treats cfg(not(test)) and feature="test" as production', asyn
       attribute,
     );
   }
+});
+
+test('rs/unreachable recognizes test modules with a comment after the attribute', async () => {
+  const source = [
+    '#[cfg(test)] // unit tests',
+    'mod tests {',
+    '    fn helper() {',
+    '        return;',
+    '        println!("dead");',
+    '    }',
+    '}',
+    '',
+  ].join('\n');
+  assert.deepEqual(await runRule('rs/unreachable', source, 'rust'), []);
 });
 
 test('rs/noop-test flags an empty #[test]', async () => {

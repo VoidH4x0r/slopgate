@@ -379,6 +379,16 @@ const noopTest: Rule = {
       if (!looksLikeTestModule(ctx.file) && !inClass) continue;
       const body = fn.childForFieldName('body');
       if (!body) continue;
+      const parent = fn.parent;
+      const decoratorText =
+        parent?.type === 'decorated_definition'
+          ? parent.namedChildren
+              .filter((child) => child.type === 'decorator')
+              .map((child) => child.text)
+              .join(' ')
+          : '';
+      if (/pytest\.mark\.(?:skip|skipif|xfail)|unittest\.skip/.test(decoratorText)) continue;
+      if (/\bpytest\.(?:skip|xfail|importorskip)\s*\(/.test(body.text)) continue;
       const docstring = docstringOf(fn);
       // Doctest-style tests keep their expectations in the docstring.
       if (docstring?.includes('>>>')) continue;
@@ -766,11 +776,11 @@ const deadBranch: Rule = {
     if (isTestPath(ctx.file)) return [];
     const drafts: RuleDraft[] = [];
 
-    for (const node of descendantsOfType(ctx.root, ['if_statement', 'while_statement'])) {
+    for (const node of descendantsOfType(ctx.root, ['if_statement', 'while_statement', 'elif_clause'])) {
       if (insideAbstractMethod(node)) continue;
       const condition = node.childForFieldName('condition');
       if (!condition) continue;
-      const text = collapseWhitespace(condition.text);
+      const text = collapseWhitespace(condition.text).replace(/^\((.*)\)$/, '$1');
       const isDeadFalse = text === 'False' || text === '0' || text === 'None';
       // `while True:` is a legitimate event loop; `if True:` is not.
       const isDeadTrue = text === 'True' || text === '1';
@@ -787,7 +797,7 @@ const deadBranch: Rule = {
         statements.every(
           (statement) => statement.type === 'import_statement' || statement.type === 'import_from_statement',
         );
-      if (onlyImports) continue;
+      if (isDeadFalse && onlyImports) continue;
 
       const commented = hasCommentBetween(
         ctx,

@@ -194,7 +194,7 @@ export async function scanProject(options: ScanOptions): Promise<ScanResult> {
       deps,
       comments,
     };
-    const suppressions = readSuppressions(source, commentLines);
+    const suppressions = readSuppressions(source, commentLines, comments);
     suppressionsByFile.set(findingFile, suppressions);
     let sourceHash: string | undefined;
 

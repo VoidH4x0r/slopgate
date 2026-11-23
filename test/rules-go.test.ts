@@ -115,6 +115,23 @@ test('go/unreachable is not disabled by a generated marker after package', async
   assert.equal((await runRule('go/unreachable', source, 'go')).length, 1);
 });
 
+test('go/unreachable reports statements after return in type switch cases', async () => {
+  const source = [
+    'package main',
+    '',
+    'func f(x any) int {',
+    '  switch x.(type) {',
+    '  case int:',
+    '    return 1',
+    '    println("dead")',
+    '  }',
+    '  return 0',
+    '}',
+    '',
+  ].join('\n');
+  assert.equal((await runRule('go/unreachable', source, 'go')).length, 1);
+});
+
 test('go/unreachable reports statements after return', async () => {
   const source = [
     'package main',

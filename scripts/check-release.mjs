@@ -12,6 +12,11 @@ if (!changelog.includes(`## [${version}]`)) {
   errors.push(`CHANGELOG.md has no ## [${version}] section`);
 }
 
+const ref = process.env.GITHUB_REF_NAME;
+if (ref?.startsWith('v') && ref.slice(1) !== version) {
+  errors.push(`git tag ${ref} does not match package version ${version}`);
+}
+
 for (const file of [
   'benchmark/results.json',
   'benchmark/go-results.json',

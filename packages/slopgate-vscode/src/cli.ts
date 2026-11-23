@@ -1,8 +1,4 @@
-import { execFile } from 'node:child_process';
-import process from 'node:process';
-import { promisify } from 'node:util';
-
-const exec = promisify(execFile);
+import spawn from 'cross-spawn';
 
 export interface ScanFinding {
   ruleId: string;
@@ -94,14 +90,7 @@ export async function runSlopgate(
   cwd: string,
 ): Promise<ScanPayload> {
   try {
-    const { stdout } = await exec(executable, [...args], {
-      cwd,
-      maxBuffer: 64 * 1024 * 1024,
-      windowsHide: true,
-      // npm exposes `slopgate.cmd` on Windows; execFile cannot launch a .cmd
-      // shim without a shell.
-      shell: process.platform === 'win32',
-    });
+    const { stdout } = await spawnSlopgate(executable, args, cwd);
     return parseScanPayload(stdout);
   } catch (error) {
     // `slopgate` exits 1 when findings exist; the JSON payload is still on stdout.
@@ -109,4 +98,40 @@ export async function runSlopgate(
     if (stdout.trim().length > 0) return parseScanPayload(stdout);
     throw new Error((error as Error).message);
   }
+}
+
+function spawnSlopgate(
+  executable: string,
+  args: readonly string[],
+  cwd: string,
+): Promise<{ stdout: string; stderr: string; code: number }> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(executable, [...args], {
+      cwd,
+      windowsHide: true,
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout?.setEncoding('utf8');
+    child.stderr?.setEncoding('utf8');
+    child.stdout?.on('data', (chunk: string) => {
+      stdout += chunk;
+    });
+    child.stderr?.on('data', (chunk: string) => {
+      stderr += chunk;
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      const exitCode = code ?? 1;
+      if (exitCode === 0 || stdout.trim().length > 0) {
+        resolve({ stdout, stderr, code: exitCode });
+      } else {
+        reject(Object.assign(new Error(stderr.trim() || `slopgate exited ${exitCode}`), {
+          stdout,
+          stderr,
+          code: exitCode,
+        }));
+      }
+    });
+  });
 }

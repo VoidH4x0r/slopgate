@@ -12,6 +12,8 @@ export function normalizePythonName(name: string): string {
 export function requirementName(spec: string): string | undefined {
   const trimmed = spec.trim().replace(/^['"]|['"]$/g, '').trim();
   if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('-')) return undefined;
+  const direct = /^([A-Za-z0-9][A-Za-z0-9._-]*)\s*@\s*https?:\/\//.exec(trimmed);
+  if (direct?.[1]) return normalizePythonName(direct[1]);
   if (trimmed.includes('://')) return undefined;
   const match = /^([A-Za-z0-9][A-Za-z0-9._-]*)/.exec(trimmed);
   return match?.[1] ? normalizePythonName(match[1]) : undefined;
@@ -135,8 +137,14 @@ function isPyprojectArraySection(section: string, key: string): boolean {
 export function parsePythonManifestText(fileName: string, text: string): string[] {
   const names: string[] = [];
   const base = path.basename(fileName).toLowerCase();
+  const normalizedPath = fileName.replace(/\\/g, '/').toLowerCase();
+  const requirementsFile =
+    (base.startsWith('requirements') ||
+      normalizedPath.startsWith('requirements/') ||
+      normalizedPath.includes('/requirements/')) &&
+    (base.endsWith('.txt') || base.endsWith('.in'));
 
-  if (base.startsWith('requirements') && (base.endsWith('.txt') || base.endsWith('.in'))) {
+  if (requirementsFile) {
     for (const rawLine of text.split(/\r?\n/)) {
       const line = rawLine.replace(/\s+#.*$/, '');
       const name = requirementName(line);
@@ -419,10 +427,73 @@ async function readDirSafe(dir: string): Promise<Dirent[] | undefined> {
   }
 }
 
+function requirementsIncludes(text: string): string[] {
+  const includes: string[] = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.replace(/\s+#.*$/, '').trim();
+    const match = /^(?:-r|--requirement)\s+(.+)$/.exec(line);
+    if (match?.[1]) includes.push(match[1].trim().replace(/^['"]|['"]$/g, ''));
+  }
+  return includes;
+}
+
 async function loadPythonDeps(root: string): Promise<PythonDeps> {
   const declared = new Set<string>();
   const manifests: string[] = [];
-  for (const rel of PYTHON_MANIFESTS) {
+  const manifestsSeen = new Set<string>();
+  const candidates = new Set(PYTHON_MANIFESTS);
+  const requirementsDir = path.join(root, 'requirements');
+  const requirementEntries = await readDirSafe(requirementsDir);
+  if (requirementEntries) {
+    for (const entry of requirementEntries) {
+      if (
+        entry.isFile() &&
+        (entry.name.endsWith('.txt') || entry.name.endsWith('.in'))
+      ) {
+        candidates.add(`requirements/${entry.name}`);
+      }
+    }
+  }
+  const rootEntries = await readDirSafe(root);
+  if (rootEntries) {
+    for (const entry of rootEntries) {
+      if (
+        entry.isFile() &&
+        /^requirements.*\.(?:txt|in)$/i.test(entry.name)
+      ) {
+        candidates.add(entry.name);
+      }
+    }
+  }
+
+  const readRequirementsFile = async (rel: string, stack: Set<string>): Promise<void> => {
+    const normalized = rel.replace(/\\/g, '/');
+    if (manifestsSeen.has(normalized)) return;
+    const abs = path.resolve(root, normalized);
+    const relative = path.relative(root, abs);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) return;
+    const text = await readIfExists(abs);
+    if (text === undefined) return;
+    manifestsSeen.add(normalized);
+    manifests.push(normalized);
+    for (const name of parsePythonManifestText(normalized, text)) declared.add(name);
+    if (stack.has(abs)) return;
+    stack.add(abs);
+    for (const include of requirementsIncludes(text)) {
+      const child = path.resolve(path.dirname(abs), include);
+      const childRel = path.relative(root, child).replace(/\\/g, '/');
+      if (!childRel.startsWith('..') && !path.isAbsolute(childRel)) {
+        await readRequirementsFile(childRel, stack);
+      }
+    }
+    stack.delete(abs);
+  };
+
+  for (const rel of candidates) {
+    if (rel.includes('/') || /^requirements.*\.(?:txt|in)$/i.test(rel)) {
+      await readRequirementsFile(rel, new Set());
+      continue;
+    }
     const abs = path.join(root, rel);
     const text = await readIfExists(abs);
     if (text === undefined) continue;
@@ -468,17 +539,79 @@ export function parseGoModText(text: string): { module?: string; requires: strin
   return { ...(module ? { module } : {}), requires };
 }
 
+export function parseGoWorkText(text: string): string[] {
+  const uses: string[] = [];
+  let inUse = false;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.replace(/\/\/.*$/, '').trim();
+    if (!line) continue;
+    if (/^use\s*\($/.test(line)) {
+      inUse = true;
+      continue;
+    }
+    const single = /^use\s+(.+)$/.exec(line);
+    if (single?.[1]) {
+      uses.push(single[1].replace(/^['"]|['"]$/g, ''));
+      continue;
+    }
+    if (inUse && line === ')') {
+      inUse = false;
+      continue;
+    }
+    if (inUse) {
+      const value = /^(.+?)\s*$/.exec(line)?.[1];
+      if (value) uses.push(value.replace(/^['"]|['"]$/g, ''));
+    }
+  }
+  return uses;
+}
+
 async function loadGoDeps(root: string): Promise<GoDeps> {
+  const requires = new Set<string>();
+  const manifests: string[] = [];
+  let module: string | undefined;
+  let workspaceDir: string | undefined;
+  let dir = root;
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (await exists(path.join(dir, 'go.work'))) {
+      workspaceDir = dir;
+      break;
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+
   const goMod = path.join(root, 'go.mod');
   const text = await readIfExists(goMod);
-  if (text === undefined) {
+  if (text !== undefined) {
+    const parsed = parseGoModText(text);
+    module = parsed.module;
+    for (const required of parsed.requires) requires.add(required);
+    manifests.push('go.mod');
+  }
+
+  if (workspaceDir) {
+    const workText = await readIfExists(path.join(workspaceDir, 'go.work'));
+    if (workText !== undefined) {
+      manifests.push(path.relative(root, path.join(workspaceDir, 'go.work')).replace(/\\/g, '/') || 'go.work');
+      for (const use of parseGoWorkText(workText)) {
+        const moduleRoot = path.resolve(workspaceDir, use);
+        const moduleText = await readIfExists(path.join(moduleRoot, 'go.mod'));
+        if (moduleText === undefined) continue;
+        const parsed = parseGoModText(moduleText);
+        if (parsed.module) requires.add(parsed.module);
+      }
+    }
+  }
+
+  if (text === undefined && manifests.length === 0) {
     return { requires: new Set<string>(), manifests: [] };
   }
-  const parsed = parseGoModText(text);
   return {
-    ...(parsed.module ? { module: parsed.module } : {}),
-    requires: new Set(parsed.requires),
-    manifests: ['go.mod'],
+    ...(module ? { module } : {}),
+    requires,
+    manifests,
   };
 }
 
