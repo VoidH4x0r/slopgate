@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- `docs/roadmap.md`: release plan through 1.0, priority order, acceptance gates, metrics, risks and next actions.
+
 ### Changed
 - Added an explicit encoding contract (`docs/encoding.md`, `scripts/encoding-policy.json`, `scripts/check-encoding.mjs`, `.editorconfig`) enforced by `npm run verify` and CI on Linux and Windows.
 - Replaced content-based CJK density/run heuristics with a path-based localization policy and a reviewed non-ASCII whitelist for English docs.

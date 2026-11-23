@@ -316,8 +316,14 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - [x] v0.2.7 — all-run marker and repeated U+8DEF guard
 - [x] v0.2.8 — CJK density classification and ASCII-context road runs
 - [x] v0.2.9 — line-bounded road-run detection
-- [ ] v0.3 — Go and Rust grammars, VS Code diagnostics
-- [ ] v0.4 — expanded published false-positive benchmark, duplicate-block semantic clones
+- [ ] v0.2.10 — maintenance: encoding contract release, autofix matrix, Windows CI, packaging hygiene
+- [ ] v0.3.0 — Go support
+- [ ] v0.3.1 — Rust support
+- [ ] v0.3.2 — VS Code extension
+- [ ] v0.4 — semantic duplicates, expanded benchmark, integrations
+- [ ] v1.0 — stable public API and release gate
+
+The detailed plan, estimates, release gates, risks and next-14-days actions are in [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Known limitations
 
@@ -328,7 +334,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - A path whose name matches a subcommand (`rules/`, `init/`, `scan/`) is parsed as the subcommand; write `./rules` to scan that directory.
 - Non-git ancestor module discovery follows namespace packages up to 5 levels and only inspects Python-bearing top-level directories; deeper or non-Python ancestor layouts may be missed. Use a git repository for full-repository discovery.
 - The registry is rebuilt for each MCP scan so new files are never missed; very large repositories (tens of thousands of directories) can make a scan take seconds.
-- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.2.2. A file contributes at most one representative per duplicate group.
+- `duplicate-block` detects exact normalized bodies only; renamed variables and semantic clones are not reported in 0.2.9. A file contributes at most one representative per duplicate group.
 - `duplicate-block` still collects function/body signatures even when the display threshold is `high` (duplicates are `medium`); on very large repositories, set `rules: { "py/duplicate-block": "off", "ts/duplicate-block": "off" }` if you do not need medium findings.
 - `--fix` is deliberately limited to unreachable statements after `return` / `raise` / `break` / `continue`; it does not rewrite imports, stubs or formatting.
 
