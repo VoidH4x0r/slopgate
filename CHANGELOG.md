@@ -14,9 +14,9 @@ All notable changes to this project are documented here. The format follows [Kee
 - `*` semantic duplicate rule metadata in the rule reference and README.
 
 ### Changed
-- 32 rules and 383 tests.
-- Benchmark scale is now 4.19M lines across three languages: 1.1M Python/JS/AI, 2.45M Go and 635k Rust. A bundled Electron corpus adds 6 files / 332 lines with **0 high**. The published Python/JS precision remains **43 high / 97.7% / 30/30 seeded**; Go and Rust have **0 high** findings.
-- Tape/TAP and held-out-AI corpora are tracked as follow-up work; they are not claimed as published measurements in 0.4.0.
+- 32 rules and 384 tests.
+- Benchmark scale is now 4.19M lines across three languages: 1.1M Python/JS/AI, 2.45M Go and 635k Rust. A bundled Electron corpus adds 6 files / 332 lines with **0 high**. Published Python/JS is **42 high / 97.6% (41/42) / 30/30 seeded**; Go and Rust have **0 high** findings. Tape/TAP adds 185 files / 11,958 lines with **0 high**, and a held-out AI set adds 10 files / 39 lines with **8/8 labeled high**.
+- `ts/noop-test` now gives a non-empty body with no statically visible assertion `medium` confidence instead of `high`; this removes Tape/TAP false positives while keeping empty tests `high`.
 
 ## [0.3.2] - 2026-11-23
 

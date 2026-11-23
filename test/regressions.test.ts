@@ -81,7 +81,7 @@ test('regression: test.runIf/test.skipIf are analysed but assertXxx helpers coun
   // The three assertEqual/assertNotNull/assertTruthy tests are clean; only the
   // two conditional-test wrappers have no assertion.
   assert.equal(findings.length, 2);
-  assert.ok(findings.every((finding) => finding.confidence === 'high'));
+  assert.ok(findings.every((finding) => finding.confidence === 'medium'));
   assert.deepEqual(
     findings.map((finding) => finding.start.line).sort((a, b) => a - b),
     [16, 20],
@@ -110,7 +110,7 @@ test('regression: test.each / it.concurrent / nested it are still analysed', asy
   const result = await scanFixture('regressions/test-call-forms');
   const findings = ruleFindings(result, 'ts/noop-test');
   assert.equal(findings.length, 3);
-  assert.ok(findings.every((finding) => finding.confidence === 'high'));
+  assert.ok(findings.every((finding) => finding.confidence === 'medium'));
 });
 
 test('regression: .js is counted as javascript, not tsx', async () => {

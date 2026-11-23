@@ -204,6 +204,8 @@ If the package **is** installed under `node_modules` the finding is `medium` ("u
 
 **Disabled tests.** `test.skip`, `test.todo`, `test.fixme`, `xdescribe`, `xcontext`, `xsuite`, and tests nested under `describe.skip` / `context.skip` / `suite.skip` are not reported. Cypress/Playwright-style commands (`cy.*`, `page.*`, `browser.*`) can fail a test implicitly, so an otherwise assertion-free test is demoted to `medium` rather than `high`.
 
+**Confidence.** An empty body is `high`. A non-empty body with no statically visible assertion is `medium`: it may assert through a helper, Tape/TAP lifecycle method, or framework events. This keeps Tape/TAP suites from producing high false positives.
+
 ```ts
 test('creates user', () => {
   createUser('a@b.c');       // no expect() → finding

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T02:32:17.278Z",
+  "generatedAt": "2026-11-23T02:37:54.166Z",
   "slopgateVersion": "0.4.0",
   "nodeVersion": "v24.19.0",
   "corpora": [
@@ -9,7 +9,7 @@
       "digest": "027f952580cd6622",
       "files": 1845,
       "lines": 991705,
-      "durationMs": 11922,
+      "durationMs": 13033,
       "findings": 6836,
       "high": 29,
       "suppressed": 0,
@@ -319,7 +319,7 @@
       "digest": "d2b720bf4294881f",
       "files": 7,
       "lines": 2783,
-      "durationMs": 43,
+      "durationMs": 45,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -344,7 +344,7 @@
       "digest": "7e4d9210a0fc613d",
       "files": 2,
       "lines": 799,
-      "durationMs": 8,
+      "durationMs": 6,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -369,7 +369,7 @@
       "digest": "4c7472ad58bd8a01",
       "files": 111,
       "lines": 8363,
-      "durationMs": 129,
+      "durationMs": 141,
       "findings": 11,
       "high": 0,
       "suppressed": 0,
@@ -400,7 +400,7 @@
       "digest": "2035d82b564fe0fd",
       "files": 49,
       "lines": 3166,
-      "durationMs": 48,
+      "durationMs": 52,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -425,7 +425,7 @@
       "digest": "a1904525101c27be",
       "files": 7,
       "lines": 4225,
-      "durationMs": 46,
+      "durationMs": 39,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -450,7 +450,7 @@
       "digest": "423d0332532c2e32",
       "files": 4,
       "lines": 841,
-      "durationMs": 8,
+      "durationMs": 9,
       "findings": 4,
       "high": 0,
       "suppressed": 0,
@@ -481,7 +481,7 @@
       "digest": "8d19ccdb8205985c",
       "files": 409,
       "lines": 100880,
-      "durationMs": 767,
+      "durationMs": 853,
       "findings": 3,
       "high": 0,
       "suppressed": 0,
@@ -517,7 +517,7 @@
       "digest": "dc4dc56c06b64fb8",
       "files": 7,
       "lines": 2217,
-      "durationMs": 44,
+      "durationMs": 52,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -542,7 +542,7 @@
       "digest": "53ba47a2d90b26ae",
       "files": 5,
       "lines": 198,
-      "durationMs": 6,
+      "durationMs": 8,
       "findings": 0,
       "high": 0,
       "suppressed": 0,
@@ -567,9 +567,9 @@
       "digest": "95d85ff450c21ede",
       "files": 20,
       "lines": 93,
-      "durationMs": 9,
+      "durationMs": 11,
       "findings": 16,
-      "high": 14,
+      "high": 13,
       "suppressed": 0,
       "parseErrors": 0,
       "byRule": {
@@ -614,8 +614,8 @@
           "low": 0
         },
         "ts/noop-test": {
-          "high": 1,
-          "medium": 0,
+          "high": 0,
+          "medium": 1,
           "low": 0
         },
         "ts/dead-branch": {
@@ -646,7 +646,7 @@
       },
       "precision": {
         "overall": {
-          "tp": 14,
+          "tp": 13,
           "fp": 0,
           "precision": 1
         },
@@ -682,11 +682,6 @@
             "precision": 1
           },
           "py/unreachable": {
-            "tp": 1,
-            "fp": 0,
-            "precision": 1
-          },
-          "ts/noop-test": {
             "tp": 1,
             "fp": 0,
             "precision": 1
@@ -782,14 +777,6 @@
           "line": 3,
           "confidence": "high",
           "snippet": "print(\"never\")"
-        },
-        {
-          "fingerprint": "c550b6330388a966",
-          "ruleId": "ts/noop-test",
-          "file": "typescript/checkout.test.ts",
-          "line": 1,
-          "confidence": "high",
-          "snippet": "test(\"checkout\", () => {"
         },
         {
           "fingerprint": "3f1ba12eebc89d64",

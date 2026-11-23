@@ -69,12 +69,12 @@ Measured on **1,115,270 lines** of real code — the CPython standard library (a
 
 | Metric | Result |
 | --- | --- |
-| High-confidence findings | **43** (29 CPython + 14 AI-generated), in 17 of 1,845 CPython files |
-| Labeled precision of high-confidence findings | **97.7%** (42/43 manually reviewed) |
+| High-confidence findings | **42** (29 CPython + 13 AI-generated), in 17 of 1,845 CPython files |
+| Labeled precision of high-confidence findings | **97.6%** (41/42 manually reviewed) |
 | Recall on seeded defects | **30/30** (14 demo + 16 AI-generated) |
 | High-confidence findings on 601 JavaScript files (`eslint`, `express`, `execa`, `semver`, `chalk`, `commander`, `debug`, `yargs`, `glob`) | **0** (these packages contain no Tape/TAP suites or bundled output — see the [coverage note](docs/benchmark.md#what-the-javascript-half-does-not-cover)) |
 
-A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings**; a Rust-only run of **Rust 1.83 std source** (1,494 files, 635,245 lines) also reports **0 high**. The runners use `--include '**/*.go'` / `--include '**/*.rs'`; see [`docs/benchmark.md`](docs/benchmark.md).
+A separate Go-only run of the local **Go 1.24 source tree** (6,090 files, 2,455,171 lines) reports **0 high-confidence findings**; a Rust-only run of **Rust 1.83 std source** (1,494 files, 635,245 lines) also reports **0 high**. Tape/TAP (185 files), a held-out AI set (10 files, 8/8 labeled high) and a bundled Electron app (6 files) are separate corpus runs. See [`docs/benchmark.md`](docs/benchmark.md).
 
 The labels, the corpus definition and the harness are in [`benchmark/`](https://github.com/VoidH4x0r/slopgate/tree/main/benchmark) and [`docs/benchmark.md`](https://github.com/VoidH4x0r/slopgate/blob/main/docs/benchmark.md); `node scripts/benchmark.mjs` reproduces the numbers. We publish the false positives instead of hiding them.
 
@@ -388,7 +388,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 383 tests; the tests themselves make no network or child-process calls
+npm test            # 384 tests; the tests themselves make no network or child-process calls
 npm run typecheck
 npm run verify      # all release gates in one command
 ```

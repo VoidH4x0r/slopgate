@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T02:36:49.829Z",
+  "slopgateVersion": "0.4.0",
+  "nodeVersion": "v24.19.0",
+  "corpora": [
+    {
+      "name": "tape",
+      "package": {
+        "name": "tape",
+        "version": "5.11.0"
+      },
+      "digest": "3657d8426287c4a3",
+      "files": 185,
+      "lines": 11958,
+      "durationMs": 259,
+      "findings": 2,
+      "high": 0,
+      "suppressed": 0,
+      "parseErrors": 2,
+      "byRule": {
+        "ts/noop-test": {
+          "high": 0,
+          "medium": 2,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 0,
+          "fp": 0,
+          "precision": null
+        },
+        "byRule": {}
+      },
+      "findingsList": []
+    }
+  ],
+  "staleLabels": [],
+  "unlabeledHigh": []
+}

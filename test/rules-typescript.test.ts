@@ -277,13 +277,13 @@ test('ts/noop-test reports delegated assertions at medium', async () => {
 test('ts/noop-test does not treat a context receiver as delegation', async () => {
   const drafts = await runRule('ts/noop-test', "test('x', (t) => { t.end(); });\n", 'typescript');
   assert.equal(drafts.length, 1);
-  assert.equal(drafts[0]?.confidence, 'high');
+  assert.equal(drafts[0]?.confidence, 'medium');
 });
 
 test('ts/noop-test does not delegate without a callback parameter', async () => {
   const drafts = await runRule('ts/noop-test', "test('x', () => { runSuite(); });\n", 'typescript');
   assert.equal(drafts.length, 1);
-  assert.equal(drafts[0]?.confidence, 'high');
+  assert.equal(drafts[0]?.confidence, 'medium');
 });
 
 test('ts/unreachable ignores erased type declarations after return', async () => {

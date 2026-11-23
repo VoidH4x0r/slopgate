@@ -25,7 +25,7 @@ Every roadmap decision should protect those advantages.
 | Rules | 28, all with negative tests |
 | Interfaces | CLI, JSON, SARIF, GitHub annotations, MCP, baseline, diff, suppression |
 | Autofix | Safe deletion of unreachable statements after `return` / `raise` / `break` / `continue` |
-| Benchmark | 1,115,270 Python/JS/AI lines: 43 high, 97.7% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 635,245 lines, 0 high |
+| Benchmark | 1,115,270 Python/JS/AI lines: 42 high, 97.6% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 635,245 lines, 0 high |
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
 | Release | npm `@voidh4x0r/slopgate`; 0.3.2 release candidate; VS Code extension 0.1.0 |
 
@@ -155,7 +155,7 @@ Exit criteria:
 
 ### 0.4.0 - semantic duplicates, benchmark expansion, integrations
 
-Goal: deepen the product where AST plus project context creates a defensible moat. **Status: semantic duplicates, MCP, JSON schema, GitHub Action, pre-commit and a bundled-app corpus implemented in 0.4.0; Tape/TAP and held-out-AI corpora remain follow-up work.**
+Goal: deepen the product where AST plus project context creates a defensible moat. **Status: semantic duplicates, MCP, JSON schema, GitHub Action, pre-commit, Tape/TAP, bundled-app and held-out-AI corpora implemented in 0.4.0.**
 
 Workstreams:
 

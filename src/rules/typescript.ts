@@ -170,7 +170,11 @@ const T_ASSERTION_MEMBERS = new Set([
  * `assert.strictEqual` ends in `strictEqual`, which the old last-segment
  * regex missed, so node:assert-based tests were reported as assertion-free.
  */
-function isAssertionCallee(text: string, aliases: ReadonlySet<string>): boolean {
+function isAssertionCallee(
+  text: string,
+  aliases: ReadonlySet<string>,
+  contextParam?: string,
+): boolean {
   if (text.length === 0) return false;
   // Renamed imports: nodeAssert.strictEqual, strictAssert.equal, eq(...).
   const root = text.split(/[.(]/)[0] ?? '';
@@ -186,6 +190,10 @@ function isAssertionCallee(text: string, aliases: ReadonlySet<string>): boolean 
   }
   if (text === 'should' || text.startsWith('should.') || text.startsWith('should(')) return true;
   if (text.startsWith('chai.')) return true;
+  // Tape/TAP callback parameter may be named tt/st/myself, not just t.
+  if (contextParam && text.startsWith(`${contextParam}.`)) {
+    return T_ASSERTION_MEMBERS.has(text.slice(contextParam.length + 1));
+  }
   // node:test context: t.ok, t.is, t.throws, t.assert.strictEqual, ...
   if (/^t\.assert(\.[A-Za-z_$][\w$]*)*$/.test(text)) return true;
   if (/^t\.[A-Za-z_$][\w$]*$/.test(text)) {
@@ -195,14 +203,18 @@ function isAssertionCallee(text: string, aliases: ReadonlySet<string>): boolean 
   return false;
 }
 
-function hasAssertion(body: AstNode, aliases: ReadonlySet<string>): boolean {
+function hasAssertion(
+  body: AstNode,
+  aliases: ReadonlySet<string>,
+  contextParam?: string,
+): boolean {
   let found = false;
   walk(body, (node) => {
     if (found) return false;
     if (node.type === 'call_expression') {
       const fn = node.childForFieldName('function') ?? node.namedChildren[0];
       const text = collapseWhitespace(fn?.text ?? '');
-      if (isAssertionCallee(text, aliases)) {
+      if (isAssertionCallee(text, aliases, contextParam)) {
         found = true;
         return false;
       }
@@ -419,9 +431,10 @@ const noopTest: Rule = {
       const label = args.namedChildren[0]?.type === 'string' ? truncate(args.namedChildren[0].text, 60) : undefined;
       const delegated = delegatedHelper(body, callback);
       const implicit = hasImplicitFrameworkAction(body);
+      const contextParam = firstParameterName(callback);
 
       if (body.type !== 'statement_block') {
-        if (!hasAssertion(body, aliases)) {
+        if (!hasAssertion(body, aliases, contextParam)) {
           drafts.push({
             message: delegated
               ? 'test delegates its assertions to a helper'
@@ -431,7 +444,7 @@ const noopTest: Rule = {
             start: startOf(call),
             end: endOf(body),
             snippet: snippetOf(ctx, call),
-            confidence: delegated || implicit ? 'medium' : 'high',
+            confidence: 'medium',
             evidence: [
               `test: ${label ?? '(anonymous)'}`,
               ...(delegated
@@ -459,7 +472,7 @@ const noopTest: Rule = {
         });
         continue;
       }
-      if (!hasAssertion(body, aliases)) {
+      if (!hasAssertion(body, aliases, contextParam)) {
         drafts.push({
           message: delegated
             ? 'test delegates its assertions to a helper'
@@ -469,7 +482,7 @@ const noopTest: Rule = {
           start: startOf(call),
           end: endOf(body),
           snippet: snippetOf(ctx, call),
-          confidence: delegated || implicit ? 'medium' : 'high',
+          confidence: 'medium',
           evidence: [
             `test: ${label ?? '(anonymous)'}`,
             `statements: ${statements.length}`,

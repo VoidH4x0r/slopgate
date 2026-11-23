@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (0.4.0): **43 high-confidence findings across 1,115,270 lines, 97.7% labeled precision (42/43), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 14 high findings on a 20-file AI-generated regression corpus.**
+> Status (0.4.0): **42 high-confidence findings across 1,115,270 lines, 97.6% labeled precision (41/42), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 13 high findings on a 20-file AI-generated regression corpus.**
 
 ## The claim
 
@@ -16,7 +16,7 @@ Three corpora:
 
 1. **Human-written code (false-positive side).** The published run uses the **CPython 3.14.7 standard library** (1,845 files, 991,705 lines) because it is unusually adversarial: it contains hundreds of helper functions named `test_*`, interface stubs, and deliberate no-ops. The JavaScript half is the published tarballs of nine packages — `eslint@10.15.0`, `express@5.3.0`, `execa@10.2.1`, `semver@7.8.6`, `chalk@6.0.1`, `commander@15.1.0`, `debug@4.4.3`, `yargs@18.2.0`, `glob@14.0.6` — 601 files and 123,472 lines, scanned package by package so each resolves its own manifest.
 2. **Seeded defects (recall side).** `fixtures/demo` — a miniature repository with 14 deliberately planted defects, one per rule — and `fixtures/ai-generated`, a 20-file corpus generated from a fixed prompt set. `benchmark/seeded.json` lists the expected `file + ruleId` pairs for both.
-3. **AI-generated regression corpus (false-positive and AI-shape side).** `fixtures/ai-generated` contains 10 Python files, 6 TypeScript files and 4 clean controls (20 source files, 93 lines). It was generated from a fixed prompt set and committed with `PROVENANCE.md`; it is a static regression corpus, **not** a representative sample of model output. Its 14 high-confidence findings are labeled in `benchmark/labels.json`.
+3. **AI-generated regression corpus (false-positive and AI-shape side).** `fixtures/ai-generated` contains 10 Python files, 6 TypeScript files and 4 clean controls (20 source files, 93 lines). It was generated from a fixed prompt set and committed with `PROVENANCE.md`; it is a static regression corpus, **not** a representative sample of model output. Its 13 high-confidence findings are labeled in `benchmark/labels.json`.
 
 Repositories are not vendored. Each corpus is identified in `benchmark/results.json` by a **SHA-256 digest over its scanned files, truncated to 64 bits** (relative path + content), plus the package name/version when a `package.json` exists. The digest lets another checkout prove it is running the same tree without publishing absolute paths. The CPython corpus is a local 3.14.7 install rather than a git checkout, so it is identified by digest and version, not by commit.
 
@@ -59,6 +59,14 @@ node scripts/benchmark.mjs \
 ```
 
 The source tree is identified by digest rather than committed. There are no Rust labels because the run has no high findings; the label file is intentionally empty.
+
+### Tape/TAP corpus
+
+The Tape repository (`tape@5.11.0`, tests and examples) is scanned with `--include '**/{test,example}/**/*.{js,mjs,cjs}'`: **185 files / 11,958 lines / 0 high**. It exercises TAP callbacks that assert through `t.plan`, aliased assertions and subtests. The result is in `benchmark/tape-results.json`; labels are empty because there are no high findings.
+
+### Held-out AI corpus
+
+`fixtures/ai-heldout` is a fixed 10-file regression set written from a separate prompt list after the main AI corpus was frozen. It contains 8 seeded high findings, all labeled `tp` in `benchmark/heldout-labels.json`; the held-out run is kept separate from the main precision number so it can be used as a check rather than a tuning set.
 
 ### Bundled-app corpus
 
@@ -109,7 +117,7 @@ The overhead is about 1 second, or roughly 9% of a scan that is already dominate
 
 ## Labels and limitations
 
-- Labels are **per fingerprint**, not per occurrence: identical snippets in one file share a label. The published run has 32 labels covering 43 high-finding occurrences.
+- Labels are **per fingerprint**, not per occurrence: identical snippets in one file share a label. The published run has 31 labels covering 42 high-finding occurrences.
 - The labels were produced while iterating on the same corpus. Precision is therefore a **development-set measurement, not a held-out estimate**; a rule tuned against these labels is not evidence that it generalises.
 - Label additions, removals and disputed labels are recorded in `CHANGELOG.md`. There is no "fewer than 10 samples" exclusion: every rule with at least one labeled high finding appears in the per-rule table, with its sample count.
 - False negatives found after release are added to the fixture corpus or to a future corpus; they are not silently patched without a test.
@@ -118,4 +126,4 @@ The overhead is about 1 second, or roughly 9% of a scan that is already dominate
 ## What this benchmark does not measure
 
 - **Usefulness.** A finding can be correct and still be intentional (the CPython swallowed-exception findings usually are). The report separates "is it true" from "would you act on it" only implicitly, through the notes in the labels file.
-- **AI-generated code specifically.** The AI corpus is a fixed-prompt regression set, not a sample of real AI-generated pull requests. Its 14 high findings are useful for rule coverage, not for estimating a model's real-world error rate.
+- **AI-generated code specifically.** The AI corpus is a fixed-prompt regression set, not a sample of real AI-generated pull requests. Its 13 high findings are useful for rule coverage, not for estimating a model's real-world error rate.

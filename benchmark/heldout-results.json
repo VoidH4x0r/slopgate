@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-23T02:37:16.071Z",
+  "slopgateVersion": "0.4.0",
+  "nodeVersion": "v24.19.0",
+  "corpora": [
+    {
+      "name": "heldout-ai",
+      "digest": "2404daae29252116",
+      "files": 10,
+      "lines": 39,
+      "durationMs": 48,
+      "findings": 8,
+      "high": 8,
+      "suppressed": 0,
+      "parseErrors": 0,
+      "byRule": {
+        "py/noop-test": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/phantom-import": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/stub-body": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/swallowed-exception": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "py/unreachable": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/noop-test": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/phantom-import": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        },
+        "ts/stub-function": {
+          "high": 1,
+          "medium": 0,
+          "low": 0
+        }
+      },
+      "precision": {
+        "overall": {
+          "tp": 8,
+          "fp": 0,
+          "precision": 1
+        },
+        "byRule": {
+          "py/noop-test": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/phantom-import": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/stub-body": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/swallowed-exception": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "py/unreachable": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/noop-test": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/phantom-import": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          },
+          "ts/stub-function": {
+            "tp": 1,
+            "fp": 0,
+            "precision": 1
+          }
+        }
+      },
+      "findingsList": [
+        {
+          "fingerprint": "68034c90ae8bf542",
+          "ruleId": "py/noop-test",
+          "file": "python/noop_test.py",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "def test_nothing():"
+        },
+        {
+          "fingerprint": "0dabf0785b8d959f",
+          "ruleId": "py/phantom-import",
+          "file": "python/phantom.py",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "import heldout_missing_dependency"
+        },
+        {
+          "fingerprint": "915eb867e04c0bbe",
+          "ruleId": "py/stub-body",
+          "file": "python/stub.py",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "def save_user(user):"
+        },
+        {
+          "fingerprint": "e184a569ff2a0353",
+          "ruleId": "py/swallowed-exception",
+          "file": "python/swallowed.py",
+          "line": 4,
+          "confidence": "high",
+          "snippet": "except Exception:"
+        },
+        {
+          "fingerprint": "0815f6f9482dbf76",
+          "ruleId": "py/unreachable",
+          "file": "python/unreachable.py",
+          "line": 3,
+          "confidence": "high",
+          "snippet": "print(\"dead\")"
+        },
+        {
+          "fingerprint": "ad4f0af6c9d902df",
+          "ruleId": "ts/noop-test",
+          "file": "typescript/noop.test.ts",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "test(\"nothing\", () => {})"
+        },
+        {
+          "fingerprint": "e3922db34576e743",
+          "ruleId": "ts/phantom-import",
+          "file": "typescript/phantom.ts",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "import { missing } from \"heldout-missing-package\";"
+        },
+        {
+          "fingerprint": "fc8ca3371d8022ec",
+          "ruleId": "ts/stub-function",
+          "file": "typescript/stub.ts",
+          "line": 1,
+          "confidence": "high",
+          "snippet": "function save() {"
+        }
+      ]
+    }
+  ],
+  "staleLabels": [],
+  "unlabeledHigh": []
+}

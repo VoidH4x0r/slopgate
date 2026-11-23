@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T02:32:17.278Z by `scripts/benchmark.mjs` (slopgate 0.4.0, Node v24.19.0).
+Generated 2026-11-23T02:37:54.166Z by `scripts/benchmark.mjs` (slopgate 0.4.0, Node v24.19.0).
 
 ## Summary
 
@@ -16,7 +16,7 @@ Generated 2026-11-23T02:32:17.278Z by `scripts/benchmark.mjs` (slopgate 0.4.0, N
 | eslint | 409 | 100880 | 0 | 0.00 | — | `8d19ccdb8205985c` |
 | glob | 7 | 2217 | 0 | 0.00 | — | `dc4dc56c06b64fb8` |
 | yargs | 5 | 198 | 0 | 0.00 | — | `53ba47a2d90b26ae` |
-| ai-generated | 20 | 93 | 14 | 150.54 | 100.0% | `95d85ff450c21ede` |
+| ai-generated | 20 | 93 | 13 | 139.78 | 100.0% | `95d85ff450c21ede` |
 
 ## Recall (seeded defects)
 
@@ -24,7 +24,7 @@ Detected **30/30** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 11922 ms.
+Scanned **1845** files (**991705** lines) in 13033 ms.
 
 Corpus digest: `027f952580cd6622`.
 
@@ -40,7 +40,7 @@ Corpus digest: `027f952580cd6622`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 43 ms.
+Scanned **7** files (**2783** lines) in 45 ms.
 
 Package: `express@5.3.0`.
 
@@ -51,7 +51,7 @@ Corpus digest: `d2b720bf4294881f`.
 
 ## chalk
 
-Scanned **2** files (**799** lines) in 8 ms.
+Scanned **2** files (**799** lines) in 6 ms.
 
 Package: `chalk@6.0.1`.
 
@@ -62,7 +62,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 129 ms.
+Scanned **111** files (**8363** lines) in 141 ms.
 
 Package: `execa@10.2.1`.
 
@@ -74,7 +74,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 48 ms.
+Scanned **49** files (**3166** lines) in 52 ms.
 
 Package: `semver@7.8.6`.
 
@@ -85,7 +85,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 46 ms.
+Scanned **7** files (**4225** lines) in 39 ms.
 
 Package: `commander@15.1.0`.
 
@@ -96,7 +96,7 @@ Corpus digest: `a1904525101c27be`.
 
 ## debug
 
-Scanned **4** files (**841** lines) in 8 ms.
+Scanned **4** files (**841** lines) in 9 ms.
 
 Package: `debug@4.4.3`.
 
@@ -108,7 +108,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 767 ms.
+Scanned **409** files (**100880** lines) in 853 ms.
 
 Package: `eslint@10.15.0`.
 
@@ -121,7 +121,7 @@ Corpus digest: `8d19ccdb8205985c`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 44 ms.
+Scanned **7** files (**2217** lines) in 52 ms.
 
 Package: `glob@14.0.6`.
 
@@ -132,7 +132,7 @@ Corpus digest: `dc4dc56c06b64fb8`.
 
 ## yargs
 
-Scanned **5** files (**198** lines) in 6 ms.
+Scanned **5** files (**198** lines) in 8 ms.
 
 Package: `yargs@18.2.0`.
 
@@ -143,7 +143,7 @@ Corpus digest: `53ba47a2d90b26ae`.
 
 ## ai-generated
 
-Scanned **20** files (**93** lines) in 9 ms.
+Scanned **20** files (**93** lines) in 11 ms.
 
 Package: `ai-generated-corpus@0.0.0`.
 
@@ -160,7 +160,7 @@ Corpus digest: `95d85ff450c21ede`.
 | `py/tautological-assert` | 1 | 0 | 0 | 1 | 100.0% |
 | `py/unreachable` | 1 | 0 | 0 | 1 | 100.0% |
 | `ts/dead-branch` | 1 | 0 | 0 | 1 | 100.0% |
-| `ts/noop-test` | 1 | 0 | 0 | 1 | 100.0% |
+| `ts/noop-test` | 0 | 1 | 0 | 0 | — |
 | `ts/phantom-import` | 1 | 0 | 0 | 1 | 100.0% |
 | `ts/stub-function` | 1 | 0 | 0 | 1 | 100.0% |
 | `ts/tautological-assert` | 1 | 0 | 0 | 1 | 100.0% |

@@ -103,10 +103,6 @@
     "label": "tp",
     "note": "AI-generated corpus: py/unreachable pattern is present in the source"
   },
-  "c550b6330388a966": {
-    "label": "tp",
-    "note": "AI-generated corpus: ts/noop-test pattern is present in the source"
-  },
   "3f1ba12eebc89d64": {
     "label": "tp",
     "note": "AI-generated corpus: ts/dead-branch pattern is present in the source"
