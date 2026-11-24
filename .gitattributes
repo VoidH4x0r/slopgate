@@ -5,7 +5,15 @@
 *.wasm binary
 *.gif binary
 *.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.mp4 binary
+*.webm binary
 *.tgz binary
+*.vsix binary
+*.zip binary
+*.pdf binary
 
 # Lockfiles are generated; diffs are noise in review.
 package-lock.json -diff

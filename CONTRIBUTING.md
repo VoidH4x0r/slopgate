@@ -10,7 +10,7 @@ cd slopgate
 npm install
 npm test           # 478 tests; test:sandbox skips the one git-diff integration test
 npm run typecheck
-npm run verify     # typecheck + links + tests + build + self-scan + package check
+npm run verify     # hygiene + typecheck + links + tests + build + self-scan + package check
 npm run build      # emits dist/ used by the published package
 ```
 
@@ -104,6 +104,20 @@ npm run check:encoding
 ```
 
 See [docs/encoding.md](docs/encoding.md) for the incident analysis, the whitelist policy, and the recovery procedure.
+
+## Repository hygiene
+
+Never commit credentials, personal absolute paths, local release tarballs, `.vsix` packages or TypeScript build caches. The publish surface is the Git index, not your working tree, so an ignored artifact is safe only as long as it stays ignored and is never force-added.
+
+Before committing:
+
+```bash
+git status --ignored
+git diff --cached --name-only
+npm run check:hygiene
+```
+
+`npm run check:hygiene` scans tracked files for private-key blocks, common token shapes and absolute home paths. It is deliberately high-signal; it is not a replacement for a dedicated secret scanner. If it flags a real credential, rotate the credential first, then follow [SECURITY.md](SECURITY.md).
 
 ## Tests
 

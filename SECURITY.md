@@ -24,6 +24,15 @@ Include, when possible:
 
 You should receive an acknowledgement within a few business days. We will coordinate a fix and a disclosure date with you.
 
+## Accidental secret in a commit
+
+If a credential, token or private key is ever committed:
+
+1. **Revoke or rotate it first.** Treat the value as compromised as soon as it reaches a remote.
+2. Report the incident privately through the advisory link above.
+3. Do not rewrite public history alone; coordinate with the maintainer so mirrors, forks and CI caches are handled consistently.
+4. Add a regression case or ignore rule so the same artifact cannot be staged again.
+
 ## What counts as a vulnerability
 
 - arbitrary code execution through a scanned file, config, grammar or MCP message;

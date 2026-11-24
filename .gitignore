@@ -2,12 +2,21 @@ node_modules/
 dist/
 *.log
 *.tgz
+*.vsix
+*.tsbuildinfo
+*.zip
+*.7z
+*.rar
+*.sqlite
+*.db
+*.har
 .DS_Store
 Thumbs.db
 .slopgate-cache/
 coverage/
 docs/demo-preview.png
 test/.tmp-*/
+.vscode-test/
 
 # Editor and shell state
 .idea/

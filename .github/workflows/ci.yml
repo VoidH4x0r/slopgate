@@ -21,6 +21,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run check:encoding
+      - run: npm run check:hygiene
       - run: node scripts/check-links.mjs
       - run: node scripts/set-repo.mjs --self-test
       - run: npm test
@@ -134,6 +135,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check:encoding
+      - run: npm run check:hygiene
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
