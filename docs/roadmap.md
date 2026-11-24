@@ -1,6 +1,6 @@
 # Development roadmap
 
-Status: **1.0.2 is published on npm; 1.0.3 is being prepared to ship the reviewed main branch, current docs/demo, TypeScript 7 toolchain and repository hygiene gate**. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code; 0.4.x added semantic duplicates, integrations and complete benchmark coverage; 1.0.x hardened the public contract after external review. This roadmap is effort-based, not a promise of dates.
+Status: **1.0.3 is published on npm; it ships the reviewed main branch, current docs/demo, TypeScript 7 toolchain and repository hygiene gate**. 1.0.2 remains a historical release with the old npm metadata. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code; 0.4.x added semantic duplicates, integrations and complete benchmark coverage; 1.0.x hardened the public contract after external review. This roadmap is effort-based, not a promise of dates.
 
 ## 1. Product thesis
 
@@ -27,7 +27,7 @@ Every roadmap decision should protect those advantages.
 | Autofix | Safe deletion of unreachable statements after `return` / `raise` / `break` / `continue` |
 | Benchmark | 1,115,270 Python/JS/AI lines: 42 high, 97.6% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 635,245 lines, 0 high |
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
-| Release | npm `@voidh4x0r/slopgate` latest published 1.0.2; 1.0.3 preparing; VS Code extension 0.1.1 not yet in Marketplace |
+| Release | npm `@voidh4x0r/slopgate` latest published 1.0.3; VS Code extension 0.1.1 not yet in Marketplace |
 
 The current limitations are documented in `README.md`. The biggest remaining gaps are release/artifact alignment, npm maintainer metadata privacy, Marketplace distribution, JavaScript test-theatre and real AI-PR benchmark coverage, security/coverage gates, and custom-rule/LSP extensibility.
 
@@ -280,7 +280,7 @@ A release does not ship if precision drops below 97% or any high finding is unla
 
 ## 10. Next 14 days
 
-1. Publish **1.0.3** from a v1.0.3 tag, create the GitHub release, and deprecate the stale 1.0.2 artifact.
+1. Create the v1.0.3 tag and GitHub release; deprecate the stale 1.0.2 artifact.
 2. Replace the npm maintainer email with the public GitHub noreply address; verify the packument.
 3. Package the VS Code extension as a VSIX and create the Marketplace listing.
 4. Add a real AI-PR benchmark corpus plus a nightly or scheduled full-benchmark run; stop trusting only committed result files.
