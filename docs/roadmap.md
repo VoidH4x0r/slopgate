@@ -1,6 +1,6 @@
 # Development roadmap
 
-Status: **1.0.2 is the review-hardened candidate; 1.0.1 is published on npm**. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code; 0.4.x added semantic duplicates, integrations and complete benchmark coverage; 1.0.x hardened the public contract after external review. This roadmap is effort-based, not a promise of dates.
+Status: **1.0.2 is published on npm; 1.0.3 is being prepared to ship the reviewed main branch, current docs/demo, TypeScript 7 toolchain and repository hygiene gate**. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code; 0.4.x added semantic duplicates, integrations and complete benchmark coverage; 1.0.x hardened the public contract after external review. This roadmap is effort-based, not a promise of dates.
 
 ## 1. Product thesis
 
@@ -19,7 +19,7 @@ Every roadmap decision should protect those advantages.
 
 ## 2. Current baseline
 
-| Area | State at 1.0.2 |
+| Area | State at 1.0.3 |
 | --- | --- |
 | Languages | Python, TypeScript/JavaScript, Go, Rust |
 | Rules | 32, all with negative tests |
@@ -27,9 +27,9 @@ Every roadmap decision should protect those advantages.
 | Autofix | Safe deletion of unreachable statements after `return` / `raise` / `break` / `continue` |
 | Benchmark | 1,115,270 Python/JS/AI lines: 42 high, 97.6% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 635,245 lines, 0 high |
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
-| Release | npm `@voidh4x0r/slopgate`; latest published 1.0.1, 1.0.2 review-hardened candidate; VS Code extension 0.1.1 |
+| Release | npm `@voidh4x0r/slopgate` latest published 1.0.2; 1.0.3 preparing; VS Code extension 0.1.1 not yet in Marketplace |
 
-The current limitations are documented in `README.md`. The biggest remaining gaps are JavaScript test-theatre coverage, editor/Marketplace distribution, language-version edge cases, and a broader held-out AI corpus.
+The current limitations are documented in `README.md`. The biggest remaining gaps are release/artifact alignment, npm maintainer metadata privacy, Marketplace distribution, JavaScript test-theatre and real AI-PR benchmark coverage, security/coverage gates, and custom-rule/LSP extensibility.
 
 ## 3. Non-goals
 
@@ -77,7 +77,7 @@ Exit criteria:
 
 ### 0.3.0 - Go support
 
-Goal: a real Go mode, not a parser demo. **Status: implemented in 0.3.0; pending release validation.**
+Goal: a real Go mode, not a parser demo. **Status: implemented in 0.3.0 and released.**
 
 Scope:
 
@@ -115,7 +115,7 @@ Exit criteria:
 
 ### 0.3.1 - Rust support
 
-Goal: same bar as Go, with Rust-specific ownership and test idioms. **Status: implemented in 0.3.1; pending release validation.**
+Goal: same bar as Go, with Rust-specific ownership and test idioms. **Status: implemented in 0.3.1 and released.**
 
 Initial rules:
 
@@ -132,7 +132,7 @@ Exit criteria: same as Go, plus a Rust test corpus that includes macros, async f
 
 ### 0.3.2 - VS Code extension
 
-Goal: make findings visible where the reviewer already works, without duplicating rule logic. **Status: implemented in 0.3.2; pending release validation.**
+Goal: make findings visible where the reviewer already works, without duplicating rule logic. **Status: implemented in 0.3.2; Marketplace distribution remains pending.**
 
 Design:
 
@@ -186,7 +186,7 @@ Exit criteria:
 
 ### 1.0.0 - stable public contract
 
-Goal: a release that can be depended on without reading the changelog. **Status: implemented in 1.0.0; hardened in 1.0.1 and 1.0.2 after external review.**
+Goal: a release that can be depended on without reading the changelog. **Status: implemented in 1.0.0; hardened in 1.0.1 and 1.0.2 after external review; 1.0.3 aligns the published artifact with the reviewed main branch.**
 
 Required:
 
@@ -280,12 +280,12 @@ A release does not ship if precision drops below 97% or any high finding is unla
 
 ## 10. Next 14 days
 
-1. Cut **0.2.10** from `main` after the encoding contract, stale docs and autofix matrix pass.
-2. Add the full Windows test/runtime job; keep the encoding job.
-3. Fix `--write-baseline` stale-entry behavior or document the chosen semantics.
-4. Run a Go spike: tree-sitter-go parse, module resolution, two rules, 10 fixtures.
-5. Decide Go vs Rust order from the spike and available time; write the decision in this file.
-6. Do not start VS Code or semantic duplicates before 0.3.0 is benchmarked.
+1. Publish **1.0.3** from a v1.0.3 tag, create the GitHub release, and deprecate the stale 1.0.2 artifact.
+2. Replace the npm maintainer email with the public GitHub noreply address; verify the packument.
+3. Package the VS Code extension as a VSIX and create the Marketplace listing.
+4. Add a real AI-PR benchmark corpus plus a nightly or scheduled full-benchmark run; stop trusting only committed result files.
+5. Add CodeQL, dependency review, coverage threshold and SHA-pinned Actions.
+6. Design the custom-rule/plugin API and decide whether LSP/watch/incremental scan belongs in 1.1 or 2.0.
 
 ## 11. Decision log
 

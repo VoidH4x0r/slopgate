@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T08:17:00.754Z",
-  "slopgateVersion": "1.0.2",
+  "generatedAt": "2026-11-24T02:05:48.269Z",
+  "slopgateVersion": "1.0.3",
   "nodeVersion": "v24.19.0",
   "labelsFile": "benchmark/heldout-labels.json",
   "corpora": [
@@ -10,7 +10,7 @@
       "digest": "2404daae29252116",
       "files": 10,
       "lines": 39,
-      "durationMs": 64,
+      "durationMs": 91,
       "findings": 8,
       "high": 8,
       "suppressed": 0,

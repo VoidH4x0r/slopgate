@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T07:50:21.236Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
+Generated 2026-11-24T02:05:47.173Z by `scripts/benchmark.mjs` (slopgate 1.0.3, Node v24.19.0).
 
 ## Summary
 
@@ -10,7 +10,7 @@ Generated 2026-11-23T07:50:21.236Z by `scripts/benchmark.mjs` (slopgate 1.0.2, N
 
 ## bundled-app
 
-Scanned **6** files (**332** lines) in 717 ms; parse errors: **2**.
+Scanned **6** files (**332** lines) in 843 ms; parse errors: **2**.
 
 Package: `asus_framework@4.2.5.4`.
 

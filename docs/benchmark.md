@@ -2,7 +2,7 @@
 
 The point of this document is to make our central claim **falsifiable**. Anyone should be able to repeat it and get a similar number.
 
-> Status (1.0.2): **42 high-confidence findings across 1,115,270 lines, 97.6% labeled precision (41/42), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 13 high findings on a 20-file AI-generated regression corpus.**
+> Status (1.0.3): **42 high-confidence findings across 1,115,270 lines, 97.6% labeled precision (41/42), 30/30 seeded defects detected, 0 high findings on 601 JavaScript files, and 13 high findings on a 20-file AI-generated regression corpus.**
 
 ## The claim
 

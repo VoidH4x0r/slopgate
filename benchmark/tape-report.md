@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T07:50:20.581Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
+Generated 2026-11-24T02:05:42.972Z by `scripts/benchmark.mjs` (slopgate 1.0.3, Node v24.19.0).
 
 ## Summary
 
@@ -10,7 +10,7 @@ Generated 2026-11-23T07:50:20.581Z by `scripts/benchmark.mjs` (slopgate 1.0.2, N
 
 ## tape
 
-Scanned **185** files (**11958** lines) in 250 ms; parse errors: **2**.
+Scanned **185** files (**11958** lines) in 3674 ms; parse errors: **2**.
 
 Package: `tape@5.11.0`.
 
@@ -18,7 +18,7 @@ Corpus digest: `3657d8426287c4a3`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `ts/noop-test` | 0 | 37 | 0 | 0 | — |
+| `ts/noop-test` | 0 | 17 | 0 | 0 | — |
 
 ## Method
 

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T08:26:58.834Z",
-  "slopgateVersion": "1.0.2",
+  "generatedAt": "2026-11-24T02:07:02.317Z",
+  "slopgateVersion": "1.0.3",
   "nodeVersion": "v24.19.0",
   "labelsFile": "benchmark/go-labels.json",
   "corpora": [
@@ -10,7 +10,7 @@
       "digest": "3970b1f25e424815",
       "files": 6090,
       "lines": 2455171,
-      "durationMs": 20650,
+      "durationMs": 113917,
       "findings": 427,
       "high": 0,
       "suppressed": 0,

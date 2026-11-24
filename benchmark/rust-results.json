@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T08:27:21.058Z",
-  "slopgateVersion": "1.0.2",
+  "generatedAt": "2026-11-24T02:10:06.194Z",
+  "slopgateVersion": "1.0.3",
   "nodeVersion": "v24.19.0",
   "labelsFile": "benchmark/rust-labels.json",
   "corpora": [
     {
       "name": "rust-stdlib",
-      "digest": "fce4df135e171390",
+      "digest": "2069123903286e07",
       "files": 1494,
       "lines": 635245,
-      "durationMs": 51110,
+      "durationMs": 72768,
       "findings": 217,
       "high": 0,
       "suppressed": 0,

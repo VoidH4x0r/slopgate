@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-11-24
+
+### Changed
+- 478 tests.
+- Release alignment: the npm artifact is rebuilt from the reviewed `main` branch, including the baseline v2 message fingerprints, Python setup/dev-requirements parsing, TS e2e/malformed tsconfig handling, `go.work` sibling requires, semantic representative fixes and the other post-1.0.2 review fixes that were committed after the 1.0.2 tarball.
+- Refreshed README, Chinese guide, MCP/integrations/contract/rules/roadmap docs and demo artwork; the demo now reflects the real 12-finding `fixtures/demo` output.
+- Dev toolchain: TypeScript 7.0.2 with explicit `rootDir`; CI actions `checkout@v7` / `setup-node@v7`; Dependabot ignores incompatible `web-tree-sitter >= 0.26` and `@types/node >= 21`.
+- Release workflow is idempotent (skip an already-published version), fails clearly when a new version has no `NPM_TOKEN`, and creates/updates the GitHub release for the tag.
+
+### Security
+- Added `check:hygiene` to `verify` and Linux/Windows CI: tracked credentials, private keys, absolute home paths and local build/package artifacts are rejected.
+- `.gitignore`/`.gitattributes` now cover VSIX, TypeScript build caches, archives and common databases.
+
 ## [1.0.2] - 2026-11-23
 
 ### Documentation

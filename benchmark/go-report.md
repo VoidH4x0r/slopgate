@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T08:26:58.834Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
+Generated 2026-11-24T02:07:02.317Z by `scripts/benchmark.mjs` (slopgate 1.0.3, Node v24.19.0).
 
 ## Summary
 
@@ -10,7 +10,7 @@ Generated 2026-11-23T08:26:58.834Z by `scripts/benchmark.mjs` (slopgate 1.0.2, N
 
 ## go-stdlib
 
-Scanned **6090** files (**2455171** lines) in 20650 ms; parse errors: **72**.
+Scanned **6090** files (**2455171** lines) in 113917 ms; parse errors: **72**.
 
 Corpus digest: `3970b1f25e424815`.
 

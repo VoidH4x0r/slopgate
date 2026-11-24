@@ -29,8 +29,27 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [ -z "${NODE_AUTH_TOKEN}" ]; then
-            echo "::warning::NPM_TOKEN is not set; validation passed, publish skipped."
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          if npm view "@voidh4x0r/slopgate@${version}" version >/dev/null 2>&1; then
+            echo "::notice::@voidh4x0r/slopgate@${version} is already published; skipping publish."
             exit 0
           fi
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::error::NPM_TOKEN is required to publish @voidh4x0r/slopgate@${version}."
+            exit 1
+          fi
           npm publish --provenance --access public
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            echo "::notice::GitHub release ${GITHUB_REF_NAME} already exists; leaving it unchanged."
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              --title "slopgate ${GITHUB_REF_NAME#v}" \
+              --generate-notes
+          fi

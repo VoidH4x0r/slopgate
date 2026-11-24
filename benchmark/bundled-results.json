@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:50:21.236Z",
-  "slopgateVersion": "1.0.2",
+  "generatedAt": "2026-11-24T02:05:47.173Z",
+  "slopgateVersion": "1.0.3",
   "nodeVersion": "v24.19.0",
   "labelsFile": "benchmark/bundled-labels.json",
   "corpora": [
@@ -14,7 +14,7 @@
       "digest": "c4478600ed4e4f39",
       "files": 6,
       "lines": 332,
-      "durationMs": 717,
+      "durationMs": 843,
       "findings": 48,
       "high": 0,
       "suppressed": 0,

@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: VoidH4x0r/slopgate@v1.0.2
+      - uses: VoidH4x0r/slopgate@v1.0.3
         with:
           path: .
           confidence: high
           fail-on: high
-          version: "1.0.2"
+          version: "1.0.3"
 ```
 
 `version: latest` uses the published npm package. Pin a version for reproducible CI. The action calls `npx --yes @voidh4x0r/slopgate@<version>`; it does not bundle the CLI. The runner must have Node.js available (the GitHub-hosted Ubuntu/Windows images do).
@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@1.0.2 . --fail-on high --no-color
+      - run: npx --yes @voidh4x0r/slopgate@1.0.3 . --fail-on high --no-color
 ```
 
 The committed `.slopgate-baseline.json` is read automatically. New findings on changed code still fail; accepted debt does not.
@@ -55,7 +55,7 @@ The committed `.slopgate-baseline.json` is read automatically. New findings on c
 ```yaml
       - run: |
           git fetch origin "${{ github.base_ref }}" --depth=1
-          npx --yes @voidh4x0r/slopgate@1.0.2 . \
+          npx --yes @voidh4x0r/slopgate@1.0.3 . \
             --diff "origin/${{ github.base_ref }}" \
             --fail-on high \
             --format github
@@ -80,7 +80,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@1.0.2 . --format sarif --fail-on high > slopgate.sarif
+      - run: npx --yes @voidh4x0r/slopgate@1.0.3 . --format sarif --fail-on high > slopgate.sarif
       - uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
@@ -94,7 +94,7 @@ SARIF 2.1.0 output includes the driver, rule metadata and one result per finding
 `--format github` emits workflow commands directly:
 
 ```yaml
-      - run: npx --yes @voidh4x0r/slopgate@1.0.2 . --format github --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@1.0.3 . --format github --fail-on high
 ```
 
 Each finding becomes an `error` / `warning` / `notice` annotation on the cited line, followed by a summary notice. This works on pull requests from forks without a security-events permission.
@@ -106,7 +106,7 @@ Add this to `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/VoidH4x0r/slopgate
-    rev: v1.0.2
+    rev: v1.0.3
     hooks:
       - id: slopgate
 ```

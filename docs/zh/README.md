@@ -172,13 +172,13 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with: { node-version: 22 }
-      - run: npx --yes @voidh4x0r/slopgate@1.0.2 . --fail-on high
+      - run: npx --yes @voidh4x0r/slopgate@1.0.3 . --fail-on high
 ```
 
 仓库还提供 composite action：
 
 ```yaml
-- uses: VoidH4x0r/slopgate@v1.0.2
+- uses: VoidH4x0r/slopgate@v1.0.3
   with:
     path: .
     confidence: high
@@ -188,7 +188,7 @@ jobs:
 GitHub 行内注解：
 
 ```yaml
-- run: npx --yes @voidh4x0r/slopgate@1.0.2 . --format github --fail-on high
+- run: npx --yes @voidh4x0r/slopgate@1.0.3 . --format github --fail-on high
 ```
 
 每个 finding 会变成对应行的 `error` / `warning` / `notice`，最后再输出一条汇总 notice。需要 GitHub code scanning 时，用 `--format sarif` 并配合 `github/codeql-action/upload-sarif`。
@@ -198,7 +198,7 @@ pre-commit：
 ```yaml
 repos:
   - repo: https://github.com/VoidH4x0r/slopgate
-    rev: v1.0.2
+    rev: v1.0.3
     hooks:
       - id: slopgate
 ```

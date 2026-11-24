@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-23T08:17:00.754Z by `scripts/benchmark.mjs` (slopgate 1.0.2, Node v24.19.0).
+Generated 2026-11-24T02:05:48.269Z by `scripts/benchmark.mjs` (slopgate 1.0.3, Node v24.19.0).
 
 ## Summary
 
@@ -10,7 +10,7 @@ Generated 2026-11-23T08:17:00.754Z by `scripts/benchmark.mjs` (slopgate 1.0.2, N
 
 ## heldout-ai
 
-Scanned **10** files (**39** lines) in 64 ms; parse errors: **0**.
+Scanned **10** files (**39** lines) in 91 ms; parse errors: **0**.
 
 Corpus digest: `2404daae29252116`.
 

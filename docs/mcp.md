@@ -35,7 +35,7 @@ npx @voidh4x0r/slopgate mcp .
 The server prints one line to stderr on startup:
 
 ```text
-slopgate mcp 1.0.2 ready (root: /path/to/repo)
+slopgate mcp 1.0.3 ready (root: /path/to/repo)
 ```
 
 Nothing else is written except newline-delimited JSON-RPC messages on stdout.
@@ -115,7 +115,7 @@ Shows the safe fixes that `--fix` would apply under the path, **without writing 
 
 ```text
 Diff since origin/main: 2 finding(s) on changed lines.
-slopgate 1.0.2 · 2 finding(s) (1 error) · 38 files scanned in 214ms
+slopgate 1.0.3 · 2 finding(s) (1 error) · 38 files scanned in 214ms
 src/users.py:12:5  error  high  py/phantom-import  `requests_v2` is imported but not declared…
     import requests_v2
     - no Python dependency manifest found
@@ -127,7 +127,7 @@ When there are no findings, the result still reports what was scanned:
 
 ```text
 Diff since origin/main: no findings on changed lines.
-slopgate 1.0.2 · 0 finding(s) · 38 files scanned in 204ms
+slopgate 1.0.3 · 0 finding(s) · 38 files scanned in 204ms
 ```
 
 `scan_path` and `scan_diff` return `isError: true` when zero files match. This is intentional: an over-broad `exclude` should not look like a clean repository.

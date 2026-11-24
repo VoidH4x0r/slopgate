@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are applied to the latest **1.x** release line. The current release candidate is `1.0.2`; `1.0.1` is the latest npm release until `1.0.2` is published.
+Security fixes are applied to the latest **1.x** release line. The latest published npm release is `1.0.2`; `1.0.3` is the current release-alignment patch.
 
 | Version | Supported |
 | --- | --- |
