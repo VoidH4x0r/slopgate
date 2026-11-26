@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@types/emscripten": "^1.41.6",
+    "lodash": "^4.17.19",
     "web-tree-sitter": "^0.25.10"
   },
   "devDependencies": {
