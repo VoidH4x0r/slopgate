@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- `npm run test:coverage` enforces line 95%, branch 85% and function 92% in `src/`; `npm run verify` now uses it instead of the plain sandbox suite.
+- `scripts/check-benchmark-drift.mjs` compares a fresh benchmark run with the committed baseline: corpus digest, file and high-confidence counts, labeled precision, stale/unlabeled labels, seeded recall, parse-error drift and the CPython duration budget.
+- Unit tests for the drift checker (9 cases).
+
+### Changed
+- 487 tests.
+
 ## [1.0.3] - 2026-11-24
 
 ### Changed

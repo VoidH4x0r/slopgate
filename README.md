@@ -452,9 +452,10 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test            # 478 tests; the sandbox gate skips the one git-diff integration test
+npm test               # 487 tests; the sandbox gate skips the one git-diff integration test
+npm run test:coverage  # same suite, with line 95 / branch 85 / function 92 thresholds
 npm run typecheck
-npm run verify      # all release gates in one command
+npm run verify         # all release gates in one command
 ```
 
 ## License
