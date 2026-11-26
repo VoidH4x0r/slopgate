@@ -6,7 +6,7 @@
   "asset": {
     "name": "ai-pr-corpus-v1.tar.gz",
     "url": "https://github.com/VoidH4x0r/slopgate/releases/download/ai-pr-corpus-v1/ai-pr-corpus-v1.tar.gz",
-    "sha256": "5bafb31c5a244aa990164d79f022628be4ecab8949cf37f9a586960dd3daac05"
+    "sha256": "c29a2423e66a062962a7603bdafe7e291b485b7d8a780a99dc942878db4bb693"
   },
   "totals": {
     "prs": 150,

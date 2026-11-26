@@ -149,7 +149,7 @@ Scanning only the changed files without the rest of the repository is not valid 
 
 The corpus therefore ships a **structural skeleton** per PR: a GitHub tree listing reproduces every source path as an empty placeholder file, the real dependency manifests (`pyproject.toml`, requirements files, `package.json`, `tsconfig`, `go.mod`, `Cargo.toml`, lockfiles) are fetched verbatim, and the changed files keep their real content. Import resolution sees the same module layout as the original repository while only the changed files are scanned.
 
-The archive is a GitHub release asset (`ai-pr-corpus-v1.tar.gz`, 0.4 MB) because it contains third-party code; the manifest stores its SHA-256 and the fetch script verifies it before unpacking.
+The archive is a GitHub release asset (`ai-pr-corpus-v1.tar.gz`, about 28 MB) because it contains third-party code; the manifest stores its SHA-256 and the fetch script verifies it before unpacking.
 
 ### Running it
 
