@@ -10,7 +10,7 @@
  * URL and its SHA-256; the archive is verified before it is unpacked.
  */
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -48,14 +48,26 @@ function digest(buffer) {
   return createHash('sha256').update(buffer).digest('hex');
 }
 
-const cached = existsSync(archive) ? await readFile(archive) : undefined;
+const cached = await readFile(archive).catch(() => undefined);
 if (cached && digest(cached) === expected) {
   console.log('archive already verified');
 } else {
   await mkdir(outDir, { recursive: true });
-  const response = await fetch(releaseUrl(manifest.asset.url), { redirect: 'follow' });
-  if (!response.ok) throw new Error(`download failed: ${response.status} ${response.statusText}`);
-  const buffer = Buffer.from(await response.arrayBuffer());
+  let buffer;
+  for (let attempt = 1; attempt <= 3 && !buffer; attempt += 1) {
+    try {
+      console.log(`downloading ${manifest.asset.name} (attempt ${attempt})`);
+      const response = await fetch(releaseUrl(manifest.asset.url), {
+        redirect: 'follow',
+        signal: AbortSignal.timeout(180000),
+      });
+      if (!response.ok) throw new Error(`download failed: ${response.status} ${response.statusText}`);
+      buffer = Buffer.from(await response.arrayBuffer());
+    } catch (err) {
+      if (attempt === 3) throw err;
+      console.warn(`download attempt ${attempt} failed: ${err.message}`);
+    }
+  }
   const actual = digest(buffer);
   if (actual !== expected) throw new Error(`asset digest mismatch: expected ${expected}, got ${actual}`);
   await writeFile(archive, buffer);
@@ -64,12 +76,13 @@ if (cached && digest(cached) === expected) {
 
 const skeletons = path.join(outDir, 'skeletons');
 const marker = path.join(skeletons, '.complete');
-if (!existsSync(marker)) {
+const markerText = await readFile(marker, 'utf8').catch(() => undefined);
+if (markerText === undefined) {
   rmSync(skeletons, { recursive: true, force: true });
   await mkdir(skeletons, { recursive: true });
   const extracted = extractTarGz(archive, skeletons);
   console.log(`unpacked ${extracted} files`);
-  writeFileSync(marker, `${manifest.asset.sha256}\n`, 'utf8');
+  await writeFile(marker, `${manifest.asset.sha256}\n`, 'utf8');
   console.log('unpacked corpus');
 } else {
   console.log('corpus already unpacked');
