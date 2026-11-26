@@ -1,0 +1,125 @@
+name: benchmark
+
+on:
+  schedule:
+    - cron: "41 2 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: full benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      - name: Fetch CPython 3.14.7 and Go 1.24.0
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/corpora"
+          git clone --depth 1 --branch v3.14.7 --filter=blob:none --sparse https://github.com/python/cpython.git "$RUNNER_TEMP/corpora/cpython"
+          git -C "$RUNNER_TEMP/corpora/cpython" sparse-checkout set Lib
+          git clone --depth 1 --branch go1.24.0 https://github.com/golang/go.git "$RUNNER_TEMP/corpora/go"
+
+      - name: Fetch Rust 1.83 rust-src
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.83.0 --profile minimal --component rust-src
+          echo "RUST_SRC=$(rustc +1.83.0 --print sysroot)/lib/rustlib/src/rust/library" >> "$GITHUB_ENV"
+
+      - name: Fetch published npm tarballs
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/corpora/js"
+          cd "$RUNNER_TEMP/corpora/js"
+          for spec in eslint@10.15.0 express@5.3.0 execa@10.2.1 semver@7.8.6 chalk@6.0.1 commander@15.1.0 debug@4.4.3 yargs@18.2.0 glob@14.0.6 tape@5.11.0; do
+            name="${spec%@*}"
+            tgz="$(npm pack "$spec" --silent)"
+            mkdir -p "$name"
+            tar -xzf "$tgz" -C "$name" --strip-components=1
+            rm -f "$tgz"
+          done
+
+      - name: Main benchmark (Python, JavaScript, AI)
+        run: |
+          set -euo pipefail
+          node scripts/benchmark.mjs \
+            --corpus cpython-stdlib="$RUNNER_TEMP/corpora/cpython/Lib" \
+            --corpus express="$RUNNER_TEMP/corpora/js/express" \
+            --corpus chalk="$RUNNER_TEMP/corpora/js/chalk" \
+            --corpus execa="$RUNNER_TEMP/corpora/js/execa" \
+            --corpus semver="$RUNNER_TEMP/corpora/js/semver" \
+            --corpus commander="$RUNNER_TEMP/corpora/js/commander" \
+            --corpus debug="$RUNNER_TEMP/corpora/js/debug" \
+            --corpus eslint="$RUNNER_TEMP/corpora/js/eslint" \
+            --corpus glob="$RUNNER_TEMP/corpora/js/glob" \
+            --corpus yargs="$RUNNER_TEMP/corpora/js/yargs" \
+            --corpus ai-generated=fixtures/ai-generated \
+            --labels benchmark/labels.json \
+            --seeded benchmark/seeded.json \
+            --out "$RUNNER_TEMP/results.json" \
+            --report "$RUNNER_TEMP/report.md"
+          node scripts/check-benchmark-drift.mjs \
+            --new "$RUNNER_TEMP/results.json" \
+            --baseline benchmark/results.json \
+            --max-duration-ms 20000
+
+      - name: Go benchmark
+        run: |
+          set -euo pipefail
+          node scripts/benchmark.mjs \
+            --corpus go-stdlib="$RUNNER_TEMP/corpora/go/src" \
+            --include '**/*.go' \
+            --labels benchmark/go-labels.json \
+            --out "$RUNNER_TEMP/go-results.json" \
+            --report "$RUNNER_TEMP/go-report.md"
+          node scripts/check-benchmark-drift.mjs \
+            --new "$RUNNER_TEMP/go-results.json" \
+            --baseline benchmark/go-results.json
+
+      - name: Rust benchmark
+        run: |
+          set -euo pipefail
+          node scripts/benchmark.mjs \
+            --corpus rust-stdlib="$RUST_SRC" \
+            --include '**/*.rs' \
+            --labels benchmark/rust-labels.json \
+            --out "$RUNNER_TEMP/rust-results.json" \
+            --report "$RUNNER_TEMP/rust-report.md"
+          node scripts/check-benchmark-drift.mjs \
+            --new "$RUNNER_TEMP/rust-results.json" \
+            --baseline benchmark/rust-results.json
+
+      - name: Tape benchmark
+        run: |
+          set -euo pipefail
+          node scripts/benchmark.mjs \
+            --corpus tape="$RUNNER_TEMP/corpora/js/tape" \
+            --include '**/{test,example}/**/*.{js,mjs,cjs}' \
+            --labels benchmark/tape-labels.json \
+            --out "$RUNNER_TEMP/tape-results.json" \
+            --report "$RUNNER_TEMP/tape-report.md"
+          node scripts/check-benchmark-drift.mjs \
+            --new "$RUNNER_TEMP/tape-results.json" \
+            --baseline benchmark/tape-results.json
+
+      - name: Held-out AI benchmark
+        run: |
+          set -euo pipefail
+          node scripts/benchmark.mjs \
+            --corpus heldout-ai=fixtures/ai-heldout \
+            --labels benchmark/heldout-labels.json \
+            --out "$RUNNER_TEMP/heldout-results.json" \
+            --report "$RUNNER_TEMP/heldout-report.md"
+          node scripts/check-benchmark-drift.mjs \
+            --new "$RUNNER_TEMP/heldout-results.json" \
+            --baseline benchmark/heldout-results.json

@@ -7,10 +7,13 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Added
 - `npm run test:coverage` enforces line 95%, branch 85% and function 92% in `src/`; `npm run verify` now uses it instead of the plain sandbox suite.
 - `scripts/check-benchmark-drift.mjs` compares a fresh benchmark run with the committed baseline: corpus digest, file and high-confidence counts, labeled precision, stale/unlabeled labels, seeded recall, parse-error drift and the CPython duration budget.
-- Unit tests for the drift checker (9 cases).
+- Unit tests for the drift checker (9 cases) and a test that rejects any workflow action not pinned to a full commit SHA.
 
 ### Changed
-- 487 tests.
+- 488 tests.
+- CI now runs the coverage-gated suite; every workflow `uses:` is pinned to a commit SHA and Dependabot updates the `github-actions` ecosystem weekly.
+- Added CodeQL (`javascript-typescript`, `security-and-quality`), dependency review (runtime, high/critical) and a weekly full benchmark that compares fresh results with the committed baseline through `scripts/check-benchmark-drift.mjs`.
+- Added [docs/quality-gates.md](docs/quality-gates.md) and linked it from the docs map.
 
 ## [1.0.3] - 2026-11-24
 

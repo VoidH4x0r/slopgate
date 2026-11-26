@@ -296,6 +296,8 @@ Each finding becomes an `error` / `warning` / `notice` annotation on the exact l
 
 Exit codes: `0` no findings at or above `--fail-on`, `1` findings at or above the threshold, `2` usage or configuration error (missing path, unknown rule id, invalid config, git failure, or zero files matched).
 
+The project's own repository also runs CodeQL, dependency review and a weekly full benchmark; see [docs/quality-gates.md](https://github.com/VoidH4x0r/slopgate/blob/main/docs/quality-gates.md).
+
 ### Suppressing a finding
 
 ```python
@@ -452,7 +454,7 @@ Issues and pull requests are welcome. Start with [CONTRIBUTING.md](https://githu
 git clone https://github.com/VoidH4x0r/slopgate
 cd slopgate
 npm install
-npm test               # 487 tests; the sandbox gate skips the one git-diff integration test
+npm test               # 488 tests; the sandbox gate skips the one git-diff integration test
 npm run test:coverage  # same suite, with line 95 / branch 85 / function 92 thresholds
 npm run typecheck
 npm run verify         # all release gates in one command
