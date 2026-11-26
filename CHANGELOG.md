@@ -9,6 +9,10 @@ All notable changes to this project are documented here. The format follows [Kee
 - `scripts/check-benchmark-drift.mjs` compares a fresh benchmark run with the committed baseline: corpus digest, file and high-confidence counts, labeled precision, stale/unlabeled labels, seeded recall, parse-error drift and the CPython duration budget.
 - Unit tests for the drift checker (9 cases) and a test that rejects any workflow action not pinned to a full commit SHA.
 
+### Fixed
+- Benchmark corpus digests are hashed in sorted relative-path order with CRLF normalized to LF, so a Windows and a Linux checkout of the same tree share one identity and the scheduled benchmark does not report false drift.
+- The scheduled benchmark runs every corpus group even when one fails and uploads the result files as an artifact for diagnosis.
+
 ### Changed
 - 488 tests.
 - CI now runs the coverage-gated suite; every workflow `uses:` is pinned to a commit SHA and Dependabot updates the `github-actions` ecosystem weekly.

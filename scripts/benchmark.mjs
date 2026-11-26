@@ -9,7 +9,7 @@
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { open, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findingFingerprint } from '../dist/baseline.js';
@@ -52,9 +52,7 @@ const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'out', 'targ
 const SOURCE_EXT = /\.(py|pyi|ts|tsx|mts|cts|js|jsx|mjs|cjs|go|rs)$/;
 
 async function countLines(dir) {
-  let files = 0;
-  let lines = 0;
-  const hash = createHash('sha256');
+  const collected = [];
   async function walk(current) {
     let entries;
     try {
@@ -71,24 +69,39 @@ async function countLines(dir) {
       }
       if (!SOURCE_EXT.test(entry.name) || entry.name.endsWith('.d.ts') || entry.name.endsWith('.min.js')) continue;
       try {
-        const info = await stat(abs);
-        if (info.size > 1024 * 1024) continue;
-        const text = await readFile(abs, 'utf8');
-        files += 1;
-        lines += text.split(/\r?\n/).length;
-        // Identity without leaking absolute paths: same tree => same digest.
-        hash.update(path.relative(dir, abs).replace(/\\/g, '/'));
-        hash.update('\0');
-        hash.update(text);
-        hash.update('\0');
+        const handle = await open(abs, 'r');
+        try {
+          const info = await handle.stat();
+          if (info.size > 1024 * 1024) continue;
+          collected.push({
+            relative: path.relative(dir, abs).replace(/\\/g, '/'),
+            text: await handle.readFile({ encoding: 'utf8' }),
+          });
+        } finally {
+          await handle.close();
+        }
       } catch {
         continue;
       }
     }
   }
   await walk(dir);
+  // Sort by relative path and normalize CRLF so a Windows and a Linux checkout
+  // of the same tree produce the same identity. Directory enumeration order is
+  // not stable across filesystems.
+  collected.sort((a, b) => (a.relative < b.relative ? -1 : a.relative > b.relative ? 1 : 0));
+  let lines = 0;
+  const hash = createHash('sha256');
+  for (const entry of collected) {
+    lines += entry.text.split(/\r?\n/).length;
+    // Identity without leaking absolute paths: same tree => same digest.
+    hash.update(entry.relative);
+    hash.update('\0');
+    hash.update(entry.text.replace(/\r\n?/g, '\n'));
+    hash.update('\0');
+  }
   // Truncated SHA-256: enough to identify a corpus without a 128-character column.
-  return { files, lines, digest: hash.digest('hex').slice(0, 16) };
+  return { files: collected.length, lines, digest: hash.digest('hex').slice(0, 16) };
 }
 
 async function readPackage(dir) {
@@ -318,7 +331,7 @@ function renderMarkdown(report) {
   }
   lines.push('## Method', '');
   lines.push(
-    'Corpora are real checkouts identified by a SHA-256 digest over their scanned files, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.',
+    'Corpora are real checkouts identified by a SHA-256 digest over their scanned files in sorted relative-path order with CRLF normalized to LF, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.',
   );
   lines.push('');
   lines.push(

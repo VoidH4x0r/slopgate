@@ -50,6 +50,7 @@ jobs:
           done
 
       - name: Main benchmark (Python, JavaScript, AI)
+        if: always()
         run: |
           set -euo pipefail
           node scripts/benchmark.mjs \
@@ -74,6 +75,7 @@ jobs:
             --max-duration-ms 20000
 
       - name: Go benchmark
+        if: always()
         run: |
           set -euo pipefail
           node scripts/benchmark.mjs \
@@ -87,6 +89,7 @@ jobs:
             --baseline benchmark/go-results.json
 
       - name: Rust benchmark
+        if: always()
         run: |
           set -euo pipefail
           node scripts/benchmark.mjs \
@@ -100,6 +103,7 @@ jobs:
             --baseline benchmark/rust-results.json
 
       - name: Tape benchmark
+        if: always()
         run: |
           set -euo pipefail
           node scripts/benchmark.mjs \
@@ -113,6 +117,7 @@ jobs:
             --baseline benchmark/tape-results.json
 
       - name: Held-out AI benchmark
+        if: always()
         run: |
           set -euo pipefail
           node scripts/benchmark.mjs \
@@ -123,3 +128,21 @@ jobs:
           node scripts/check-benchmark-drift.mjs \
             --new "$RUNNER_TEMP/heldout-results.json" \
             --baseline benchmark/heldout-results.json
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: benchmark-results
+          path: |
+            ${{ runner.temp }}/results.json
+            ${{ runner.temp }}/report.md
+            ${{ runner.temp }}/go-results.json
+            ${{ runner.temp }}/go-report.md
+            ${{ runner.temp }}/rust-results.json
+            ${{ runner.temp }}/rust-report.md
+            ${{ runner.temp }}/tape-results.json
+            ${{ runner.temp }}/tape-report.md
+            ${{ runner.temp }}/heldout-results.json
+            ${{ runner.temp }}/heldout-report.md
+          if-no-files-found: ignore
