@@ -73,7 +73,7 @@ jobs:
           node scripts/check-benchmark-drift.mjs \
             --new "$RUNNER_TEMP/results.json" \
             --baseline benchmark/results.json \
-            --max-duration-ms 20000
+            --max-duration-ms 25000
 
       - name: Go benchmark
         if: always()

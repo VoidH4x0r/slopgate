@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const packageJson = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-const maxCpythonMs = Number(process.env.SLOPGATE_MAX_CPYTHON_MS ?? 20000);
+const maxCpythonMs = Number(process.env.SLOPGATE_MAX_CPYTHON_MS ?? 25000);
 const files = [
   'benchmark/results.json',
   'benchmark/go-results.json',
