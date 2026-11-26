@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-24T02:05:48.269Z",
-  "slopgateVersion": "1.0.3",
-  "nodeVersion": "v24.19.0",
+  "generatedAt": "2026-11-26T12:11:32.032Z",
+  "slopgateVersion": "1.0.4",
+  "nodeVersion": "v24.22.3",
   "labelsFile": "benchmark/heldout-labels.json",
   "corpora": [
     {
@@ -10,7 +10,7 @@
       "digest": "2404daae29252116",
       "files": 10,
       "lines": 39,
-      "durationMs": 91,
+      "durationMs": 259,
       "findings": 8,
       "high": 8,
       "suppressed": 0,
@@ -175,5 +175,24 @@
     }
   ],
   "staleLabels": [],
-  "unlabeledHigh": []
+  "unlabeledHigh": [],
+  "recall": {
+    "total": 30,
+    "detected": 30,
+    "missed": [],
+    "byCorpus": [
+      {
+        "fixture": "fixtures/demo",
+        "total": 14,
+        "detected": 14,
+        "missed": []
+      },
+      {
+        "fixture": "fixtures/ai-generated",
+        "total": 16,
+        "detected": 16,
+        "missed": []
+      }
+    ]
+  }
 }

@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-24T02:10:06.194Z",
-  "slopgateVersion": "1.0.3",
-  "nodeVersion": "v24.19.0",
+  "generatedAt": "2026-11-26T12:10:09.197Z",
+  "slopgateVersion": "1.0.4",
+  "nodeVersion": "v24.22.3",
   "labelsFile": "benchmark/rust-labels.json",
   "corpora": [
     {
       "name": "rust-stdlib",
       "digest": "e0e65af573aae995",
       "files": 1494,
-      "lines": 635245,
-      "durationMs": 72768,
+      "lines": 634979,
+      "durationMs": 79550,
       "findings": 217,
       "high": 0,
       "suppressed": 0,
@@ -39,5 +39,24 @@
     }
   ],
   "staleLabels": [],
-  "unlabeledHigh": []
+  "unlabeledHigh": [],
+  "recall": {
+    "total": 30,
+    "detected": 30,
+    "missed": [],
+    "byCorpus": [
+      {
+        "fixture": "fixtures/demo",
+        "total": 14,
+        "detected": 14,
+        "missed": []
+      },
+      {
+        "fixture": "fixtures/ai-generated",
+        "total": 16,
+        "detected": 16,
+        "missed": []
+      }
+    ]
+  }
 }

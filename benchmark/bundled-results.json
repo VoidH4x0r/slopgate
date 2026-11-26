@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-24T02:05:47.173Z",
-  "slopgateVersion": "1.0.3",
+  "generatedAt": "2026-11-26T12:14:49.290Z",
+  "slopgateVersion": "1.0.4",
   "nodeVersion": "v24.19.0",
   "labelsFile": "benchmark/bundled-labels.json",
   "corpora": [
@@ -11,10 +11,10 @@
         "name": "asus_framework",
         "version": "4.2.5.4"
       },
-      "digest": "c4478600ed4e4f39",
+      "digest": "0848378b4cd9abe3",
       "files": 6,
       "lines": 332,
-      "durationMs": 843,
+      "durationMs": 752,
       "findings": 48,
       "high": 0,
       "suppressed": 0,
@@ -43,5 +43,24 @@
     }
   ],
   "staleLabels": [],
-  "unlabeledHigh": []
+  "unlabeledHigh": [],
+  "recall": {
+    "total": 30,
+    "detected": 30,
+    "missed": [],
+    "byCorpus": [
+      {
+        "fixture": "fixtures/demo",
+        "total": 14,
+        "detected": 14,
+        "missed": []
+      },
+      {
+        "fixture": "fixtures/ai-generated",
+        "total": 16,
+        "detected": 16,
+        "missed": []
+      }
+    ]
+  }
 }

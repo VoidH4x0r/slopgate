@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-11-26
+
 ### Added
 - `benchmark/ai-pr/` — a real AI pull request corpus: 150 merged PRs from six coding agents across 121 repositories (703 files, 461,062 lines), with per-PR provenance, a structural skeleton for import resolution, per-fingerprint tp/fp labels and 82 high-confidence findings that are all labeled `tp`.
 - `scripts/fetch-ai-pr-corpus.mjs` verifies the release asset's SHA-256 and unpacks it; `scripts/benchmark-ai-pr.mjs` scans only the changed files and fails on unlabeled, stale or missing corpus entries.
