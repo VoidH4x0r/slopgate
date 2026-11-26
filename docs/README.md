@@ -14,6 +14,7 @@ Start with the [README](../README.md) for the product story and a 60-second exam
 | Configure `.slopgate.json` | [README: Configuration](../README.md#configuration) and [config schema](https://github.com/VoidH4x0r/slopgate/blob/main/schema/slopgate.schema.json) |
 | Suppress a finding | [README: Suppressing a finding](../README.md#suppressing-a-finding) |
 | Run it in CI or pre-commit | [Integrations](integrations.md) |
+| See the automated quality and security gates | [Quality gates](quality-gates.md) |
 | Let an agent self-check over MCP | [MCP server](mcp.md) |
 | Use the VS Code extension | [VS Code extension](https://github.com/VoidH4x0r/slopgate/blob/main/packages/slopgate-vscode/README.md) |
 | Use the programmatic API | [Public contract](contract.md) |
@@ -29,6 +30,7 @@ Start with the [README](../README.md) for the product story and a 60-second exam
 - [JSON output schema](https://github.com/VoidH4x0r/slopgate/blob/main/schema/scan-output.schema.json) and [config schema](https://github.com/VoidH4x0r/slopgate/blob/main/schema/slopgate.schema.json).
 - [Benchmark methodology](benchmark.md) — corpus digests, labels, false positives and reproduction commands.
 - [Integrations](integrations.md) — GitHub Action, SARIF, annotations, pre-commit, MCP, VS Code.
+- [Quality gates](quality-gates.md) — coverage thresholds, CodeQL, dependency review, pinned Actions and the weekly benchmark.
 - [MCP server](mcp.md) — tools, protocol details and the agent loop.
 - [Encoding contract](encoding.md) — UTF-8/BOM, English docs whitelist and CJK safeguards.
 - [Roadmap](roadmap.md) — product thesis, release history and remaining risks.
