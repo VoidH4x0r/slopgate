@@ -312,6 +312,22 @@ function insidePlatformGuard(node: AstNode): boolean {
   return false;
 }
 
+function isLockedPython(module: string, ctx: RuleContext): boolean {
+  const installed = ctx.deps.python.installed;
+  if (installed.size === 0) return false;
+  const parts = module.split('.');
+  for (let index = parts.length; index > 0; index -= 1) {
+    if (installed.has(normalizePythonName(parts.slice(0, index).join('.')))) return true;
+  }
+  const distribution = distributionFor(module);
+  if (distribution && installed.has(normalizePythonName(distribution))) return true;
+  const root = parts[0] ?? module;
+  for (const alias of DISTRIBUTION_ALIASES[root] ?? []) {
+    if (installed.has(normalizePythonName(alias))) return true;
+  }
+  return false;
+}
+
 const phantomImport: Rule = {
   meta: {
     id: 'py/phantom-import',
@@ -340,19 +356,26 @@ const phantomImport: Rule = {
       if (isOptionalImport(node)) continue;
       if (insideTypeChecking(node) || insidePlatformGuard(node)) continue;
 
+      // A lockfile pins transitive and extra-installed distributions. They are
+      // not declared directly, but they are present, so the report must not
+      // claim the package is missing from the environment.
+      const locked = isLockedPython(module, ctx);
       drafts.push({
-        message: `\`${module}\` is imported but not declared in any manifest and not present in this repository`,
+        message: locked
+          ? `\`${module}\` is imported but not declared in any manifest (a lockfile pins it)`
+          : `\`${module}\` is imported but not declared in any manifest and not present in this repository`,
         start: startOf(node),
         end: endOf(node),
         snippet: snippetOf(ctx, node),
         // Test suites monkey-patch sys.path; keep the fact but do not fail CI.
-        ...(isTestPath(ctx.classificationFile) ? { confidence: 'medium' as const } : {}),
+        ...(locked || isTestPath(ctx.classificationFile) ? { confidence: 'medium' as const } : {}),
         evidence: [
           `import: ${truncate(node.text, 100)}`,
+          locked ? 'found in a lockfile (installed transitively or through an extra)' : '',
           manifests.length > 0
             ? `manifests checked: ${manifests.join(', ')}`
             : 'no Python dependency manifest found (pyproject.toml, requirements*.txt, setup.py, Pipfile)',
-        ],
+        ].filter(Boolean),
         help:
           'Add it to your manifest, remove the import, or wrap it in try/except ImportError if it is optional.',
       });
