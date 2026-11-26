@@ -18,6 +18,9 @@ docs/demo-preview.png
 test/.tmp-*/
 .vscode-test/
 
+# Local project notes (decisions and progress, not published)
+项目笔记/
+
 # Editor and shell state
 .idea/
 .vscode/
