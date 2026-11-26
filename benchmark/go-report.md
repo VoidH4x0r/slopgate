@@ -6,13 +6,13 @@ Generated 2026-11-24T02:07:02.317Z by `scripts/benchmark.mjs` (slopgate 1.0.3, N
 
 | Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest (64-bit) |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| go-stdlib | 6090 | 2455171 | 0 | 0.00 | — | `3970b1f25e424815` |
+| go-stdlib | 6090 | 2455171 | 0 | 0.00 | — | `d2c81658b437dc42` |
 
 ## go-stdlib
 
 Scanned **6090** files (**2455171** lines) in 113917 ms; parse errors: **72**.
 
-Corpus digest: `3970b1f25e424815`.
+Corpus digest: `d2c81658b437dc42`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
