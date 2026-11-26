@@ -133,6 +133,8 @@ export interface ProjectDeps {
   node: NodeDeps;
   go: GoDeps;
   rust: RustDeps;
+  /** Declarations collected from every project in the repository, not just the nearest one. */
+  repositoryDeclared?: { python: Set<string>; node: Set<string> };
   /** Module/package names the user told us to trust (`ignoreModules`). */
   ignoredModules: Set<string>;
 }

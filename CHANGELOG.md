@@ -5,13 +5,15 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Added
-- `benchmark/ai-pr/` — a real AI pull request corpus: 150 merged PRs from six coding agents across 121 repositories (703 files, 461,062 lines), with per-PR provenance, a structural skeleton for import resolution, per-fingerprint tp/fp labels and a published 92.8% labeled precision (103 tp, 8 fp).
+- `benchmark/ai-pr/` — a real AI pull request corpus: 150 merged PRs from six coding agents across 121 repositories (703 files, 461,062 lines), with per-PR provenance, a structural skeleton for import resolution, per-fingerprint tp/fp labels and 82 high-confidence findings that are all labeled `tp`.
 - `scripts/fetch-ai-pr-corpus.mjs` verifies the release asset's SHA-256 and unpacks it; `scripts/benchmark-ai-pr.mjs` scans only the changed files and fails on unlabeled, stale or missing corpus entries.
 - `npm run test:coverage` enforces line 95%, branch 85% and function 92% in `src/`; `npm run verify` now uses it instead of the plain sandbox suite.
 - `scripts/check-benchmark-drift.mjs` compares a fresh benchmark run with the committed baseline: corpus digest, file and high-confidence counts, labeled precision, stale/unlabeled labels, seeded recall, parse-error drift and the CPython duration budget.
 - Unit tests for the drift checker (9 cases) and a test that rejects any workflow action not pinned to a full commit SHA.
 
 ### Fixed
+- The AI PR corpus benchmark unpacks the corpus under the user cache directory and pins every resolution root to the corpus entry. A cache inside the checkout previously let the project resolver walk up into slopgate's own manifests, which changed the result (99 high findings instead of 82 on Linux CI).
+- `py/phantom-import` and `ts/phantom-import` consult every project manifest in the repository before claiming a package is missing. Imports that a sibling subproject or workspace package declares are reported at medium confidence instead of high.
 - `py/phantom-import` and `ts/phantom-import` no longer claim a package is missing when a lockfile pins it: `uv.lock`, `poetry.lock`, `pdm.lock`, `Pipfile.lock`, `package-lock.json`, `pnpm-lock.yaml` and `yarn.lock` are read, and a locked package is reported at medium confidence with the lockfile as evidence.
 - Benchmark corpus digests are hashed in sorted relative-path order with CRLF normalized to LF, so a Windows and a Linux checkout of the same tree share one identity and the scheduled benchmark does not report false drift.
 - The scheduled benchmark runs every corpus group even when one fails and uploads the result files as an artifact for diagnosis.
@@ -19,7 +21,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Committed benchmark digests refreshed to the canonical (path-sorted, CRLF-normalized) values.
 
 ### Changed
-- 499 tests.
+- 502 tests.
 - CI now runs the coverage-gated suite; every workflow `uses:` is pinned to a commit SHA and Dependabot updates the `github-actions` ecosystem weekly.
 - Added CodeQL (`javascript-typescript`, `security-and-quality`), dependency review (runtime, high/critical) and a weekly full benchmark that compares fresh results with the committed baseline through `scripts/check-benchmark-drift.mjs`.
 - Added [docs/quality-gates.md](docs/quality-gates.md) and linked it from the docs map.

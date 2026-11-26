@@ -172,15 +172,35 @@ export async function loadProjectRegistry(
   const loadProject = (dir: string): Promise<ProjectDeps> => {
     let pending = depsCache.get(dir);
     if (!pending) {
-      pending = loadProjectDeps(dir).then((deps) => {
+      pending = loadProjectDeps(dir).then(async (deps) => {
         deps.python.localModules = localModules;
         deps.rust.localModules = rustModules;
         deps.ignoredModules = ignoredModules;
+        deps.repositoryDeclared = await repositoryDeclared();
         return deps;
       });
       depsCache.set(dir, pending);
     }
     return pending;
+  };
+
+  // The phantom-import rules claim a package is declared in no manifest at all,
+  // so they also need the declarations of sibling projects in the same
+  // repository. Loaded once per scan.
+  let repositoryDeclaredPromise: Promise<{ python: Set<string>; node: Set<string> }> | undefined;
+  const repositoryDeclared = (): Promise<{ python: Set<string>; node: Set<string> }> => {
+    repositoryDeclaredPromise ??= (async () => {
+      const python = new Set<string>();
+      const node = new Set<string>();
+      for (const dir of projectDirs) {
+        const deps = await loadProjectDeps(dir);
+        for (const name of deps.python.declared) python.add(name);
+        for (const name of deps.node.declared) node.add(name);
+        for (const name of deps.node.workspaces) node.add(name);
+      }
+      return { python, node };
+    })();
+    return repositoryDeclaredPromise;
   };
 
   const matchesLanguage = (deps: ProjectDeps, language: LanguageId): boolean =>

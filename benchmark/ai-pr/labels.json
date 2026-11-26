@@ -55,37 +55,9 @@
     "label": "tp",
     "note": "no manifest in the repository declares homeassistant.helpers.update_coordinator"
   },
-  "4c42dd5d6cc34d35": {
-    "label": "fp",
-    "note": "the repository declares sqlalchemy in another manifest"
-  },
   "c282b442d6f12bd2": {
     "label": "tp",
     "note": "report is factually accurate"
-  },
-  "7ed18f08388c84cb": {
-    "label": "fp",
-    "note": "the repository declares mcp.server in another manifest"
-  },
-  "e2f86042c58978b6": {
-    "label": "fp",
-    "note": "the repository declares mcp.server.stdio in another manifest"
-  },
-  "7626671584562a31": {
-    "label": "fp",
-    "note": "the repository declares mcp.types in another manifest"
-  },
-  "ceb6cae79a203f0f": {
-    "label": "fp",
-    "note": "the repository declares pydantic in another manifest"
-  },
-  "3dace8394479a60a": {
-    "label": "fp",
-    "note": "the repository declares requests in another manifest"
-  },
-  "01e6dc70048b7a56": {
-    "label": "fp",
-    "note": "the repository declares sqlalchemy in another manifest"
   },
   "a84ab923e6c73b2c": {
     "label": "tp",
@@ -138,10 +110,6 @@
   "bcd63dfefb66fcec": {
     "label": "tp",
     "note": "no manifest in the repository declares dbt_common.events.base_types"
-  },
-  "8ebdc1a70e7bc74e": {
-    "label": "tp",
-    "note": "no manifest in the repository declares google.protobuf.json_format"
   },
   "51bb619c14bccf75": {
     "label": "tp",
@@ -251,30 +219,6 @@
     "label": "tp",
     "note": "no manifest in the repository declares torch.nn"
   },
-  "700ce095598936d9": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "1bdf6b43db323148": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "327dbb12728b3126": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "a225318002a26856": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "1a6f1379baac8681": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "18719617a7bc5249": {
-    "label": "fp",
-    "note": "the repository declares semver in another manifest"
-  },
   "3972883f365d1075": {
     "label": "tp",
     "note": "no manifest in the repository declares type"
@@ -306,50 +250,6 @@
   "6e708202a593b038": {
     "label": "tp",
     "note": "no manifest in the repository declares annotated_types"
-  },
-  "b7f04205563f8f63": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "f16c94b7df7ea7f4": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "70fa1445a72debc1": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "e8eee52864700263": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "bc2c35f20cf49ff6": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "f1034fd82a0e32b8": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "c12302c1c96011bf": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "a60538b52abaa0c9": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "5b714e69077d5ea4": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "f70ebe91cc132792": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "f05d1471cd35d71b": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
   },
   "0b49a6a7485de640": {
     "label": "tp",
@@ -392,22 +292,6 @@
     "note": "report is factually accurate"
   },
   "fed0b06f210bbcb8": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "e518d1de6065be16": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "3cebcf324c78c252": {
-    "label": "tp",
-    "note": "no manifest in the repository declares type"
-  },
-  "ce7b66c3889fad19": {
-    "label": "tp",
-    "note": "no manifest in the repository declares undefined"
-  },
-  "19c4b015698a72c8": {
     "label": "tp",
     "note": "no manifest in the repository declares type"
   },

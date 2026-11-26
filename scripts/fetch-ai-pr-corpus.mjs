@@ -12,6 +12,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, rmSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { extractTarGz } from './tar-extract.mjs';
@@ -25,7 +26,11 @@ function arg(name, fallback) {
   return index >= 0 ? process.argv[index + 1] : fallback;
 }
 
-const outDir = path.resolve(ROOT, arg('out', 'benchmark/ai-pr/cache'));
+// The corpus must live outside the repository: an in-repo cache lets the
+// project resolver walk up into slopgate itself and resolve the wrong root.
+const cacheHome = process.env.XDG_CACHE_HOME || path.join(os.homedir(), '.cache');
+const defaultCache = path.join(cacheHome, 'slopgate', 'ai-pr');
+const outDir = path.resolve(ROOT, arg('out', defaultCache));
 const archive = path.join(outDir, 'ai-pr-corpus-v1.tar.gz');
 
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));

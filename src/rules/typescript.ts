@@ -330,20 +330,24 @@ const phantomImport: Rule = {
       if (ctx.deps.ignoredModules.has(pkg)) continue;
 
       const isInstalled = installed.has(pkg);
+      const elsewhere = ctx.deps.repositoryDeclared?.node.has(pkg) ?? false;
       drafts.push({
         message: isInstalled
           ? `\`${pkg}\` is imported but not listed in package.json`
-          : `\`${pkg}\` is imported but is not a dependency and is not installed`,
+          : elsewhere
+            ? `\`${pkg}\` is imported but not listed in this package.json (another package in the workspace declares it)`
+            : `\`${pkg}\` is imported but is not a dependency and is not installed`,
         start: startOf(node),
         end: endOf(node),
         snippet: snippetOf(ctx, node),
-        confidence: isInstalled || isTestPath(ctx.classificationFile) ? 'medium' : 'high',
+        confidence: isInstalled || elsewhere || isTestPath(ctx.classificationFile) ? 'medium' : 'high',
         evidence: [
           `specifier: ${specifier}`,
           isInstalled ? `found in node_modules/${pkg}` : `not found in node_modules/${pkg}`,
+          elsewhere ? 'declared by another package in the same repository' : '',
           'not listed in dependencies, devDependencies, peerDependencies or optionalDependencies',
-        ],
-        help: isInstalled
+        ].filter(Boolean),
+        help: isInstalled || elsewhere
           ? 'Add it to package.json so a fresh install reproduces your build.'
           : 'A package that is not installed cannot be run. Check the name on npm: this is the signature of a hallucinated package.',
       });
