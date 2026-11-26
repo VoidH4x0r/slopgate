@@ -7,7 +7,7 @@
   "corpora": [
     {
       "name": "rust-stdlib",
-      "digest": "2069123903286e07",
+      "digest": "e0e65af573aae995",
       "files": 1494,
       "lines": 635245,
       "durationMs": 72768,

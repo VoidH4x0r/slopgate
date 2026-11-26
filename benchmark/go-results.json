@@ -7,7 +7,7 @@
   "corpora": [
     {
       "name": "go-stdlib",
-      "digest": "3970b1f25e424815",
+      "digest": "d2c81658b437dc42",
       "files": 6090,
       "lines": 2455171,
       "durationMs": 113917,

@@ -6,13 +6,13 @@ Generated 2026-11-24T02:10:06.194Z by `scripts/benchmark.mjs` (slopgate 1.0.3, N
 
 | Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest (64-bit) |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| rust-stdlib | 1494 | 635245 | 0 | 0.00 | — | `2069123903286e07` |
+| rust-stdlib | 1494 | 635245 | 0 | 0.00 | — | `e0e65af573aae995` |
 
 ## rust-stdlib
 
 Scanned **1494** files (**635245** lines) in 72768 ms; parse errors: **157**.
 
-Corpus digest: `2069123903286e07`.
+Corpus digest: `e0e65af573aae995`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |

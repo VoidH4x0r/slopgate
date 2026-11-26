@@ -62,7 +62,7 @@ The source tree is identified by digest rather than committed. There are no Rust
 
 ### Tape/TAP corpus
 
-The Tape repository (`tape@5.11.0`, tests and examples) is scanned with `--include '**/{test,example}/**/*.{js,mjs,cjs}'`: **185 files / 11,958 lines / 0 high**. It exercises TAP callbacks that assert through `t.plan`, aliased assertions and subtests. The result is in `benchmark/tape-results.json`; labels are empty because there are no high findings.
+The Tape repository (`tape@5.11.0`, tests and examples) is checked out with `git clone --depth 1 --branch v5.11.0 https://github.com/tape-testing/tape.git` and scanned with `--include '**/{test,example}/**/*.{js,mjs,cjs}'`: **185 files / 11,958 lines / 0 high**. It exercises TAP callbacks that assert through `t.plan`, aliased assertions and subtests. The result is in `benchmark/tape-results.json`; labels are empty because there are no high findings.
 
 ### Held-out AI corpus
 

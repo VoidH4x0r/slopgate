@@ -12,6 +12,8 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Fixed
 - Benchmark corpus digests are hashed in sorted relative-path order with CRLF normalized to LF, so a Windows and a Linux checkout of the same tree share one identity and the scheduled benchmark does not report false drift.
 - The scheduled benchmark runs every corpus group even when one fails and uploads the result files as an artifact for diagnosis.
+- The scheduled benchmark checks out the Tape repository at `v5.11.0` instead of packing the npm tarball, which does not ship the `test/` and `example/` trees.
+- Committed benchmark digests refreshed to the canonical (path-sorted, CRLF-normalized) values.
 
 ### Changed
 - 488 tests.

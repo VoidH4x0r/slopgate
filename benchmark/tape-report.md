@@ -6,7 +6,7 @@ Generated 2026-11-24T02:05:42.972Z by `scripts/benchmark.mjs` (slopgate 1.0.3, N
 
 | Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest (64-bit) |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| tape | 185 | 11958 | 0 | 0.00 | — | `3657d8426287c4a3` |
+| tape | 185 | 11958 | 0 | 0.00 | — | `323ca777a1f33a6d` |
 
 ## tape
 
@@ -14,7 +14,7 @@ Scanned **185** files (**11958** lines) in 3674 ms; parse errors: **2**.
 
 Package: `tape@5.11.0`.
 
-Corpus digest: `3657d8426287c4a3`.
+Corpus digest: `323ca777a1f33a6d`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |

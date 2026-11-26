@@ -6,14 +6,14 @@ Generated 2026-11-24T02:05:23.312Z by `scripts/benchmark.mjs` (slopgate 1.0.3, N
 
 | Corpus | Files | Lines | High findings | High / kLOC | Precision (labeled) | Digest (64-bit) |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| cpython-stdlib | 1845 | 991705 | 29 | 0.03 | 96.6% | `027f952580cd6622` |
+| cpython-stdlib | 1845 | 991705 | 29 | 0.03 | 96.6% | `a56a6849f01a0865` |
 | express | 7 | 2783 | 0 | 0.00 | — | `d2b720bf4294881f` |
 | chalk | 2 | 799 | 0 | 0.00 | — | `7e4d9210a0fc613d` |
 | execa | 111 | 8363 | 0 | 0.00 | — | `4c7472ad58bd8a01` |
 | semver | 49 | 3166 | 0 | 0.00 | — | `2035d82b564fe0fd` |
 | commander | 7 | 4225 | 0 | 0.00 | — | `a1904525101c27be` |
 | debug | 4 | 841 | 0 | 0.00 | — | `423d0332532c2e32` |
-| eslint | 409 | 100880 | 0 | 0.00 | — | `8d19ccdb8205985c` |
+| eslint | 409 | 100880 | 0 | 0.00 | — | `3d248ab8433c9cd8` |
 | glob | 7 | 2217 | 0 | 0.00 | — | `dc4dc56c06b64fb8` |
 | yargs | 5 | 198 | 0 | 0.00 | — | `53ba47a2d90b26ae` |
 | ai-generated | 20 | 93 | 13 | 139.78 | 100.0% | `95d85ff450c21ede` |
@@ -26,7 +26,7 @@ Detected **30/30** seeded defects.
 
 Scanned **1845** files (**991705** lines) in 12359 ms; parse errors: **9**.
 
-Corpus digest: `027f952580cd6622`.
+Corpus digest: `a56a6849f01a0865`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -114,7 +114,7 @@ Scanned **409** files (**100880** lines) in 1521 ms; parse errors: **0**.
 
 Package: `eslint@10.15.0`.
 
-Corpus digest: `8d19ccdb8205985c`.
+Corpus digest: `3d248ab8433c9cd8`.
 
 | Rule | high | medium | low | Labeled | Precision |
 | --- | ---: | ---: | ---: | ---: | ---: |
