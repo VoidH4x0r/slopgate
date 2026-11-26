@@ -280,12 +280,18 @@ A release does not ship if precision drops below 97% or any high finding is unla
 
 ## 10. Next 14 days
 
-1. Create the v1.0.3 tag and GitHub release; deprecate the stale 1.0.2 artifact.
+Status 2026-11-26: the v1.0.3 tag/release and the quality gates (coverage thresholds, CodeQL, dependency review, pinned Actions, weekly full benchmark) are in place. Remaining items:
+
+1. Deprecate the stale 1.0.2 npm artifact; the v1.0.3 tag and GitHub release already exist.
 2. Replace the npm maintainer email with the public GitHub noreply address; verify the packument.
 3. Package the VS Code extension as a VSIX and create the Marketplace listing.
-4. Add a real AI-PR benchmark corpus plus a nightly or scheduled full-benchmark run; stop trusting only committed result files.
-5. Add CodeQL, dependency review, coverage threshold and SHA-pinned Actions.
-6. Design the custom-rule/plugin API and decide whether LSP/watch/incremental scan belongs in 1.1 or 2.0.
+4. Add a real AI-PR benchmark corpus; the weekly full-benchmark run is in place.
+5. Design the custom-rule/plugin API and decide whether LSP/watch/incremental scan belongs in 1.1 or 2.0.
+
+Done after 1.0.3:
+
+- CodeQL (`javascript-typescript`, `security-and-quality`), dependency review (runtime, high/critical), coverage thresholds (line 95 / branch 85 / function 92) and SHA-pinned Actions with weekly Dependabot updates; see [quality-gates.md](quality-gates.md).
+- Weekly full benchmark across CPython 3.14.7, Go 1.24.0, Rust 1.83, nine published npm packages, Tape and the AI corpora, compared with the committed baseline.
 
 ## 11. Decision log
 
