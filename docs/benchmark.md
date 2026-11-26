@@ -159,7 +159,7 @@ node scripts/fetch-ai-pr-corpus.mjs
 node scripts/benchmark-ai-pr.mjs
 ```
 
-The benchmark exits non-zero when a high finding is unlabeled, a label no longer matches, or a corpus file fails its digest check.
+The benchmark exits non-zero when a high finding is unlabeled, a label no longer matches, or a corpus file fails its digest check. The weekly benchmark workflow runs both commands and compares the result with the committed `results.json`; `--update-baseline` is the explicit way to record an intended change.
 
 ### Published result
 

@@ -19,7 +19,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Committed benchmark digests refreshed to the canonical (path-sorted, CRLF-normalized) values.
 
 ### Changed
-- 497 tests.
+- 499 tests.
 - CI now runs the coverage-gated suite; every workflow `uses:` is pinned to a commit SHA and Dependabot updates the `github-actions` ecosystem weekly.
 - Added CodeQL (`javascript-typescript`, `security-and-quality`), dependency review (runtime, high/critical) and a weekly full benchmark that compares fresh results with the committed baseline through `scripts/check-benchmark-drift.mjs`.
 - Added [docs/quality-gates.md](docs/quality-gates.md) and linked it from the docs map.

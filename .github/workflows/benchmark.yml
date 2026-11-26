@@ -130,6 +130,13 @@ jobs:
             --new "$RUNNER_TEMP/heldout-results.json" \
             --baseline benchmark/heldout-results.json
 
+      - name: Real AI pull request corpus
+        if: always()
+        run: |
+          set -euo pipefail
+          node scripts/fetch-ai-pr-corpus.mjs
+          node scripts/benchmark-ai-pr.mjs
+
       - name: Upload benchmark results
         if: always()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
@@ -146,4 +153,6 @@ jobs:
             ${{ runner.temp }}/tape-report.md
             ${{ runner.temp }}/heldout-results.json
             ${{ runner.temp }}/heldout-report.md
+            benchmark/ai-pr/results.json
+            benchmark/ai-pr/report.md
           if-no-files-found: ignore

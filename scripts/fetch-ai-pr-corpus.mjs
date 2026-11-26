@@ -14,10 +14,7 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { mkdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
-
-const run = promisify(execFile);
+import { extractTarGz } from './tar-extract.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
 const MANIFEST = path.join(ROOT, 'benchmark', 'ai-pr', 'manifest.json');
@@ -60,7 +57,8 @@ const marker = path.join(skeletons, '.complete');
 if (!existsSync(marker)) {
   rmSync(skeletons, { recursive: true, force: true });
   await mkdir(skeletons, { recursive: true });
-  await run('tar', ['-xzf', archive, '-C', skeletons]);
+  const extracted = extractTarGz(archive, skeletons);
+  console.log(`unpacked ${extracted} files`);
   writeFileSync(marker, `${manifest.asset.sha256}\n`, 'utf8');
   console.log('unpacked corpus');
 } else {

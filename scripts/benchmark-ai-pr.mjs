@@ -35,7 +35,9 @@ const cache = path.resolve(ROOT, arg('cache', 'benchmark/ai-pr/cache'));
 const skeletons = path.join(cache, 'skeletons');
 const outPath = path.resolve(ROOT, arg('out', 'benchmark/ai-pr/results.json'));
 const reportPath = path.resolve(ROOT, arg('report', 'benchmark/ai-pr/report.md'));
+const updateBaseline = process.argv.includes('--update-baseline');
 const packageJson = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+const previous = existsSync(outPath) ? JSON.parse(readFileSync(outPath, 'utf8')) : undefined;
 
 if (!existsSync(path.join(skeletons, '.complete'))) {
   throw new Error('corpus missing: run `node scripts/fetch-ai-pr-corpus.mjs` first');
@@ -168,6 +170,25 @@ writeFileSync(reportPath, lines.join('\n'));
 console.log(
   `${manifest.totals.prs} PRs, ${findings.length} high, precision ${percent(results.labeled.precision)} (${tp} tp / ${fp} fp), ${results.durationMs}ms`,
 );
+
+// The committed result is the baseline: a scheduled run must reproduce it.
+const drift = [];
+if (previous && !updateBaseline) {
+  if (previous.high !== results.high) drift.push(`high ${previous.high} -> ${results.high}`);
+  const before = previous.labeled?.precision;
+  const after = results.labeled.precision;
+  if (before !== after) drift.push(`precision ${percent(before)} -> ${percent(after)}`);
+  for (const rule of new Set([...Object.keys(previous.byRule ?? {}), ...Object.keys(results.byRule)])) {
+    const a = previous.byRule?.[rule]?.total ?? 0;
+    const b = results.byRule?.[rule]?.total ?? 0;
+    if (a !== b) drift.push(`${rule} high ${a} -> ${b}`);
+  }
+  if (previous.corpus?.asset?.sha256 !== results.corpus.asset.sha256) drift.push('corpus asset digest changed');
+}
+if (drift.length > 0) {
+  for (const item of drift) console.error(`drift: ${item}`);
+  process.exitCode = 1;
+}
 if (unlabeledHigh.length > 0) console.warn(`high findings without a label: ${unlabeledHigh.length}`);
 if (staleLabels.length > 0) console.warn(`stale labels: ${staleLabels.length}`);
 if (verifyFailures > 0) console.warn(`corpus files that failed verification: ${verifyFailures}`);
