@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-26T08:47:35.685Z",
+  "generatedAt": "2026-11-26T09:34:23.673Z",
   "slopgateVersion": "1.0.3",
   "nodeVersion": "v24.19.0",
   "corpus": {
@@ -27,12 +27,12 @@
       "sha256": "c29a2423e66a062962a7603bdafe7e291b485b7d8a780a99dc942878db4bb693"
     }
   },
-  "durationMs": 17551,
-  "high": 111,
+  "durationMs": 29104,
+  "high": 82,
   "labeled": {
-    "tp": 103,
-    "fp": 8,
-    "precision": 0.9279279279279279
+    "tp": 82,
+    "fp": 0,
+    "precision": 1
   },
   "byRule": {
     "py/noop-test": {
@@ -46,9 +46,9 @@
       "fp": 0
     },
     "py/phantom-import": {
-      "total": 56,
-      "tp": 49,
-      "fp": 7
+      "total": 48,
+      "tp": 48,
+      "fp": 0
     },
     "py/swallowed-exception": {
       "total": 12,
@@ -56,9 +56,9 @@
       "fp": 0
     },
     "ts/phantom-import": {
-      "total": 25,
-      "tp": 24,
-      "fp": 1
+      "total": 4,
+      "tp": 4,
+      "fp": 0
     },
     "rs/stub-body": {
       "total": 7,
@@ -254,7 +254,7 @@
       "language": "python",
       "agent": "Claude_Code",
       "files": 7,
-      "high": 11
+      "high": 4
     },
     {
       "repo": "PrefectHQ/prefect",
@@ -270,7 +270,7 @@
       "language": "python",
       "agent": "Claude_Code",
       "files": 2,
-      "high": 12
+      "high": 11
     },
     {
       "repo": "PyAutoLabs/PyAutoLens",
@@ -438,7 +438,7 @@
       "language": "ts",
       "agent": "Copilot",
       "files": 3,
-      "high": 6
+      "high": 0
     },
     {
       "repo": "cyw0ng95/sqlvibe",
@@ -678,7 +678,7 @@
       "language": "ts",
       "agent": "Claude_Code",
       "files": 7,
-      "high": 11
+      "high": 0
     },
     {
       "repo": "holoviz/panel",
@@ -918,7 +918,7 @@
       "language": "ts",
       "agent": "Claude_Code",
       "files": 2,
-      "high": 2
+      "high": 1
     },
     {
       "repo": "obsessiondb/rudel",
@@ -966,7 +966,7 @@
       "language": "ts",
       "agent": "Claude_Code",
       "files": 10,
-      "high": 3
+      "high": 0
     },
     {
       "repo": "openclaw/openclaw",
@@ -1441,17 +1441,6 @@
       "number": 394,
       "language": "python",
       "agent": "Claude_Code",
-      "ruleId": "py/phantom-import",
-      "file": "mcp_cloud/db_setup.py",
-      "line": 14,
-      "fingerprint": "4c42dd5d6cc34d35",
-      "message": "`sqlalchemy` is imported but not declared in any manifest and not present in this repository"
-    },
-    {
-      "repo": "PlanExeOrg/PlanExe",
-      "number": 394,
-      "language": "python",
-      "agent": "Claude_Code",
       "ruleId": "py/swallowed-exception",
       "file": "mcp_cloud/http_server.py",
       "line": 346,
@@ -1468,72 +1457,6 @@
       "line": 1001,
       "fingerprint": "c282b442d6f12bd2",
       "message": "`except` swallows the error silently"
-    },
-    {
-      "repo": "PlanExeOrg/PlanExe",
-      "number": 394,
-      "language": "python",
-      "agent": "Claude_Code",
-      "ruleId": "py/phantom-import",
-      "file": "mcp_local/planexe_mcp_local.py",
-      "line": 21,
-      "fingerprint": "7ed18f08388c84cb",
-      "message": "`mcp.server` is imported but not declared in any manifest and not present in this repository"
-    },
-    {
-      "repo": "PlanExeOrg/PlanExe",
-      "number": 394,
-      "language": "python",
-      "agent": "Claude_Code",
-      "ruleId": "py/phantom-import",
-      "file": "mcp_local/planexe_mcp_local.py",
-      "line": 22,
-      "fingerprint": "e2f86042c58978b6",
-      "message": "`mcp.server.stdio` is imported but not declared in any manifest and not present in this repository"
-    },
-    {
-      "repo": "PlanExeOrg/PlanExe",
-      "number": 394,
-      "language": "python",
-      "agent": "Claude_Code",
-      "ruleId": "py/phantom-import",
-      "file": "mcp_local/planexe_mcp_local.py",
-      "line": 23,
-      "fingerprint": "7626671584562a31",
-      "message": "`mcp.types` is imported but not declared in any manifest and not present in this repository"
-    },
-    {
-      "repo": "PlanExeOrg/PlanExe",
-      "number": 394,
-      "language": "python",
-      "agent": "Claude_Code",
-      "ruleId": "py/phantom-import",
-      "file": "mcp_local/planexe_mcp_local.py",
-      "line": 24,
-      "fingerprint": "ceb6cae79a203f0f",
-      "message": "`pydantic` is imported but not declared in any manifest and not present in this repository"
-    },
-    {
-      "repo": "PlanExeOrg/PlanExe",
-      "number": 394,
-      "language": "python",
-      "agent": "Claude_Code",
-      "ruleId": "py/phantom-import",
-      "file": "worker_plan_database/app.py",
-      "line": 27,
-      "fingerprint": "3dace8394479a60a",
-      "message": "`requests` is imported but not declared in any manifest and not present in this repository"
-    },
-    {
-      "repo": "PlanExeOrg/PlanExe",
-      "number": 394,
-      "language": "python",
-      "agent": "Claude_Code",
-      "ruleId": "py/phantom-import",
-      "file": "worker_plan_database/app.py",
-      "line": 28,
-      "fingerprint": "01e6dc70048b7a56",
-      "message": "`sqlalchemy` is imported but not declared in any manifest and not present in this repository"
     },
     {
       "repo": "PlanExeOrg/PlanExe",
@@ -1677,17 +1600,6 @@
       "line": 29,
       "fingerprint": "bcd63dfefb66fcec",
       "message": "`dbt_common.events.base_types` is imported but not declared in any manifest and not present in this repository"
-    },
-    {
-      "repo": "PrefectHQ/prefect",
-      "number": 19708,
-      "language": "python",
-      "agent": "Claude_Code",
-      "ruleId": "py/phantom-import",
-      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
-      "line": 30,
-      "fingerprint": "8ebdc1a70e7bc74e",
-      "message": "`google.protobuf.json_format` is imported but not declared in any manifest and not present in this repository"
     },
     {
       "repo": "PyAutoLabs/PyAutoLens",
@@ -1987,72 +1899,6 @@
       "message": "`torch.nn` is imported but not declared in any manifest and not present in this repository"
     },
     {
-      "repo": "cnpm/cnpmcore",
-      "number": 967,
-      "language": "ts",
-      "agent": "Copilot",
-      "ruleId": "ts/phantom-import",
-      "file": "app/core/service/PackageSyncerService.ts",
-      "line": 5,
-      "fingerprint": "700ce095598936d9",
-      "message": "`@cnpmjs/packument` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "cnpm/cnpmcore",
-      "number": 967,
-      "language": "ts",
-      "agent": "Copilot",
-      "ruleId": "ts/phantom-import",
-      "file": "app/core/service/PackageSyncerService.ts",
-      "line": 6,
-      "fingerprint": "1bdf6b43db323148",
-      "message": "`egg` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "cnpm/cnpmcore",
-      "number": 967,
-      "language": "ts",
-      "agent": "Copilot",
-      "ruleId": "ts/phantom-import",
-      "file": "app/core/service/PackageSyncerService.ts",
-      "line": 7,
-      "fingerprint": "327dbb12728b3126",
-      "message": "`egg` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "cnpm/cnpmcore",
-      "number": 967,
-      "language": "ts",
-      "agent": "Copilot",
-      "ruleId": "ts/phantom-import",
-      "file": "app/core/service/PackageSyncerService.ts",
-      "line": 8,
-      "fingerprint": "a225318002a26856",
-      "message": "`egg` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "cnpm/cnpmcore",
-      "number": 967,
-      "language": "ts",
-      "agent": "Copilot",
-      "ruleId": "ts/phantom-import",
-      "file": "app/core/service/PackageSyncerService.ts",
-      "line": 9,
-      "fingerprint": "1a6f1379baac8681",
-      "message": "`lodash-es` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "cnpm/cnpmcore",
-      "number": 967,
-      "language": "ts",
-      "agent": "Copilot",
-      "ruleId": "ts/phantom-import",
-      "file": "app/core/service/PackageSyncerService.ts",
-      "line": 10,
-      "fingerprint": "18719617a7bc5249",
-      "message": "`semver` is imported but is not a dependency and is not installed"
-    },
-    {
       "repo": "desplega-ai/agent-swarm",
       "number": 11,
       "language": "ts",
@@ -2139,127 +1985,6 @@
       "line": 5,
       "fingerprint": "6e708202a593b038",
       "message": "`annotated_types` is imported but not declared in any manifest and not present in this repository"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/core/agent-session.ts",
-      "line": 18,
-      "fingerprint": "b7f04205563f8f63",
-      "message": "`@gsd/pi-agent-core` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/core/agent-session.ts",
-      "line": 26,
-      "fingerprint": "f16c94b7df7ea7f4",
-      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/core/agent-session.ts",
-      "line": 27,
-      "fingerprint": "70fa1445a72debc1",
-      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/core/auth-storage.ts",
-      "line": 12,
-      "fingerprint": "e8eee52864700263",
-      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/core/auth-storage.ts",
-      "line": 18,
-      "fingerprint": "bc2c35f20cf49ff6",
-      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/core/fallback-resolver.ts",
-      "line": 12,
-      "fingerprint": "f1034fd82a0e32b8",
-      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/core/settings-manager.ts",
-      "line": 1,
-      "fingerprint": "c12302c1c96011bf",
-      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
-      "line": 10,
-      "fingerprint": "a60538b52abaa0c9",
-      "message": "`@gsd/pi-agent-core` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
-      "line": 11,
-      "fingerprint": "5b714e69077d5ea4",
-      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
-      "line": 12,
-      "fingerprint": "f70ebe91cc132792",
-      "message": "`@gsd/pi-tui` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "gsd-build/gsd-2",
-      "number": 412,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
-      "line": 23,
-      "fingerprint": "f05d1471cd35d71b",
-      "message": "`@gsd/pi-tui` is imported but is not a dependency and is not installed"
     },
     {
       "repo": "ithacaxyz/porto",
@@ -2381,50 +2106,6 @@
       "line": 5,
       "fingerprint": "fed0b06f210bbcb8",
       "message": "`packages` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "nrwl/nx",
-      "number": 31887,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "packages/js/src/plugins/typescript/util.ts",
-      "line": 7,
-      "fingerprint": "e518d1de6065be16",
-      "message": "`typescript` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "openclaw/openclaw",
-      "number": 1751,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "extensions/bluebubbles/src/channel.ts",
-      "line": 1,
-      "fingerprint": "3cebcf324c78c252",
-      "message": "`clawdbot` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "openclaw/openclaw",
-      "number": 1751,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "extensions/bluebubbles/src/channel.ts",
-      "line": 2,
-      "fingerprint": "ce7b66c3889fad19",
-      "message": "`clawdbot` is imported but is not a dependency and is not installed"
-    },
-    {
-      "repo": "openclaw/openclaw",
-      "number": 1751,
-      "language": "ts",
-      "agent": "Claude_Code",
-      "ruleId": "ts/phantom-import",
-      "file": "extensions/bluebubbles/src/send.ts",
-      "line": 9,
-      "fingerprint": "19c4b015698a72c8",
-      "message": "`clawdbot` is imported but is not a dependency and is not installed"
     },
     {
       "repo": "pandas-dev/pandas",

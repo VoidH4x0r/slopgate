@@ -163,11 +163,12 @@ The benchmark exits non-zero when a high finding is unlabeled, a label no longer
 
 ### Published result
 
-- **111 high-confidence findings, 103 labeled `tp`, 8 labeled `fp`: 92.8% labeled precision.**
+- **82 high-confidence findings, all labeled `tp`: 100% labeled precision on the high tier.**
+- The 29 findings that the earlier corpus run reported at high and are now demoted are still visible at `medium`: 21 TypeScript imports that another workspace package declares, and 8 Python imports declared by a sibling subproject (`mcp_cloud/requirements.txt` for a file under `mcp_local/`). The `phantom-import` rules now consult every project manifest in the repository before claiming a package is missing, so the high-confidence claim is limited to imports no manifest anywhere declares.
 - 150 PRs, 703 changed files, 461,062 lines, about 20 seconds.
 - `benchmark/ai-pr/results.json` and `benchmark/ai-pr/report.md` are committed; `benchmark/ai-pr/labels.json` holds the labels.
 
-The eight false positives are all `phantom-import` reports from repositories that declare the package in a sibling subproject's manifest (`mcp_cloud/requirements.txt`), which the per-project resolver does not merge into `mcp_local/`. The corpus records the limitation instead of hiding it; the fix is tracked separately.
+The earlier corpus run produced eight high-confidence `phantom-import` reports for packages declared in a sibling subproject's manifest. That was a real false-positive class, not a label dispute: the rule now merges every project manifest in the repository before it claims a package is missing, and those reports are medium confidence with the sibling declaration as evidence.
 
 ### Limits
 

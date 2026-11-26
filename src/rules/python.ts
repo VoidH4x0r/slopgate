@@ -88,25 +88,24 @@ function distributionFor(module: string): string | undefined {
   return undefined;
 }
 
-function isDeclaredPython(module: string, ctx: RuleContext): boolean {
-  const deps = ctx.deps.python;
+function isDeclaredPython(module: string, ctx: RuleContext, declared = ctx.deps.python.declared): boolean {
   const parts = module.split('.');
   // A manifest declares distributions, but same-name packages (`requests`)
   // and dotted namespace packages (`google.protobuf`) both appear here.
   for (let index = parts.length; index > 0; index -= 1) {
     const candidate = parts.slice(0, index).join('.');
-    if (deps.declared.has(normalizePythonName(candidate))) return true;
+    if (declared.has(normalizePythonName(candidate))) return true;
   }
   const distribution = distributionFor(module);
-  if (distribution && deps.declared.has(normalizePythonName(distribution))) return true;
+  if (distribution && declared.has(normalizePythonName(distribution))) return true;
   const root = parts[0] ?? module;
   for (const alias of DISTRIBUTION_ALIASES[root] ?? []) {
-    if (deps.declared.has(normalizePythonName(alias))) return true;
+    if (declared.has(normalizePythonName(alias))) return true;
   }
   if (NAMESPACE_PREFIXES.has(root)) {
     const prefix = `${normalizePythonName(root)}-`;
-    for (const declared of deps.declared) {
-      if (declared.startsWith(prefix)) return true;
+    for (const name of declared) {
+      if (name.startsWith(prefix)) return true;
     }
   }
   return false;
@@ -360,18 +359,25 @@ const phantomImport: Rule = {
       // not declared directly, but they are present, so the report must not
       // claim the package is missing from the environment.
       const locked = isLockedPython(module, ctx);
+      const elsewhere =
+        !locked && ctx.deps.repositoryDeclared
+          ? isDeclaredPython(module, ctx, ctx.deps.repositoryDeclared.python)
+          : false;
       drafts.push({
         message: locked
           ? `\`${module}\` is imported but not declared in any manifest (a lockfile pins it)`
-          : `\`${module}\` is imported but not declared in any manifest and not present in this repository`,
+          : elsewhere
+            ? `\`${module}\` is imported but not declared in this project (another project in the repository declares it)`
+            : `\`${module}\` is imported but not declared in any manifest and not present in this repository`,
         start: startOf(node),
         end: endOf(node),
         snippet: snippetOf(ctx, node),
         // Test suites monkey-patch sys.path; keep the fact but do not fail CI.
-        ...(locked || isTestPath(ctx.classificationFile) ? { confidence: 'medium' as const } : {}),
+        ...(locked || elsewhere || isTestPath(ctx.classificationFile) ? { confidence: 'medium' as const } : {}),
         evidence: [
           `import: ${truncate(node.text, 100)}`,
           locked ? 'found in a lockfile (installed transitively or through an extra)' : '',
+          elsewhere ? 'declared by a sibling project in the same repository' : '',
           manifests.length > 0
             ? `manifests checked: ${manifests.join(', ')}`
             : 'no Python dependency manifest found (pyproject.toml, requirements*.txt, setup.py, Pipfile)',
