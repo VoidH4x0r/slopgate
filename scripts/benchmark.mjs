@@ -9,7 +9,7 @@
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { open, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findingFingerprint } from '../dist/baseline.js';
@@ -69,12 +69,17 @@ async function countLines(dir) {
       }
       if (!SOURCE_EXT.test(entry.name) || entry.name.endsWith('.d.ts') || entry.name.endsWith('.min.js')) continue;
       try {
-        const info = await stat(abs);
-        if (info.size > 1024 * 1024) continue;
-        collected.push({
-          relative: path.relative(dir, abs).replace(/\\/g, '/'),
-          text: await readFile(abs, 'utf8'),
-        });
+        const handle = await open(abs, 'r');
+        try {
+          const info = await handle.stat();
+          if (info.size > 1024 * 1024) continue;
+          collected.push({
+            relative: path.relative(dir, abs).replace(/\\/g, '/'),
+            text: await handle.readFile({ encoding: 'utf8' }),
+          });
+        } finally {
+          await handle.close();
+        }
       } catch {
         continue;
       }
