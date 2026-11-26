@@ -12,7 +12,7 @@ Status: added after 1.0.3. This page describes the automated gates on `main` and
 
 - **CI.** The full Linux and Windows matrix, the packed-tarball smoke tests and the VS Code extension.
 - **CodeQL.** Also runs on every push to `main` and weekly.
-- **Full benchmark.** Weekly (Monday 02:41 UTC) and on manual dispatch. It fetches CPython 3.14.7, Go 1.24.0, Rust 1.83 `rust-src`, the nine published npm tarballs, Tape and the AI corpora, then compares the fresh run with the committed results through `scripts/check-benchmark-drift.mjs`. The job fails on any change in corpus digest, file or high-confidence count, labeled precision, label reconciliation, seeded recall, a parse-error drift beyond 5%, or a CPython scan over 20 seconds.
+- **Full benchmark.** Weekly (Monday 02:41 UTC) and on manual dispatch. It fetches CPython 3.14.7, Go 1.24.0, Rust 1.83 `rust-src`, the nine published npm tarballs, Tape and the AI corpora, then compares the fresh run with the committed results through `scripts/check-benchmark-drift.mjs`. The job fails on any change in corpus digest, file or high-confidence count, labeled precision, label reconciliation, seeded recall, a parse-error drift beyond 5%, or a CPython scan over 25 seconds.
 
 ## Action pinning
 

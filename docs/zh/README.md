@@ -275,7 +275,7 @@ pre-commit hook 扫描仓库根而不是单个文件，因为规则需要 manife
 - 3 个 grammar 首次加载 **~35 ms**；
 - Python：约 **12 ms / 35 KB**。
 
-CI 的 CPython 性能预算是 **20 s**。扫描不启动 Python/tsc/go/rust 子进程；只有 `--diff` 和 MCP `scan_diff` 会调用 `git`。
+CI 的 CPython 性能预算是 **25 s**。扫描不启动 Python/tsc/go/rust 子进程；只有 `--diff` 和 MCP `scan_diff` 会调用 `git`。
 
 ## 已知限制
 

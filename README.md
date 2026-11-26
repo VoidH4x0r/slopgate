@@ -381,7 +381,7 @@ We would rather miss a finding than teach you to ignore the tool. That is also w
 - WASM parsers load once per language in **~35 ms**
 - Python: ~12 ms per 35 KB file
 
-The performance guard in CI treats **20 s** for the CPython corpus as the hard ceiling. The benchmark is run against the built CLI, not a mocked engine, and the repository records the exact digest and duration.
+The performance guard in CI treats **25 s** for the CPython corpus as the hard ceiling. The benchmark is run against the built CLI, not a mocked engine, and the repository records the exact digest and duration.
 
 ## Roadmap
 
