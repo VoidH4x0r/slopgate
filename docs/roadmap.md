@@ -29,7 +29,7 @@ Every roadmap decision should protect those advantages.
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
 | Release | npm `@voidh4x0r/slopgate` latest published 1.0.3; VS Code extension 0.1.1 not yet in Marketplace |
 
-The current limitations are documented in `README.md`. The biggest remaining gaps are release/artifact alignment, npm maintainer metadata privacy, Marketplace distribution, JavaScript test-theatre and real AI-PR benchmark coverage, security/coverage gates, and custom-rule/LSP extensibility.
+The current limitations are documented in `README.md`. The biggest remaining gaps are release/artifact alignment, npm maintainer metadata privacy, Marketplace distribution, JavaScript test-theatre coverage, security/coverage gates and custom-rule/LSP extensibility.
 
 ## 3. Non-goals
 
@@ -285,7 +285,7 @@ Status 2026-11-26: the v1.0.3 tag/release and the quality gates (coverage thresh
 1. Deprecate the stale 1.0.2 npm artifact; the v1.0.3 tag and GitHub release already exist.
 2. Replace the npm maintainer email with the public GitHub noreply address; verify the packument.
 3. Package the VS Code extension as a VSIX and create the Marketplace listing.
-4. Add a real AI-PR benchmark corpus; the weekly full-benchmark run is in place.
+4. ~~Add a real AI-PR benchmark corpus; the weekly full-benchmark run is in place.~~ **Done:** 150 merged agent PRs live in `benchmark/ai-pr/` with labels and a structural skeleton.
 5. Design the custom-rule/plugin API and decide whether LSP/watch/incremental scan belongs in 1.1 or 2.0.
 
 Done after 1.0.3:
