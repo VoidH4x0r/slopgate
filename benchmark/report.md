@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-24T02:05:23.312Z by `scripts/benchmark.mjs` (slopgate 1.0.3, Node v24.19.0).
+Generated 2026-11-26T12:09:10.992Z by `scripts/benchmark.mjs` (slopgate 1.0.4, Node v24.22.3).
 
 ## Summary
 
@@ -24,7 +24,7 @@ Detected **30/30** seeded defects.
 
 ## cpython-stdlib
 
-Scanned **1845** files (**991705** lines) in 12359 ms; parse errors: **9**.
+Scanned **1845** files (**991705** lines) in 19237 ms; parse errors: **9**.
 
 Corpus digest: `a56a6849f01a0865`.
 
@@ -40,7 +40,7 @@ Corpus digest: `a56a6849f01a0865`.
 
 ## express
 
-Scanned **7** files (**2783** lines) in 46 ms; parse errors: **0**.
+Scanned **7** files (**2783** lines) in 66 ms; parse errors: **0**.
 
 Package: `express@5.3.0`.
 
@@ -51,7 +51,7 @@ Corpus digest: `d2b720bf4294881f`.
 
 ## chalk
 
-Scanned **2** files (**799** lines) in 10 ms; parse errors: **0**.
+Scanned **2** files (**799** lines) in 20 ms; parse errors: **0**.
 
 Package: `chalk@6.0.1`.
 
@@ -62,7 +62,7 @@ Corpus digest: `7e4d9210a0fc613d`.
 
 ## execa
 
-Scanned **111** files (**8363** lines) in 211 ms; parse errors: **0**.
+Scanned **111** files (**8363** lines) in 285 ms; parse errors: **0**.
 
 Package: `execa@10.2.1`.
 
@@ -75,7 +75,7 @@ Corpus digest: `4c7472ad58bd8a01`.
 
 ## semver
 
-Scanned **49** files (**3166** lines) in 71 ms; parse errors: **0**.
+Scanned **49** files (**3166** lines) in 110 ms; parse errors: **0**.
 
 Package: `semver@7.8.6`.
 
@@ -86,7 +86,7 @@ Corpus digest: `2035d82b564fe0fd`.
 
 ## commander
 
-Scanned **7** files (**4225** lines) in 73 ms; parse errors: **0**.
+Scanned **7** files (**4225** lines) in 121 ms; parse errors: **0**.
 
 Package: `commander@15.1.0`.
 
@@ -98,7 +98,7 @@ Corpus digest: `a1904525101c27be`.
 
 ## debug
 
-Scanned **4** files (**841** lines) in 20 ms; parse errors: **0**.
+Scanned **4** files (**841** lines) in 28 ms; parse errors: **0**.
 
 Package: `debug@4.4.3`.
 
@@ -110,7 +110,7 @@ Corpus digest: `423d0332532c2e32`.
 
 ## eslint
 
-Scanned **409** files (**100880** lines) in 1521 ms; parse errors: **0**.
+Scanned **409** files (**100880** lines) in 2341 ms; parse errors: **0**.
 
 Package: `eslint@10.15.0`.
 
@@ -124,7 +124,7 @@ Corpus digest: `3d248ab8433c9cd8`.
 
 ## glob
 
-Scanned **7** files (**2217** lines) in 54 ms; parse errors: **0**.
+Scanned **7** files (**2217** lines) in 79 ms; parse errors: **0**.
 
 Package: `glob@14.0.6`.
 
@@ -135,7 +135,7 @@ Corpus digest: `dc4dc56c06b64fb8`.
 
 ## yargs
 
-Scanned **5** files (**198** lines) in 9 ms; parse errors: **0**.
+Scanned **5** files (**198** lines) in 15 ms; parse errors: **0**.
 
 Package: `yargs@18.2.0`.
 
@@ -146,7 +146,7 @@ Corpus digest: `53ba47a2d90b26ae`.
 
 ## ai-generated
 
-Scanned **20** files (**93** lines) in 12 ms; parse errors: **0**.
+Scanned **20** files (**93** lines) in 17 ms; parse errors: **0**.
 
 Package: `ai-generated-corpus@0.0.0`.
 
@@ -171,7 +171,7 @@ Corpus digest: `95d85ff450c21ede`.
 
 ## Method
 
-Corpora are real checkouts identified by a SHA-256 digest over their scanned files, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.
+Corpora are real checkouts identified by a SHA-256 digest over their scanned files in sorted relative-path order with CRLF normalized to LF, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.
 
 Every distinct `high` fingerprint is labeled in `benchmark/labels.json` as `tp` (the described pattern is present in the code as written) or `fp` (the report is misleading). Labels are per fingerprint, not per occurrence: identical snippets in one file share a label. Precision is `tp / (tp + fp)` over labeled findings; the report also states how many high findings are unlabeled and how many labels are stale.
 

@@ -1,6 +1,6 @@
 # Development roadmap
 
-Status: **1.0.3 is published on npm; it ships the reviewed main branch, current docs/demo, TypeScript 7 toolchain and repository hygiene gate**. 1.0.2 remains a historical release with the old npm metadata. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code; 0.4.x added semantic duplicates, integrations and complete benchmark coverage; 1.0.x hardened the public contract after external review. This roadmap is effort-based, not a promise of dates.
+Status: **1.0.4 is published on npm; it adds the real AI pull request corpus to the weekly benchmark and makes `phantom-import` resolve packages declared by any manifest in the repository or pinned by a lockfile.** 1.0.2 remains a historical release with the old npm metadata. 0.2.10 shipped the encoding contract; 0.3.0 added Go; 0.3.1 added Rust; 0.3.2 added VS Code; 0.4.x added semantic duplicates, integrations and complete benchmark coverage; 1.0.x hardened the public contract after external review. This roadmap is effort-based, not a promise of dates.
 
 ## 1. Product thesis
 
@@ -19,17 +19,17 @@ Every roadmap decision should protect those advantages.
 
 ## 2. Current baseline
 
-| Area | State at 1.0.3 |
+| Area | State at 1.0.4 |
 | --- | --- |
 | Languages | Python, TypeScript/JavaScript, Go, Rust |
 | Rules | 32, all with negative tests |
 | Interfaces | CLI, JSON, SARIF, GitHub annotations, MCP, baseline, diff, suppression |
 | Autofix | Safe deletion of unreachable statements after `return` / `raise` / `break` / `continue` |
-| Benchmark | 1,115,270 Python/JS/AI lines: 42 high, 97.6% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 635,245 lines, 0 high |
+| Benchmark | 1,115,270 Python/JS/AI lines: 42 high, 97.6% precision, 30/30 seeded; Go: 2,455,171 lines, 0 high; Rust: 634,979 lines, 0 high |
 | Runtime | Node >= 20.11, tree-sitter WASM grammars |
-| Release | npm `@voidh4x0r/slopgate` latest published 1.0.3; VS Code extension 0.1.1 not yet in Marketplace |
+| Release | npm `@voidh4x0r/slopgate` latest published 1.0.4; VS Code extension 0.1.1 not yet in Marketplace |
 
-The current limitations are documented in `README.md`. The biggest remaining gaps are release/artifact alignment, npm maintainer metadata privacy, Marketplace distribution, JavaScript test-theatre coverage, security/coverage gates and custom-rule/LSP extensibility.
+The current limitations are documented in `README.md`. The biggest remaining gaps are npm maintainer metadata privacy, Marketplace distribution, JavaScript test-theatre coverage and custom-rule/LSP extensibility.
 
 ## 3. Non-goals
 
@@ -186,7 +186,7 @@ Exit criteria:
 
 ### 1.0.0 - stable public contract
 
-Goal: a release that can be depended on without reading the changelog. **Status: implemented in 1.0.0; hardened in 1.0.1 and 1.0.2 after external review; 1.0.3 aligns the published artifact with the reviewed main branch.**
+Goal: a release that can be depended on without reading the changelog. **Status: implemented in 1.0.0; hardened in 1.0.1 and 1.0.2 after external review; 1.0.3 aligns the published artifact with the reviewed main branch; 1.0.4 adds a real AI pull request corpus and sharpens `phantom-import`.**
 
 Required:
 
@@ -280,18 +280,19 @@ A release does not ship if precision drops below 97% or any high finding is unla
 
 ## 10. Next 14 days
 
-Status 2026-11-26: the v1.0.3 tag/release and the quality gates (coverage thresholds, CodeQL, dependency review, pinned Actions, weekly full benchmark) are in place. Remaining items:
+Status 2026-11-26: the v1.0.4 tag/release and the quality gates (coverage thresholds, CodeQL, dependency review, pinned Actions, weekly full benchmark) are in place. Remaining items:
 
-1. Deprecate the stale 1.0.2 npm artifact; the v1.0.3 tag and GitHub release already exist.
+1. Deprecate the stale 1.0.2 npm artifact; the v1.0.4 tag and GitHub release already exist.
 2. Replace the npm maintainer email with the public GitHub noreply address; verify the packument.
 3. Package the VS Code extension as a VSIX and create the Marketplace listing.
 4. ~~Add a real AI-PR benchmark corpus; the weekly full-benchmark run is in place.~~ **Done:** 150 merged agent PRs live in `benchmark/ai-pr/` with labels and a structural skeleton.
 5. Design the custom-rule/plugin API and decide whether LSP/watch/incremental scan belongs in 1.1 or 2.0.
 
-Done after 1.0.3:
+Done after 1.0.4:
 
 - CodeQL (`javascript-typescript`, `security-and-quality`), dependency review (runtime, high/critical), coverage thresholds (line 95 / branch 85 / function 92) and SHA-pinned Actions with weekly Dependabot updates; see [quality-gates.md](quality-gates.md).
 - Weekly full benchmark across CPython 3.14.7, Go 1.24.0, Rust 1.83, nine published npm packages, Tape and the AI corpora, compared with the committed baseline.
+- Real AI pull request corpus: 150 merged PRs from six coding agents across 121 repositories (703 changed files), scanned from a structural skeleton with every resolution root pinned to the corpus entry; 82 high findings, all labeled `tp`.
 
 ## 11. Decision log
 

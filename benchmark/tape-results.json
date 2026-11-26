@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-24T02:05:42.972Z",
-  "slopgateVersion": "1.0.3",
-  "nodeVersion": "v24.19.0",
+  "generatedAt": "2026-11-26T12:11:30.184Z",
+  "slopgateVersion": "1.0.4",
+  "nodeVersion": "v24.22.3",
   "labelsFile": "benchmark/tape-labels.json",
   "corpora": [
     {
@@ -14,7 +14,7 @@
       "digest": "323ca777a1f33a6d",
       "files": 185,
       "lines": 11958,
-      "durationMs": 3674,
+      "durationMs": 443,
       "findings": 17,
       "high": 0,
       "suppressed": 0,
@@ -38,5 +38,24 @@
     }
   ],
   "staleLabels": [],
-  "unlabeledHigh": []
+  "unlabeledHigh": [],
+  "recall": {
+    "total": 30,
+    "detected": 30,
+    "missed": [],
+    "byCorpus": [
+      {
+        "fixture": "fixtures/demo",
+        "total": 14,
+        "detected": 14,
+        "missed": []
+      },
+      {
+        "fixture": "fixtures/ai-generated",
+        "total": 16,
+        "detected": 16,
+        "missed": []
+      }
+    ]
+  }
 }

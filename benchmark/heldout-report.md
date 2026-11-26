@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-24T02:05:48.269Z by `scripts/benchmark.mjs` (slopgate 1.0.3, Node v24.19.0).
+Generated 2026-11-26T12:11:32.032Z by `scripts/benchmark.mjs` (slopgate 1.0.4, Node v24.22.3).
 
 ## Summary
 
@@ -8,9 +8,13 @@ Generated 2026-11-24T02:05:48.269Z by `scripts/benchmark.mjs` (slopgate 1.0.3, N
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | heldout-ai | 10 | 39 | 8 | 205.13 | 100.0% | `2404daae29252116` |
 
+## Recall (seeded defects)
+
+Detected **30/30** seeded defects.
+
 ## heldout-ai
 
-Scanned **10** files (**39** lines) in 91 ms; parse errors: **0**.
+Scanned **10** files (**39** lines) in 259 ms; parse errors: **0**.
 
 Corpus digest: `2404daae29252116`.
 
@@ -27,7 +31,7 @@ Corpus digest: `2404daae29252116`.
 
 ## Method
 
-Corpora are real checkouts identified by a SHA-256 digest over their scanned files, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.
+Corpora are real checkouts identified by a SHA-256 digest over their scanned files in sorted relative-path order with CRLF normalized to LF, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.
 
 Every distinct `high` fingerprint is labeled in `benchmark/heldout-labels.json` as `tp` (the described pattern is present in the code as written) or `fp` (the report is misleading). Labels are per fingerprint, not per occurrence: identical snippets in one file share a label. Precision is `tp / (tp + fp)` over labeled findings; the report also states how many high findings are unlabeled and how many labels are stale.
 

@@ -1,6 +1,6 @@
 # Benchmark report
 
-Generated 2026-11-24T02:05:42.972Z by `scripts/benchmark.mjs` (slopgate 1.0.3, Node v24.19.0).
+Generated 2026-11-26T12:11:30.184Z by `scripts/benchmark.mjs` (slopgate 1.0.4, Node v24.22.3).
 
 ## Summary
 
@@ -8,9 +8,13 @@ Generated 2026-11-24T02:05:42.972Z by `scripts/benchmark.mjs` (slopgate 1.0.3, N
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | tape | 185 | 11958 | 0 | 0.00 | — | `323ca777a1f33a6d` |
 
+## Recall (seeded defects)
+
+Detected **30/30** seeded defects.
+
 ## tape
 
-Scanned **185** files (**11958** lines) in 3674 ms; parse errors: **2**.
+Scanned **185** files (**11958** lines) in 443 ms; parse errors: **2**.
 
 Package: `tape@5.11.0`.
 
@@ -22,7 +26,7 @@ Corpus digest: `323ca777a1f33a6d`.
 
 ## Method
 
-Corpora are real checkouts identified by a SHA-256 digest over their scanned files, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.
+Corpora are real checkouts identified by a SHA-256 digest over their scanned files in sorted relative-path order with CRLF normalized to LF, plus the package name/version when a `package.json` exists. `benchmark/results.json` stores the digest, counts and timings, so the run can be compared without publishing absolute paths.
 
 Every distinct `high` fingerprint is labeled in `benchmark/tape-labels.json` as `tp` (the described pattern is present in the code as written) or `fp` (the report is misleading). Labels are per fingerprint, not per occurrence: identical snippets in one file share a label. Precision is `tp / (tp + fp)` over labeled findings; the report also states how many high findings are unlabeled and how many labels are stale.
 

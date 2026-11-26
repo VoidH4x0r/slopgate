@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-24T02:07:02.317Z",
-  "slopgateVersion": "1.0.3",
-  "nodeVersion": "v24.19.0",
+  "generatedAt": "2026-11-26T12:09:35.012Z",
+  "slopgateVersion": "1.0.4",
+  "nodeVersion": "v24.22.3",
   "labelsFile": "benchmark/go-labels.json",
   "corpora": [
     {
@@ -10,7 +10,7 @@
       "digest": "d2c81658b437dc42",
       "files": 6090,
       "lines": 2455171,
-      "durationMs": 113917,
+      "durationMs": 31539,
       "findings": 427,
       "high": 0,
       "suppressed": 0,
@@ -34,5 +34,24 @@
     }
   ],
   "staleLabels": [],
-  "unlabeledHigh": []
+  "unlabeledHigh": [],
+  "recall": {
+    "total": 30,
+    "detected": 30,
+    "missed": [],
+    "byCorpus": [
+      {
+        "fixture": "fixtures/demo",
+        "total": 14,
+        "detected": 14,
+        "missed": []
+      },
+      {
+        "fixture": "fixtures/ai-generated",
+        "total": 16,
+        "detected": 16,
+        "missed": []
+      }
+    ]
+  }
 }
