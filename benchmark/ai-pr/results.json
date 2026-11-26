@@ -1,0 +1,2507 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-26T07:33:36.434Z",
+  "slopgateVersion": "1.0.3",
+  "nodeVersion": "v24.19.0",
+  "corpus": {
+    "dataset": "hao-li/AIDev@v5",
+    "prs": 150,
+    "files": 703,
+    "lines": 461062,
+    "agents": [
+      "Claude_Code",
+      "Copilot",
+      "Cursor",
+      "Devin",
+      "OpenAI_Codex"
+    ],
+    "languages": [
+      "go",
+      "python",
+      "rust",
+      "ts"
+    ],
+    "asset": {
+      "name": "ai-pr-corpus-v1.tar.gz",
+      "url": "https://github.com/VoidH4x0r/slopgate/releases/download/ai-pr-corpus-v1/ai-pr-corpus-v1.tar.gz",
+      "sha256": "5bafb31c5a244aa990164d79f022628be4ecab8949cf37f9a586960dd3daac05"
+    }
+  },
+  "durationMs": 19793,
+  "high": 111,
+  "labeled": {
+    "tp": 103,
+    "fp": 8,
+    "precision": 0.9279279279279279
+  },
+  "byRule": {
+    "py/noop-test": {
+      "total": 8,
+      "tp": 8,
+      "fp": 0
+    },
+    "py/unreachable": {
+      "total": 1,
+      "tp": 1,
+      "fp": 0
+    },
+    "py/phantom-import": {
+      "total": 56,
+      "tp": 49,
+      "fp": 7
+    },
+    "py/swallowed-exception": {
+      "total": 12,
+      "tp": 12,
+      "fp": 0
+    },
+    "ts/phantom-import": {
+      "total": 25,
+      "tp": 24,
+      "fp": 1
+    },
+    "rs/stub-body": {
+      "total": 7,
+      "tp": 7,
+      "fp": 0
+    },
+    "py/dead-branch": {
+      "total": 1,
+      "tp": 1,
+      "fp": 0
+    },
+    "go/noop-test": {
+      "total": 1,
+      "tp": 1,
+      "fp": 0
+    }
+  },
+  "unlabeledHigh": [],
+  "staleLabels": [],
+  "verifyFailures": 0,
+  "prs": [
+    {
+      "repo": "8b-is/smart-tree",
+      "number": 51,
+      "language": "rust",
+      "agent": "Copilot",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 30,
+      "high": 7
+    },
+    {
+      "repo": "BeaconBay/ck",
+      "number": 85,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 5,
+      "high": 0
+    },
+    {
+      "repo": "Dimillian/CodexMonitor",
+      "number": 82,
+      "language": "ts",
+      "agent": "OpenAI_Codex",
+      "files": 3,
+      "high": 0
+    },
+    {
+      "repo": "Divkix/Alita_Robot",
+      "number": 669,
+      "language": "go",
+      "agent": "OpenAI_Codex",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "EricLBuehler/mistral.rs",
+      "number": 1366,
+      "language": "rust",
+      "agent": "OpenAI_Codex",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "EtienneLescot/n8n-as-code",
+      "number": 142,
+      "language": "ts",
+      "agent": "Copilot",
+      "files": 7,
+      "high": 0
+    },
+    {
+      "repo": "Fannon/search-bookmarks-history-and-tabs",
+      "number": 197,
+      "language": "ts",
+      "agent": "OpenAI_Codex",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "FleexSecurity/fleex",
+      "number": 66,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "GlareDB/glaredb",
+      "number": 3637,
+      "language": "rust",
+      "agent": "Devin",
+      "files": 3,
+      "high": 0
+    },
+    {
+      "repo": "JWock82/Pynite",
+      "number": 314,
+      "language": "python",
+      "agent": "Copilot",
+      "files": 19,
+      "high": 5
+    },
+    {
+      "repo": "Lanerra/saga",
+      "number": 228,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "LibrePhotos/librephotos",
+      "number": 1741,
+      "language": "python",
+      "agent": "Copilot",
+      "files": 2,
+      "high": 1
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 1453,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 1954,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 2002,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 205,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 86,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "Nicxe/f1_sensor",
+      "number": 17,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 1,
+      "high": 1
+    },
+    {
+      "repo": "NikolayS/rpg",
+      "number": 207,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "NikolayS/rpg",
+      "number": 673,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 7,
+      "high": 11
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 18932,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 12
+    },
+    {
+      "repo": "PyAutoLabs/PyAutoLens",
+      "number": 396,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 2
+    },
+    {
+      "repo": "PyLabRobot/pylabrobot",
+      "number": 977,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 6,
+      "high": 0
+    },
+    {
+      "repo": "ROCm/iris",
+      "number": 435,
+      "language": "python",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "RackulaLives/Rackula",
+      "number": 1406,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "RooCodeInc/Roo-Code",
+      "number": 11831,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 7,
+      "high": 0
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 7,
+      "high": 25
+    },
+    {
+      "repo": "UM-ARM-Lab/pytorch_mppi",
+      "number": 9,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "acolomba/blackvuesync",
+      "number": 26,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "adamchainz/django-mysql",
+      "number": 1169,
+      "language": "python",
+      "agent": "Copilot",
+      "files": 6,
+      "high": 0
+    },
+    {
+      "repo": "aden-hive/hive",
+      "number": 605,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "adrgs/requestrepo",
+      "number": 66,
+      "language": "rust",
+      "agent": "Devin",
+      "files": 18,
+      "high": 0
+    },
+    {
+      "repo": "agent-era/devteam",
+      "number": 47,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 7,
+      "high": 0
+    },
+    {
+      "repo": "ai-shifu/ai-shifu",
+      "number": 638,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "apache/casbin",
+      "number": 1577,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 5,
+      "high": 0
+    },
+    {
+      "repo": "aspizu/goboscript",
+      "number": 166,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "bearcove/tracey",
+      "number": 69,
+      "language": "rust",
+      "agent": "OpenAI_Codex",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "bluesky-social/social-app",
+      "number": 10080,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "callstackincubator/react-native-harness",
+      "number": 70,
+      "language": "ts",
+      "agent": "OpenAI_Codex",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "circuit-synth/circuit-synth",
+      "number": 191,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "cloudflare/workers-sdk",
+      "number": 10961,
+      "language": "ts",
+      "agent": "Devin",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "cnpm/cnpmcore",
+      "number": 967,
+      "language": "ts",
+      "agent": "Copilot",
+      "files": 3,
+      "high": 6
+    },
+    {
+      "repo": "cyw0ng95/sqlvibe",
+      "number": 17,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 5,
+      "high": 0
+    },
+    {
+      "repo": "desplega-ai/agent-swarm",
+      "number": 11,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 10,
+      "high": 1
+    },
+    {
+      "repo": "devantler-tech/ksail",
+      "number": 2416,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 21,
+      "high": 0
+    },
+    {
+      "repo": "doobidoo/mcp-memory-service",
+      "number": 327,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 7,
+      "high": 0
+    },
+    {
+      "repo": "dragonflyoss/nydus",
+      "number": 1867,
+      "language": "rust",
+      "agent": "Copilot",
+      "files": 28,
+      "high": 6
+    },
+    {
+      "repo": "eakmanrq/sqlframe",
+      "number": 601,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "epam/ketcher",
+      "number": 8730,
+      "language": "ts",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "erans/pgsqlite",
+      "number": 50,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 8,
+      "high": 0
+    },
+    {
+      "repo": "finos/morphir",
+      "number": 511,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 9,
+      "high": 0
+    },
+    {
+      "repo": "foxglove/foxglove-sdk",
+      "number": 860,
+      "language": "rust",
+      "agent": "Cursor",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "garrytan/gstack",
+      "number": 206,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "gastownhall/gastown",
+      "number": 995,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "gijzelaerr/python-snap7",
+      "number": 648,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 10,
+      "high": 0
+    },
+    {
+      "repo": "giselles-ai/giselle",
+      "number": 1018,
+      "language": "ts",
+      "agent": "OpenAI_Codex",
+      "files": 8,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 10605,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 14899,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 1734,
+      "language": "ts",
+      "agent": "Copilot",
+      "files": 6,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 21219,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 6,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 3591,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 7009,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 8400,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 931,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 5,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw-mcpg",
+      "number": 1585,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 8,
+      "high": 0
+    },
+    {
+      "repo": "github/gh-aw-mcpg",
+      "number": 186,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "github/hotkey",
+      "number": 145,
+      "language": "ts",
+      "agent": "Copilot",
+      "files": 5,
+      "high": 0
+    },
+    {
+      "repo": "goravel/example",
+      "number": 108,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "goruck/home-generative-agent",
+      "number": 270,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 12,
+      "high": 1
+    },
+    {
+      "repo": "graphistry/pygraphistry",
+      "number": 807,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 3083,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 7,
+      "high": 11
+    },
+    {
+      "repo": "holoviz/panel",
+      "number": 8403,
+      "language": "python",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "homeassistant-ai/ha-mcp",
+      "number": 229,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "ithacaxyz/porto",
+      "number": 458,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 8,
+      "high": 2
+    },
+    {
+      "repo": "jdx/hk",
+      "number": 326,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "jdx/hk",
+      "number": 434,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "jdx/mise",
+      "number": 6439,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "jdx/mise",
+      "number": 7285,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "jdx/mise",
+      "number": 8004,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "jdx/mise",
+      "number": 8275,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "joshmedeski/sesh",
+      "number": 325,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 10,
+      "high": 0
+    },
+    {
+      "repo": "jrkropp/open-webui-developer-toolkit",
+      "number": 354,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 2,
+      "high": 4
+    },
+    {
+      "repo": "liam-hq/liam",
+      "number": 3189,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "liam-hq/liam",
+      "number": 3937,
+      "language": "ts",
+      "agent": "Devin",
+      "files": 6,
+      "high": 0
+    },
+    {
+      "repo": "longbridge/openapi",
+      "number": 485,
+      "language": "rust",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "mbailey/voicemode",
+      "number": 79,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 8,
+      "high": 0
+    },
+    {
+      "repo": "medplum/medplum",
+      "number": 8353,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "microsoft/vscode",
+      "number": 292645,
+      "language": "ts",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "milvus-io/milvus",
+      "number": 47972,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 7,
+      "high": 1
+    },
+    {
+      "repo": "mlflow/mlflow",
+      "number": 18124,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "mnfst/manifest",
+      "number": 1197,
+      "language": "ts",
+      "agent": "OpenAI_Codex",
+      "files": 8,
+      "high": 0
+    },
+    {
+      "repo": "moltis-org/moltis",
+      "number": 16,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 23,
+      "high": 1
+    },
+    {
+      "repo": "nansen-ai/nansen-cli",
+      "number": 165,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 3,
+      "high": 0
+    },
+    {
+      "repo": "nearai/ironclaw",
+      "number": 436,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 14,
+      "high": 0
+    },
+    {
+      "repo": "nesquikm/mcp-rubber-duck",
+      "number": 51,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 21,
+      "high": 0
+    },
+    {
+      "repo": "nexi-lab/nexus",
+      "number": 2203,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "nexi-lab/nexus",
+      "number": 2774,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 12,
+      "high": 0
+    },
+    {
+      "repo": "nexi-lab/nexus",
+      "number": 2871,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 33,
+      "high": 1
+    },
+    {
+      "repo": "nomadkaraoke/karaoke-gen",
+      "number": 318,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "nomadkaraoke/karaoke-gen",
+      "number": 599,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 5,
+      "high": 1
+    },
+    {
+      "repo": "nrwl/nx",
+      "number": 31887,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 2
+    },
+    {
+      "repo": "obsessiondb/rudel",
+      "number": 83,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "onikan27/claude-code-monitor",
+      "number": 18,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "open-cluster-management-io/api",
+      "number": 416,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "open-metadata/OpenMetadata",
+      "number": 23671,
+      "language": "python",
+      "agent": "Copilot",
+      "files": 3,
+      "high": 0
+    },
+    {
+      "repo": "openacid/slim",
+      "number": 182,
+      "language": "go",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "openclaw/openclaw",
+      "number": 1751,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 10,
+      "high": 3
+    },
+    {
+      "repo": "openclaw/openclaw",
+      "number": 22296,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "owid/owid-grapher",
+      "number": 5292,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "pandas-dev/pandas",
+      "number": 64548,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 5,
+      "high": 1
+    },
+    {
+      "repo": "pbakaus/agent-reviews",
+      "number": 1,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 6,
+      "high": 0
+    },
+    {
+      "repo": "pnpm/pnpm",
+      "number": 10969,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 6,
+      "high": 0
+    },
+    {
+      "repo": "projectcalico/calico",
+      "number": 12210,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "prowler-cloud/prowler",
+      "number": 10161,
+      "language": "python",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "python/devguide",
+      "number": 1583,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "quay/quay",
+      "number": 4535,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "qwibitai/nanoclaw",
+      "number": 394,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "risingwavelabs/risingwave",
+      "number": 24450,
+      "language": "rust",
+      "agent": "Copilot",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "roborev-dev/roborev",
+      "number": 426,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 13,
+      "high": 0
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 104,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 41,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 4,
+      "high": 6
+    },
+    {
+      "repo": "rolldown/rolldown",
+      "number": 8222,
+      "language": "rust",
+      "agent": "Copilot",
+      "files": 3,
+      "high": 0
+    },
+    {
+      "repo": "rue-language/rue",
+      "number": 634,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "rue-language/rue",
+      "number": 756,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "rue-language/rue",
+      "number": 829,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "rue-language/rue",
+      "number": 865,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "samanhappy/mcphub",
+      "number": 367,
+      "language": "ts",
+      "agent": "Copilot",
+      "files": 7,
+      "high": 0
+    },
+    {
+      "repo": "samhotchkiss/otter-camp",
+      "number": 1491,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 5,
+      "high": 0
+    },
+    {
+      "repo": "scylladb/scylla-rust-driver",
+      "number": 1509,
+      "language": "rust",
+      "agent": "Copilot",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "shivasurya/code-pathfinder",
+      "number": 340,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 7,
+      "high": 0
+    },
+    {
+      "repo": "shopware/shopware-cli",
+      "number": 710,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "shotgun-sh/shotgun",
+      "number": 205,
+      "language": "python",
+      "agent": "Claude_Code",
+      "files": 5,
+      "high": 0
+    },
+    {
+      "repo": "slatedb/slatedb",
+      "number": 1305,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "stacklok/toolhive",
+      "number": 4079,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "suzuki-shunsuke/pinact",
+      "number": 1250,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 14,
+      "high": 0
+    },
+    {
+      "repo": "suzuki-shunsuke/pinact",
+      "number": 1282,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "temporalio/sdk-core",
+      "number": 1164,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 6,
+      "high": 0
+    },
+    {
+      "repo": "towardsthecloud/cloudburn",
+      "number": 44,
+      "language": "ts",
+      "agent": "OpenAI_Codex",
+      "files": 5,
+      "high": 0
+    },
+    {
+      "repo": "tryethernal/ethernal",
+      "number": 785,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "vargHQ/sdk",
+      "number": 145,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 2,
+      "high": 0
+    },
+    {
+      "repo": "viperrcrypto/Siftly",
+      "number": 33,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "voidzero-dev/oxc-angular-compiler",
+      "number": 29,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 4,
+      "high": 0
+    },
+    {
+      "repo": "vorbei/figma-capture",
+      "number": 1,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "wailsapp/wails",
+      "number": 4923,
+      "language": "go",
+      "agent": "Claude_Code",
+      "files": 3,
+      "high": 0
+    },
+    {
+      "repo": "whitphx/stlite",
+      "number": 1766,
+      "language": "ts",
+      "agent": "OpenAI_Codex",
+      "files": 1,
+      "high": 0
+    },
+    {
+      "repo": "zhnd/lumo",
+      "number": 28,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "files": 3,
+      "high": 0
+    }
+  ],
+  "findings": [
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/noop-test",
+      "file": "packages/economic_agents/tests/unit/test_logging.py",
+      "line": 94,
+      "fingerprint": "33b54ae53a9305ab",
+      "message": "test `test_agent_logger_basic` makes no assertions"
+    },
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/noop-test",
+      "file": "packages/economic_agents/tests/unit/test_logging.py",
+      "line": 105,
+      "fingerprint": "acea9d74cd464852",
+      "message": "test `test_agent_logger_transaction` makes no assertions"
+    },
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/noop-test",
+      "file": "packages/economic_agents/tests/unit/test_logging.py",
+      "line": 118,
+      "fingerprint": "f365050b56b867b3",
+      "message": "test `test_agent_logger_task_completed` makes no assertions"
+    },
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/noop-test",
+      "file": "packages/economic_agents/tests/unit/test_logging.py",
+      "line": 131,
+      "fingerprint": "582582e2c09bd6f2",
+      "message": "test `test_agent_logger_decision` makes no assertions"
+    },
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/noop-test",
+      "file": "packages/economic_agents/tests/unit/test_logging.py",
+      "line": 144,
+      "fingerprint": "4f949b44cffa0c07",
+      "message": "test `test_agent_logger_cycle` makes no assertions"
+    },
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/noop-test",
+      "file": "packages/economic_agents/tests/unit/test_persistence.py",
+      "line": 32,
+      "fingerprint": "c897cf5ddcb6f88b",
+      "message": "test `test_state` makes no assertions"
+    },
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/noop-test",
+      "file": "packages/economic_agents/tests/unit/test_persistence.py",
+      "line": 44,
+      "fingerprint": "1ea4bd9d6f1f2fd0",
+      "message": "test `test_decisions` makes no assertions"
+    },
+    {
+      "repo": "JWock82/Pynite",
+      "number": 314,
+      "language": "python",
+      "agent": "Copilot",
+      "ruleId": "py/unreachable",
+      "file": "Pynite/PhysMember.py",
+      "line": 1359,
+      "fingerprint": "9fe0f392882f0552",
+      "message": "code after `return` is unreachable"
+    },
+    {
+      "repo": "JWock82/Pynite",
+      "number": 314,
+      "language": "python",
+      "agent": "Copilot",
+      "ruleId": "py/phantom-import",
+      "file": "Pynite/Rendering.py",
+      "line": 13,
+      "fingerprint": "199cc7d60fb27a54",
+      "message": "`IPython.display` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "JWock82/Pynite",
+      "number": 314,
+      "language": "python",
+      "agent": "Copilot",
+      "ruleId": "py/phantom-import",
+      "file": "Pynite/Visualization.py",
+      "line": 12,
+      "fingerprint": "726da1ef9ce89550",
+      "message": "`IPython.display` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "JWock82/Pynite",
+      "number": 314,
+      "language": "python",
+      "agent": "Copilot",
+      "ruleId": "py/phantom-import",
+      "file": "Pynite/Visualization.py",
+      "line": 15,
+      "fingerprint": "87bc4f0461579bc7",
+      "message": "`vtk` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "JWock82/Pynite",
+      "number": 314,
+      "language": "python",
+      "agent": "Copilot",
+      "ruleId": "py/phantom-import",
+      "file": "Pynite/VTKWriter.py",
+      "line": 8,
+      "fingerprint": "257fc097a4e05086",
+      "message": "`vtk` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "LibrePhotos/librephotos",
+      "number": 1741,
+      "language": "python",
+      "agent": "Copilot",
+      "ruleId": "py/phantom-import",
+      "file": "api/face_extractor.py",
+      "line": 1,
+      "fingerprint": "eb09be2234eb57f6",
+      "message": "`numpy` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "Nicxe/f1_sensor",
+      "number": 17,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "ruleId": "py/phantom-import",
+      "file": "custom_components/f1_sensor/entity.py",
+      "line": 1,
+      "fingerprint": "8cfa363927024870",
+      "message": "`homeassistant.helpers.update_coordinator` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "mcp_cloud/db_setup.py",
+      "line": 14,
+      "fingerprint": "4c42dd5d6cc34d35",
+      "message": "`sqlalchemy` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "mcp_cloud/http_server.py",
+      "line": 346,
+      "fingerprint": "c282b442d6f12bd2",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "mcp_cloud/http_server.py",
+      "line": 1001,
+      "fingerprint": "c282b442d6f12bd2",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "mcp_local/planexe_mcp_local.py",
+      "line": 21,
+      "fingerprint": "7ed18f08388c84cb",
+      "message": "`mcp.server` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "mcp_local/planexe_mcp_local.py",
+      "line": 22,
+      "fingerprint": "e2f86042c58978b6",
+      "message": "`mcp.server.stdio` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "mcp_local/planexe_mcp_local.py",
+      "line": 23,
+      "fingerprint": "7626671584562a31",
+      "message": "`mcp.types` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "mcp_local/planexe_mcp_local.py",
+      "line": 24,
+      "fingerprint": "ceb6cae79a203f0f",
+      "message": "`pydantic` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "worker_plan_database/app.py",
+      "line": 27,
+      "fingerprint": "3dace8394479a60a",
+      "message": "`requests` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "worker_plan_database/app.py",
+      "line": 28,
+      "fingerprint": "01e6dc70048b7a56",
+      "message": "`sqlalchemy` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "worker_plan_database/app.py",
+      "line": 530,
+      "fingerprint": "a84ab923e6c73b2c",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "worker_plan/app.py",
+      "line": 406,
+      "fingerprint": "866c34e2fdbc5901",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 12,
+      "fingerprint": "f53b97bee495e82f",
+      "message": "`dbt.artifacts.resources.types` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 13,
+      "fingerprint": "c65291e6e47a352e",
+      "message": "`dbt.artifacts.schemas.results` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 19,
+      "fingerprint": "5da68b34f8f5b274",
+      "message": "`dbt.artifacts.schemas.run` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 20,
+      "fingerprint": "21e3ecaacc9c23e1",
+      "message": "`dbt.cli.main` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 21,
+      "fingerprint": "84c1527863cbe194",
+      "message": "`dbt.compilation` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 22,
+      "fingerprint": "35cff974bd4901b6",
+      "message": "`dbt.config.runtime` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 23,
+      "fingerprint": "84bb2f20fb0947f9",
+      "message": "`dbt.contracts.graph.manifest` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 24,
+      "fingerprint": "fc4ff54c23c816e2",
+      "message": "`dbt.contracts.graph.nodes` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 25,
+      "fingerprint": "9b3853b11bd6a1ad",
+      "message": "`dbt.contracts.state` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 28,
+      "fingerprint": "358749eea7236251",
+      "message": "`dbt.graph.graph` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 29,
+      "fingerprint": "bcd63dfefb66fcec",
+      "message": "`dbt_common.events.base_types` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+      "line": 30,
+      "fingerprint": "8ebdc1a70e7bc74e",
+      "message": "`google.protobuf.json_format` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PyAutoLabs/PyAutoLens",
+      "number": 396,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "autolens/quantity/model/analysis.py",
+      "line": 12,
+      "fingerprint": "51bb619c14bccf75",
+      "message": "`numpy` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "PyAutoLabs/PyAutoLens",
+      "number": 396,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "autolens/quantity/model/analysis.py",
+      "line": 14,
+      "fingerprint": "6512cb74aedd6c06",
+      "message": "`autofit` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/dqn/utils.py",
+      "line": 5,
+      "fingerprint": "b7b765a203c7aa9f",
+      "message": "`torch.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/dqn/utils.py",
+      "line": 37,
+      "fingerprint": "56da4b7500d9a4c2",
+      "message": "`pandas` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/dqn/utils.py",
+      "line": 40,
+      "fingerprint": "39c05e6d9930a485",
+      "message": "`tensordict.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/dqn/utils.py",
+      "line": 41,
+      "fingerprint": "1abc2391920f4f6e",
+      "message": "`torch.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/dqn/utils.py",
+      "line": 433,
+      "fingerprint": "04ef14f18dc05524",
+      "message": "`torch.optim` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/train.py",
+      "line": 17,
+      "fingerprint": "7567863ebb1289d6",
+      "message": "`hydra` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/train.py",
+      "line": 18,
+      "fingerprint": "76c31ca84638ee3d",
+      "message": "`pandas` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/train.py",
+      "line": 19,
+      "fingerprint": "9a22803ccd9e4fd8",
+      "message": "`omegaconf` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/train.py",
+      "line": 31,
+      "fingerprint": "d93b831eb83c5cf2",
+      "message": "`torch.optim` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/train.py",
+      "line": 34,
+      "fingerprint": "d76542deb94bf35c",
+      "message": "`tensordict.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/utils.py",
+      "line": 5,
+      "fingerprint": "c7dd6bd85a82492f",
+      "message": "`torch.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/utils.py",
+      "line": 36,
+      "fingerprint": "f88eaaffe4acf828",
+      "message": "`pandas` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/utils.py",
+      "line": 335,
+      "fingerprint": "4becbfe20504cc10",
+      "message": "`tensordict.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/grpo/utils.py",
+      "line": 439,
+      "fingerprint": "eef479bdf0935e91",
+      "message": "`torch` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/train.py",
+      "line": 5,
+      "fingerprint": "accc66f911b29b31",
+      "message": "`hydra` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/train.py",
+      "line": 6,
+      "fingerprint": "3473d07c59954e7a",
+      "message": "`pandas` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/train.py",
+      "line": 7,
+      "fingerprint": "3ef46cc8f7737247",
+      "message": "`omegaconf` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/train.py",
+      "line": 18,
+      "fingerprint": "54cb93cf0b490cbf",
+      "message": "`torch.optim` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/train.py",
+      "line": 21,
+      "fingerprint": "04f307297fe074fb",
+      "message": "`tensordict` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/train.py",
+      "line": 22,
+      "fingerprint": "6608d1abb998c1f4",
+      "message": "`tensordict.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/utils.py",
+      "line": 4,
+      "fingerprint": "a9ba546af65ba71e",
+      "message": "`torch.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/utils.py",
+      "line": 31,
+      "fingerprint": "7a4499763064e2e1",
+      "message": "`pandas` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "examples/online_rl/ppo/utils.py",
+      "line": 334,
+      "fingerprint": "ac7315fd91513b2e",
+      "message": "`tensordict.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "torchtrade/models/batchnorm_mlp.py",
+      "line": 3,
+      "fingerprint": "ae73391f565714d0",
+      "message": "`torch` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "torchtrade/models/batchnorm_mlp.py",
+      "line": 4,
+      "fingerprint": "885e36ffd90b5894",
+      "message": "`torch.nn` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "cnpm/cnpmcore",
+      "number": 967,
+      "language": "ts",
+      "agent": "Copilot",
+      "ruleId": "ts/phantom-import",
+      "file": "app/core/service/PackageSyncerService.ts",
+      "line": 5,
+      "fingerprint": "700ce095598936d9",
+      "message": "`@cnpmjs/packument` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "cnpm/cnpmcore",
+      "number": 967,
+      "language": "ts",
+      "agent": "Copilot",
+      "ruleId": "ts/phantom-import",
+      "file": "app/core/service/PackageSyncerService.ts",
+      "line": 6,
+      "fingerprint": "1bdf6b43db323148",
+      "message": "`egg` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "cnpm/cnpmcore",
+      "number": 967,
+      "language": "ts",
+      "agent": "Copilot",
+      "ruleId": "ts/phantom-import",
+      "file": "app/core/service/PackageSyncerService.ts",
+      "line": 7,
+      "fingerprint": "327dbb12728b3126",
+      "message": "`egg` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "cnpm/cnpmcore",
+      "number": 967,
+      "language": "ts",
+      "agent": "Copilot",
+      "ruleId": "ts/phantom-import",
+      "file": "app/core/service/PackageSyncerService.ts",
+      "line": 8,
+      "fingerprint": "a225318002a26856",
+      "message": "`egg` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "cnpm/cnpmcore",
+      "number": 967,
+      "language": "ts",
+      "agent": "Copilot",
+      "ruleId": "ts/phantom-import",
+      "file": "app/core/service/PackageSyncerService.ts",
+      "line": 9,
+      "fingerprint": "1a6f1379baac8681",
+      "message": "`lodash-es` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "cnpm/cnpmcore",
+      "number": 967,
+      "language": "ts",
+      "agent": "Copilot",
+      "ruleId": "ts/phantom-import",
+      "file": "app/core/service/PackageSyncerService.ts",
+      "line": 10,
+      "fingerprint": "18719617a7bc5249",
+      "message": "`semver` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "desplega-ai/agent-swarm",
+      "number": 11,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "src/slack/handlers.ts",
+      "line": 2,
+      "fingerprint": "3972883f365d1075",
+      "message": "`@slack/web-api` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "dragonflyoss/nydus",
+      "number": 1867,
+      "language": "rust",
+      "agent": "Copilot",
+      "ruleId": "rs/stub-body",
+      "file": "rafs/src/lib.rs",
+      "line": 165,
+      "fingerprint": "670570e0e102f357",
+      "message": "function is a stub that panics instead of returning a value"
+    },
+    {
+      "repo": "dragonflyoss/nydus",
+      "number": 1867,
+      "language": "rust",
+      "agent": "Copilot",
+      "ruleId": "rs/stub-body",
+      "file": "rafs/src/metadata/cached_v5.rs",
+      "line": 220,
+      "fingerprint": "e34a950be7dd7210",
+      "message": "function is a stub that panics instead of returning a value"
+    },
+    {
+      "repo": "dragonflyoss/nydus",
+      "number": 1867,
+      "language": "rust",
+      "agent": "Copilot",
+      "ruleId": "rs/stub-body",
+      "file": "rafs/src/metadata/cached_v5.rs",
+      "line": 224,
+      "fingerprint": "bf2cb76a67554dfd",
+      "message": "function is a stub that panics instead of returning a value"
+    },
+    {
+      "repo": "dragonflyoss/nydus",
+      "number": 1867,
+      "language": "rust",
+      "agent": "Copilot",
+      "ruleId": "rs/stub-body",
+      "file": "service/src/lib.rs",
+      "line": 258,
+      "fingerprint": "797a7c3d9a844e79",
+      "message": "function is a stub that panics instead of returning a value"
+    },
+    {
+      "repo": "dragonflyoss/nydus",
+      "number": 1867,
+      "language": "rust",
+      "agent": "Copilot",
+      "ruleId": "rs/stub-body",
+      "file": "service/src/lib.rs",
+      "line": 262,
+      "fingerprint": "16325fbfb87ff5f2",
+      "message": "function is a stub that panics instead of returning a value"
+    },
+    {
+      "repo": "dragonflyoss/nydus",
+      "number": 1867,
+      "language": "rust",
+      "agent": "Copilot",
+      "ruleId": "rs/stub-body",
+      "file": "service/src/lib.rs",
+      "line": 266,
+      "fingerprint": "7ebbc6d4823a33bf",
+      "message": "function is a stub that panics instead of returning a value"
+    },
+    {
+      "repo": "goruck/home-generative-agent",
+      "number": 270,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/phantom-import",
+      "file": "custom_components/home_generative_agent/const.py",
+      "line": 5,
+      "fingerprint": "6e708202a593b038",
+      "message": "`annotated_types` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/core/agent-session.ts",
+      "line": 18,
+      "fingerprint": "b7f04205563f8f63",
+      "message": "`@gsd/pi-agent-core` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/core/agent-session.ts",
+      "line": 26,
+      "fingerprint": "f16c94b7df7ea7f4",
+      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/core/agent-session.ts",
+      "line": 27,
+      "fingerprint": "70fa1445a72debc1",
+      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/core/auth-storage.ts",
+      "line": 12,
+      "fingerprint": "e8eee52864700263",
+      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/core/auth-storage.ts",
+      "line": 18,
+      "fingerprint": "bc2c35f20cf49ff6",
+      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/core/fallback-resolver.ts",
+      "line": 12,
+      "fingerprint": "f1034fd82a0e32b8",
+      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/core/settings-manager.ts",
+      "line": 1,
+      "fingerprint": "c12302c1c96011bf",
+      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
+      "line": 10,
+      "fingerprint": "a60538b52abaa0c9",
+      "message": "`@gsd/pi-agent-core` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
+      "line": 11,
+      "fingerprint": "5b714e69077d5ea4",
+      "message": "`@gsd/pi-ai` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
+      "line": 12,
+      "fingerprint": "f70ebe91cc132792",
+      "message": "`@gsd/pi-tui` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
+      "line": 23,
+      "fingerprint": "f05d1471cd35d71b",
+      "message": "`@gsd/pi-tui` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "ithacaxyz/porto",
+      "number": 458,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "apps/dialog/src/routes/-components/Email.tsx",
+      "line": 6,
+      "fingerprint": "0b49a6a7485de640",
+      "message": "`~icons` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "ithacaxyz/porto",
+      "number": 458,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "apps/dialog/src/routes/-components/Email.tsx",
+      "line": 7,
+      "fingerprint": "7cceb5509c7cb5af",
+      "message": "`~icons` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "jrkropp/open-webui-developer-toolkit",
+      "number": 354,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "ruleId": "py/phantom-import",
+      "file": "functions/pipes/openai_responses_api_pipeline.py",
+      "line": 75,
+      "fingerprint": "784ca3c559775a7e",
+      "message": "`open_webui.models.chats` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "jrkropp/open-webui-developer-toolkit",
+      "number": 354,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "ruleId": "py/phantom-import",
+      "file": "functions/pipes/openai_responses_api_pipeline.py",
+      "line": 76,
+      "fingerprint": "cb8614dec2a67141",
+      "message": "`open_webui.models.models` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "jrkropp/open-webui-developer-toolkit",
+      "number": 354,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "ruleId": "py/phantom-import",
+      "file": "functions/pipes/openai_responses_api_pipeline.py",
+      "line": 77,
+      "fingerprint": "33beb124d4ae1a6b",
+      "message": "`open_webui.utils.misc` is imported but not declared in any manifest and not present in this repository"
+    },
+    {
+      "repo": "jrkropp/open-webui-developer-toolkit",
+      "number": 354,
+      "language": "python",
+      "agent": "OpenAI_Codex",
+      "ruleId": "py/dead-branch",
+      "file": "functions/pipes/openai_responses_api_pipeline.py",
+      "line": 321,
+      "fingerprint": "56e7cf0a88918213",
+      "message": "`if False:` is dead code"
+    },
+    {
+      "repo": "milvus-io/milvus",
+      "number": 47972,
+      "language": "go",
+      "agent": "Claude_Code",
+      "ruleId": "go/noop-test",
+      "file": "internal/proxy/proxy_test.go",
+      "line": 4425,
+      "fingerprint": "d3e1187d401ed970",
+      "message": "test `TestProxy_GetStatistics` has no assertion, failure or skip"
+    },
+    {
+      "repo": "moltis-org/moltis",
+      "number": 16,
+      "language": "rust",
+      "agent": "Claude_Code",
+      "ruleId": "rs/stub-body",
+      "file": "crates/agents/src/auth_profiles.rs",
+      "line": 19,
+      "fingerprint": "bcb66e208d03a60b",
+      "message": "function is a stub that panics instead of returning a value"
+    },
+    {
+      "repo": "nexi-lab/nexus",
+      "number": 2871,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "src/nexus/cli/commands/search.py",
+      "line": 103,
+      "fingerprint": "699cba57b05c22c4",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "nomadkaraoke/karaoke-gen",
+      "number": 599,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "backend/workers/audio_worker.py",
+      "line": 498,
+      "fingerprint": "57225fd663242cbe",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "nrwl/nx",
+      "number": 31887,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/js/src/plugins/typescript/util.ts",
+      "line": 5,
+      "fingerprint": "fed0b06f210bbcb8",
+      "message": "`packages` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "nrwl/nx",
+      "number": 31887,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "packages/js/src/plugins/typescript/util.ts",
+      "line": 7,
+      "fingerprint": "e518d1de6065be16",
+      "message": "`typescript` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "openclaw/openclaw",
+      "number": 1751,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "extensions/bluebubbles/src/channel.ts",
+      "line": 1,
+      "fingerprint": "3cebcf324c78c252",
+      "message": "`clawdbot` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "openclaw/openclaw",
+      "number": 1751,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "extensions/bluebubbles/src/channel.ts",
+      "line": 2,
+      "fingerprint": "ce7b66c3889fad19",
+      "message": "`clawdbot` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "openclaw/openclaw",
+      "number": 1751,
+      "language": "ts",
+      "agent": "Claude_Code",
+      "ruleId": "ts/phantom-import",
+      "file": "extensions/bluebubbles/src/send.ts",
+      "line": 9,
+      "fingerprint": "19c4b015698a72c8",
+      "message": "`clawdbot` is imported but is not a dependency and is not installed"
+    },
+    {
+      "repo": "pandas-dev/pandas",
+      "number": 64548,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/noop-test",
+      "file": "pandas/tests/extension/test_arrow.py",
+      "line": 1674,
+      "fingerprint": "02d8e3b17538232c",
+      "message": "test `test_from_arrow_respecting_given_dtype_unsafe` makes no assertions"
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 41,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "src/robotocore/services/lambda_/docker_executor.py",
+      "line": 204,
+      "fingerprint": "ef4d49bb1e618a1d",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 41,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "src/robotocore/services/lambda_/docker_executor.py",
+      "line": 209,
+      "fingerprint": "ef4d49bb1e618a1d",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 41,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "src/robotocore/services/lambda_/docker_executor.py",
+      "line": 441,
+      "fingerprint": "ef4d49bb1e618a1d",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 41,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "src/robotocore/services/lambda_/docker_executor.py",
+      "line": 489,
+      "fingerprint": "ef4d49bb1e618a1d",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 41,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "src/robotocore/services/lambda_/docker_executor.py",
+      "line": 501,
+      "fingerprint": "ef4d49bb1e618a1d",
+      "message": "`except` swallows the error silently"
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 41,
+      "language": "python",
+      "agent": "Claude_Code",
+      "ruleId": "py/swallowed-exception",
+      "file": "src/robotocore/services/lambda_/docker_executor.py",
+      "line": 505,
+      "fingerprint": "ef4d49bb1e618a1d",
+      "message": "`except` swallows the error silently"
+    }
+  ]
+}

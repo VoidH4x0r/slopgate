@@ -1,0 +1,5333 @@
+{
+  "schemaVersion": 1,
+  "dataset": "hao-li/AIDev@v5",
+  "datasetLicense": "CC-BY-4.0 (metadata only); each source repository keeps its own license",
+  "description": "Real merged pull requests authored by AI coding agents. The archive holds a structural skeleton per PR (repository file layout plus empty placeholders), the real dependency manifests and the files the PR changed.",
+  "asset": {
+    "name": "ai-pr-corpus-v1.tar.gz",
+    "url": "https://github.com/VoidH4x0r/slopgate/releases/download/ai-pr-corpus-v1/ai-pr-corpus-v1.tar.gz",
+    "sha256": "5bafb31c5a244aa990164d79f022628be4ecab8949cf37f9a586960dd3daac05"
+  },
+  "totals": {
+    "prs": 150,
+    "files": 703,
+    "lines": 461062
+  },
+  "prs": [
+    {
+      "repo": "8b-is/smart-tree",
+      "number": 51,
+      "sha": "3bd5e06d4ea4beb2404f8f07e5cc6415f75af5e5",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-01-29T06:51:38Z",
+      "lines": 2324,
+      "files": [
+        {
+          "path": "src/ai_install.rs",
+          "sha256": "805b8a3dbfb08c9b2fc40f5fdc09f6b8bf648c3e60c2b1c10dec862199663e46",
+          "lines": 1756
+        },
+        {
+          "path": "src/security_scan.rs",
+          "sha256": "407e72964ebfc5939aa92133e523c1b877ac02470247faa0762f7b3f971ed8ea",
+          "lines": 568
+        }
+      ]
+    },
+    {
+      "repo": "AndrewAltimit/template-repo",
+      "number": 168,
+      "sha": "05a43cfc54ce8f28cc0ed8e1c7c7925ee223723b",
+      "agent": "Claude_Code",
+      "license": "Unlicense",
+      "language": "python",
+      "mergedAt": "2025-12-30T19:39:38Z",
+      "lines": 6698,
+      "files": [
+        {
+          "path": "packages/economic_agents/src/economic_agents/__init__.py",
+          "sha256": "4267cfcec78eef3c490f020a48ce58db21cbf17da5fa8ab0b9cc0224d79f7391",
+          "lines": 12
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/agent/core/__init__.py",
+          "sha256": "848d2722c513a9adcf9ead7fd92009e0d1d6aaa87714723e198fb230accd7d55",
+          "lines": 35
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/agent/core/autonomous_agent.py",
+          "sha256": "d718f2b89b3a94b7c6f326299d3ecddbce97e6e284c53e937b729e939da628aa",
+          "lines": 747
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/agent/core/config.py",
+          "sha256": "9fde3947fe73f6634cbe9250f33b6db1296a52ca32e8745dbad648a87f086437",
+          "lines": 216
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/agent/core/decision_engine.py",
+          "sha256": "a596b5122231c33ce2e7a5d63e73ede39298cefc3b8b69fbb6487bf23c3b8327",
+          "lines": 123
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/agent/core/task_selection.py",
+          "sha256": "06bfd617e4efd69fd7302b08b509326b1c8124d6406152b8a2906aa606f31215",
+          "lines": 203
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/agent/llm/executors/claude.py",
+          "sha256": "a890fa26ed5b594cd30594d65e942c07ad429fa5ddd24233b940fecf1d0c5400",
+          "lines": 106
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/agent/llm/llm_decision_engine.py",
+          "sha256": "4cc3a62400ccb40975fd9a6f813f587c3bf563a27d2c63a0f657006562e09d9c",
+          "lines": 404
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/company/__init__.py",
+          "sha256": "e1259a571df0a94c3522071ee2b5ecf85e6608eac47052b5f0aa882e5f185d99",
+          "lines": 34
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/company/models.py",
+          "sha256": "d180b642505ed2a11ac33a28f629b43eca1f1f070edefd5a1bda417cb4d4704c",
+          "lines": 426
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/exceptions.py",
+          "sha256": "30e6e0b74c804822506cc9dc09b49ae6f5ab5b9855208f24d2cc427c4411bd74",
+          "lines": 168
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/implementations/mock/mock_compute.py",
+          "sha256": "8b9e4a040e007c8b7a633c53f0cdeaee0ff1a66a6b423480ad0f2f4985167cdf",
+          "lines": 156
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/implementations/mock/mock_marketplace.py",
+          "sha256": "8c9e7685d2a15593846f0b587ac5acb50d3561ae28dec3979b7b79524fde048e",
+          "lines": 495
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/implementations/mock/mock_wallet.py",
+          "sha256": "7199949af2a7d9e0041d7e03a4eb4fa4135cac825c8b3d050c79ebaf198b841d",
+          "lines": 199
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/interfaces/compute.py",
+          "sha256": "89b720f6b62e59e24708549ab115a7ba0061e7567b08277cb66af46877d6132f",
+          "lines": 38
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/interfaces/marketplace.py",
+          "sha256": "759b6b99e50606aefc7394498930cb922822752514a4275a481ef33bee7c83f2",
+          "lines": 62
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/interfaces/wallet.py",
+          "sha256": "783be2a71764cebb4369e5596fa62845687f1b50b713f357201420c31d88bbfa",
+          "lines": 59
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/logging.py",
+          "sha256": "48c2569549156d35ac5d26daeb6cd527e0b5487f51eeabb213640be501e3dd0a",
+          "lines": 328
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/monitoring/__init__.py",
+          "sha256": "4c1bb1d9ce9eea9d8b09e8e84d867b22f71890a11bf5ad04f28033c4f41775a0",
+          "lines": 57
+        },
+        {
+          "path": "packages/economic_agents/src/economic_agents/monitoring/events.py",
+          "sha256": "1c46a4ba88233a45d0b6b6937945d01bda1a283ae6a7ca6c325f106a244c14e2",
+          "lines": 333
+        },
+        {
+          "path": "packages/economic_agents/tests/integration/test_dashboard_frontend_integration.py",
+          "sha256": "9a3faebe66ac13003139b2a4a201cc412d4ef15334e817506e45fd20bbeddfae",
+          "lines": 364
+        },
+        {
+          "path": "packages/economic_agents/tests/integration/test_dashboard_integration.py",
+          "sha256": "d3126e06f5caa4dc15e2aafdc5c145651420182a496d2224b2b433e85a7cdff8",
+          "lines": 150
+        },
+        {
+          "path": "packages/economic_agents/tests/integration/test_reports_integration.py",
+          "sha256": "4952da5376961cd0a4123762a56cd4561a0fda265699be6ff5281bfcedc35e89",
+          "lines": 191
+        },
+        {
+          "path": "packages/economic_agents/tests/unit/test_autonomous_agent_llm_integration.py",
+          "sha256": "decd09c9d7cd33ac9d881a1c00544b562234daeaf0b58ba06dceb1eb4602f519",
+          "lines": 299
+        },
+        {
+          "path": "packages/economic_agents/tests/unit/test_dashboard.py",
+          "sha256": "6591d8e54f74262fbc2b21c40c8f0c11b9532b5caa013c3cc64511bdac9e3992",
+          "lines": 334
+        },
+        {
+          "path": "packages/economic_agents/tests/unit/test_events.py",
+          "sha256": "122d23e7456ccd8ff63745237dc41a1df28c1be4383d02af42c2553c22371923",
+          "lines": 422
+        },
+        {
+          "path": "packages/economic_agents/tests/unit/test_logging.py",
+          "sha256": "65ef4645c788c7bafe41b56b45375a943b0c6a124a6b0705eed7cbf9f3bb6db8",
+          "lines": 200
+        },
+        {
+          "path": "packages/economic_agents/tests/unit/test_mock_wallet.py",
+          "sha256": "7323ab70c36caab8989dccb839e44ea81d4802c992e3726842f34b32b50ef898",
+          "lines": 91
+        },
+        {
+          "path": "packages/economic_agents/tests/unit/test_persistence.py",
+          "sha256": "1f819722d427c3a87aca32c716dbb54cfe9de7b6b99d8f59473528839d98f4ba",
+          "lines": 267
+        },
+        {
+          "path": "packages/economic_agents/tests/unit/test_task_selection.py",
+          "sha256": "cbdcf52aff8f0b6872222b9472a385d8b84eab9108109f8e66fcf044b6069f89",
+          "lines": 179
+        }
+      ]
+    },
+    {
+      "repo": "BeaconBay/ck",
+      "number": 85,
+      "sha": "15c35d940c52220f421ecc3a46b1889064da6cd7",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2025-11-04T20:41:04Z",
+      "lines": 9228,
+      "files": [
+        {
+          "path": "ck-cli/src/main.rs",
+          "sha256": "ed0bd81ea7f938253d106a82a82988ee3b7ce48f35552035d8ec9f89910f65de",
+          "lines": 1950
+        },
+        {
+          "path": "ck-cli/src/mcp_server.rs",
+          "sha256": "fd1f6d006d6967b0dbf5c843e2fa406b34df30acf7520d878f2f8b362f503c27",
+          "lines": 1876
+        },
+        {
+          "path": "ck-core/src/lib.rs",
+          "sha256": "d49989257b2ee5dfdcba0e0863ab2ec87e3bbc986ab61684380b1a1591b0befe",
+          "lines": 1415
+        },
+        {
+          "path": "ck-engine/src/lib.rs",
+          "sha256": "1bd199ce21dcab4b52a9658980b38cecf3357b79b624f22b776556750eb728e3",
+          "lines": 1789
+        },
+        {
+          "path": "ck-index/src/lib.rs",
+          "sha256": "84bab7a81e95a0e28c824e013a3dc58bd918a667df72730534f25fe90dbd6609",
+          "lines": 2198
+        }
+      ]
+    },
+    {
+      "repo": "Dimillian/CodexMonitor",
+      "number": 82,
+      "sha": "f90dbbb58cefc7d213f3479b4c3a3563d3fd4c0f",
+      "agent": "OpenAI_Codex",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-01-18T11:12:28Z",
+      "lines": 1329,
+      "files": [
+        {
+          "path": "src/App.tsx",
+          "sha256": "8b7e60ff1dd097f5451445086ccfede6071afb9987961084a189a16114492dc5",
+          "lines": 1293
+        },
+        {
+          "path": "src/features/layout/hooks/useTransparencyPreference.ts",
+          "sha256": "0e4bc964a2ff3f843196ff6d27454bc0edbf347726db172aadf39ede5ae550c3",
+          "lines": 18
+        },
+        {
+          "path": "src/features/layout/hooks/useWindowLabel.ts",
+          "sha256": "9d392535e41a419c0a3481ddbca2297cda0b37d80862613344cdfbeeee63f799",
+          "lines": 18
+        }
+      ]
+    },
+    {
+      "repo": "Divkix/Alita_Robot",
+      "number": 669,
+      "sha": "36eb78ed51e1495636fe64c61803c6655618781f",
+      "agent": "OpenAI_Codex",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-03-13T06:33:02Z",
+      "lines": 2071,
+      "files": [
+        {
+          "path": "alita/modules/captcha.go",
+          "sha256": "e0bf4920085e25b8e0d953d3ef6e08f6d05b4a20513665a5751b3a6c77b425fa",
+          "lines": 2031
+        },
+        {
+          "path": "alita/modules/captcha_math_image_test.go",
+          "sha256": "36ee5ddf5e9fd86ce888520b97fe634ff6ae29c10fb5f583fd5b47e4780dff2b",
+          "lines": 40
+        }
+      ]
+    },
+    {
+      "repo": "EricLBuehler/mistral.rs",
+      "number": 1366,
+      "sha": "7f8ad73aa700e67da0303ad734823fc0ec9aced1",
+      "agent": "OpenAI_Codex",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2025-05-24T10:46:50Z",
+      "lines": 879,
+      "files": [
+        {
+          "path": "mistralrs-core/src/vision_models/mistral3/mod.rs",
+          "sha256": "e497e407e56840413bf428d0d906ef660b7d484dc55eb0271e16c1e8443c3801",
+          "lines": 378
+        },
+        {
+          "path": "mistralrs-core/src/vision_models/mistral3/vision.rs",
+          "sha256": "41c2ca1743ed62656542684722fe91b20d5836f583487b6458a57c313391f920",
+          "lines": 501
+        }
+      ]
+    },
+    {
+      "repo": "EtienneLescot/n8n-as-code",
+      "number": 142,
+      "sha": "639f5c9b94354e366bdae36937e0518c441b00e9",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-06T22:44:20Z",
+      "lines": 1785,
+      "files": [
+        {
+          "path": "packages/transformer/src/compiler/workflow-builder.ts",
+          "sha256": "e59a3f5865fe82848fce1bde92b22bbe620e35ef5384d9ff9a9a1c8ef8666d0e",
+          "lines": 277
+        },
+        {
+          "path": "packages/transformer/src/decorators/types.ts",
+          "sha256": "3efdb8fdf03bc75e7f40aad6976efc99d4a1144b0a622d8ad367003cf0a78512",
+          "lines": 133
+        },
+        {
+          "path": "packages/transformer/src/parser/ast-to-typescript.ts",
+          "sha256": "40b9ca2798730581836bf3ad816fb43e7bb95beafa3dfe17972e103309c40866",
+          "lines": 428
+        },
+        {
+          "path": "packages/transformer/src/parser/json-to-ast.ts",
+          "sha256": "b6be17c28db75b75d904eb75e18f5fabd499f9bb55fe93545042c30694d5f660",
+          "lines": 272
+        },
+        {
+          "path": "packages/transformer/src/types.ts",
+          "sha256": "f551405205b38cc226c6f7fe4335cc3e5e0d5caf3d5f19772ae5e14b61f2e8d3",
+          "lines": 296
+        },
+        {
+          "path": "packages/transformer/tests/json-to-typescript.test.ts",
+          "sha256": "3455fed946efe27982756c930bc2687e11a386ec5c08f074d6dd9f152ce35030",
+          "lines": 193
+        },
+        {
+          "path": "packages/transformer/tests/typescript-to-json.test.ts",
+          "sha256": "8f5109eb9f5b35a6205a652faa58a1ef673bfd898e0e846b64d50e3bd7743d27",
+          "lines": 186
+        }
+      ]
+    },
+    {
+      "repo": "Fannon/search-bookmarks-history-and-tabs",
+      "number": 197,
+      "sha": "a466e407f21f51c8ff40b797a1a37df4441481c1",
+      "agent": "OpenAI_Codex",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2025-10-05T12:19:16Z",
+      "lines": 108,
+      "files": [
+        {
+          "path": "popup/js/search/__tests__/simpleSearch.test.js",
+          "sha256": "f31211606a36194e8e03acdb161078b23fdc260c6c42aef26fd5e4899cd13995",
+          "lines": 108
+        }
+      ]
+    },
+    {
+      "repo": "FleexSecurity/fleex",
+      "number": 66,
+      "sha": "4e64e6b777fc19cd564c6bd941fbdd4b4da94d15",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2026-02-03T12:31:24Z",
+      "lines": 349,
+      "files": [
+        {
+          "path": "pkg/controller/scan.go",
+          "sha256": "7f464193ed2515b7a92e3ba350b6dbd9d9d9ae0475b99ddb898af230acc20802",
+          "lines": 349
+        }
+      ]
+    },
+    {
+      "repo": "GlareDB/glaredb",
+      "number": 3637,
+      "sha": "f0a598657e1e1b84aaa8bf43dfbbea59bdb312a2",
+      "agent": "Devin",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2025-04-11T21:27:37Z",
+      "lines": 498,
+      "files": [
+        {
+          "path": "crates/glaredb_core/src/functions/scalar/builtin/mod.rs",
+          "sha256": "8cb9f63e5120a81dc85a79150063cac30c634492d53c6c7002a08eeb9e9d0227",
+          "lines": 226
+        },
+        {
+          "path": "crates/glaredb_core/src/functions/scalar/builtin/numeric/lcm.rs",
+          "sha256": "d21b6ad9c81ea9b8fe5c9fee4eec15806da94a08d947c04e481f23f530ce3809",
+          "lines": 133
+        },
+        {
+          "path": "crates/glaredb_core/src/functions/scalar/builtin/numeric/mod.rs",
+          "sha256": "a69f92a1d7aba4e40644404329290e2918e11edeab8442390b510e7a32d41bb2",
+          "lines": 139
+        }
+      ]
+    },
+    {
+      "repo": "JWock82/Pynite",
+      "number": 314,
+      "sha": "401b5c3a9edc5dceac2dc67e421a3e07035f248a",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-30T14:57:50Z",
+      "lines": 20304,
+      "files": [
+        {
+          "path": "Pynite/BeamSegY.py",
+          "sha256": "90cb4ec1a44db8604920d56b45187752461407b9a5a799b0be02aa598b27f5ed",
+          "lines": 179
+        },
+        {
+          "path": "Pynite/BeamSegZ.py",
+          "sha256": "75c6a307528fa1c95348d49b284a24007b72944de4df77e023b53b67a909d24c",
+          "lines": 440
+        },
+        {
+          "path": "Pynite/FEModel3D.py",
+          "sha256": "8b5b239d1b2a4a7aeef5aaccf3f2df6ae2558dc8e7510323c7c908ab5e8dc340",
+          "lines": 2859
+        },
+        {
+          "path": "Pynite/LoadCombo.py",
+          "sha256": "2b4e18372bed48b88097de1cbe3dc0766c946976741b9049358b8834d05f932d",
+          "lines": 47
+        },
+        {
+          "path": "Pynite/MatFoundation.py",
+          "sha256": "869fd33ec157717024c27a781b7a588575e038b6ab391dc7396e93a7f873122a",
+          "lines": 224
+        },
+        {
+          "path": "Pynite/Material.py",
+          "sha256": "4478ef1e6f7b8499a7cea7993993c090ab587eb59b9b7911cd31041caf43e63c",
+          "lines": 41
+        },
+        {
+          "path": "Pynite/Member3D.py",
+          "sha256": "ac78b43c246473ea70a6d4d91535dfd75089b2c4f960ce44c10b44dc7636e7d6",
+          "lines": 3075
+        },
+        {
+          "path": "Pynite/Mesh.py",
+          "sha256": "bcb7064baee80cd1df2106eb3485808cba1047dbd17cae0f203e5246ccce5b29",
+          "lines": 2170
+        },
+        {
+          "path": "Pynite/Node3D.py",
+          "sha256": "fad746c39a94a8c13ed56baf409afa8e61ec22b6e4323cbc587f0da1ce9b5468",
+          "lines": 203
+        },
+        {
+          "path": "Pynite/PhysMember.py",
+          "sha256": "d57f66415f0ef324e9343237cce7e7faf3f20887b11ea326a3a6cdf8771bda6e",
+          "lines": 1362
+        },
+        {
+          "path": "Pynite/Plate3D.py",
+          "sha256": "fbbca949ca27d8df02fe1187fd6298f35c47e532e54160b9e900d1174f3186a2",
+          "lines": 693
+        },
+        {
+          "path": "Pynite/Quad3D.py",
+          "sha256": "c045d12bec9cfb5af5510a56cfd1c1b5511efc82641b9cf6e5e79a381708d396",
+          "lines": 1240
+        },
+        {
+          "path": "Pynite/Rendering.py",
+          "sha256": "73ef8e72e3ee43cae3ffdadc0618d2e48c81304eab666d108e349b949afa08e8",
+          "lines": 2200
+        },
+        {
+          "path": "Pynite/Section.py",
+          "sha256": "932b3e7dd84e819986ff7d149277b21bac9ac2e84689209f45339b5467ad043a",
+          "lines": 204
+        },
+        {
+          "path": "Pynite/ShearWall.py",
+          "sha256": "96b40aea2520012b5c7202d77702a092d4473b454846cba68de96db51382db6c",
+          "lines": 1036
+        },
+        {
+          "path": "Pynite/Spring3D.py",
+          "sha256": "e0ba78e9a60cf5aadc375c0b27d004aa7872f8f23b1388a829cc3c14ac1200e1",
+          "lines": 256
+        },
+        {
+          "path": "Pynite/Tri3D.py",
+          "sha256": "0da6b86a77694ac8408b09a0b4e0feba518c867ad63b793d2621e56fa1aff6ed",
+          "lines": 689
+        },
+        {
+          "path": "Pynite/VTKWriter.py",
+          "sha256": "460c340627f80e50a723e9c40680220e4b99d9730a3bf894a7ee63f10e64eee7",
+          "lines": 574
+        },
+        {
+          "path": "Pynite/Visualization.py",
+          "sha256": "192da56823f45a07400b173ff48b064361d3884d29cd252d9be51ef088b31967",
+          "lines": 2812
+        }
+      ]
+    },
+    {
+      "repo": "Lanerra/saga",
+      "number": 228,
+      "sha": "9fd9ed06b2fe0db04378480d987cb829169ef266",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-06-28T02:10:53Z",
+      "lines": 1159,
+      "files": [
+        {
+          "path": "orchestration/nana_orchestrator.py",
+          "sha256": "a7fb482f7961ede4efae09be2dc2817495026df8ecfc531722f135673260f8b3",
+          "lines": 1006
+        },
+        {
+          "path": "tests/test_orchestrator_private_methods.py",
+          "sha256": "dff111d39f67b4fefd08ab0c582dcc702d333a494276f93063b186c60e7538f6",
+          "lines": 153
+        }
+      ]
+    },
+    {
+      "repo": "LibrePhotos/librephotos",
+      "number": 1741,
+      "sha": "b8d5fb86156a60ddc8fe9a669d6cf7028c40ce7b",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-02-04T07:07:25Z",
+      "lines": 214,
+      "files": [
+        {
+          "path": "api/face_extractor.py",
+          "sha256": "7df0129af018395e74a3102e5853134a9aaa6788eb98bfbfa9046967a9bf74f6",
+          "lines": 117
+        },
+        {
+          "path": "api/tests/test_face_extractor.py",
+          "sha256": "690b184e48d41acdf2141ef8d2f5c72e8bd3a3314688405c3ef9bf111287841d",
+          "lines": 97
+        }
+      ]
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 1453,
+      "sha": "571b6e310c4e6832f5848e8cb341a5a0994dda3b",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-06-02T19:07:18Z",
+      "lines": 16,
+      "files": [
+        {
+          "path": "alpha_factory_v1/demos/alpha_agi_insight_v1/insight_browser_v1/tests/test_bundle_size.py",
+          "sha256": "d9b2cfa6b4e7c82345145af2bd7b89bac90f0f2d9af37edf3bf6d7b79b40cedd",
+          "lines": 16
+        }
+      ]
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 1954,
+      "sha": "da2846d3be401e94a760b3adcd2c962ad0ff43e1",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-06-10T02:08:21Z",
+      "lines": 287,
+      "files": [
+        {
+          "path": "alpha_factory_v1/demos/cross_industry_alpha_factory/cross_alpha_discovery_stub.py",
+          "sha256": "e2384c701a9d6bcd7b92f95a6d8082b52c7ae95d10419fc2687c6fa56faafbaf",
+          "lines": 159
+        },
+        {
+          "path": "tests/test_cross_alpha_discovery.py",
+          "sha256": "f5a76dc5ad75c6b379a90d5568313b2fd1d87c5b12e6e6cd957451ec553c97de",
+          "lines": 128
+        }
+      ]
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 2002,
+      "sha": "6edadfa1deecf36673a4fc1affbb01ed159aab44",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-06-11T16:23:13Z",
+      "lines": 454,
+      "files": [
+        {
+          "path": "alpha_factory_v1/scripts/preflight.py",
+          "sha256": "70f51a513252f62e21543faca864de5e6a3e57ad3a53c9d849dd0e9fd39bf455",
+          "lines": 242
+        },
+        {
+          "path": "check_env.py",
+          "sha256": "3f882d86ffd008fb7f89ee5cee169359899219c7864be04aa3235b406b0ed119",
+          "lines": 212
+        }
+      ]
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 205,
+      "sha": "b853ffe609608202888c81e5cef0c00b3dc833af",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-05-17T22:24:57Z",
+      "lines": 50,
+      "files": [
+        {
+          "path": "tests/test_agent_base.py",
+          "sha256": "8de0dae464b5ec1b6ad06a7e3d49d745f8054abf6ab0ed971a254e515a691d53",
+          "lines": 50
+        }
+      ]
+    },
+    {
+      "repo": "MontrealAI/AGI-Alpha-Agent-v0",
+      "number": 86,
+      "sha": "b589b0c7b2b9a68b24e4265ee07c9c984a7d91ad",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-05-17T15:22:32Z",
+      "lines": 463,
+      "files": [
+        {
+          "path": "alpha_factory_v1/backend/memory_graph.py",
+          "sha256": "57c2d53f5d76d9cef02d0c4d3da9cd34d551d4fcdf6620c573c13ce48214f620",
+          "lines": 463
+        }
+      ]
+    },
+    {
+      "repo": "Nicxe/f1_sensor",
+      "number": 17,
+      "sha": "86d2fa1da744559d4c270b1968092a96efb54599",
+      "agent": "OpenAI_Codex",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2025-06-10T16:47:31Z",
+      "lines": 24,
+      "files": [
+        {
+          "path": "custom_components/f1_sensor/entity.py",
+          "sha256": "4861a6b4916b1f3ec6ea9673534e0fe2f9e2e6aa6d5616c05cc1ad72b79e550e",
+          "lines": 24
+        }
+      ]
+    },
+    {
+      "repo": "NikolayS/rpg",
+      "number": 207,
+      "sha": "55b019769e00ad368abd2fe720d38d2c3b1d2712",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-03-13T19:35:04Z",
+      "lines": 7750,
+      "files": [
+        {
+          "path": "src/repl.rs",
+          "sha256": "a9a4a2251bc93f024d5255a66439f6e03f50fd5374b51e60d2944a15cfbe8084",
+          "lines": 7750
+        }
+      ]
+    },
+    {
+      "repo": "NikolayS/rpg",
+      "number": 673,
+      "sha": "5cd040450cdfa574b3adaacde1b6dc058c422165",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-03-20T17:52:27Z",
+      "lines": 6130,
+      "files": [
+        {
+          "path": "src/explain/issues.rs",
+          "sha256": "a640e526618877b8c042ed34d9f4f4bd55dc7c13b158368be6f23b82f428b51d",
+          "lines": 1187
+        },
+        {
+          "path": "src/explain/mod.rs",
+          "sha256": "90af7add612cbc99a85018229839f1dbc1b1b2a0ada924eca6d87cd32d97cb7d",
+          "lines": 1374
+        },
+        {
+          "path": "src/explain/render.rs",
+          "sha256": "70943b8ed03fe2b0710feabbb314f718a67f9475643efe6b979296a39aca6899",
+          "lines": 1458
+        },
+        {
+          "path": "src/repl/execute.rs",
+          "sha256": "af81565c5f57edd7d76aed91127cd060f655ca49745b890d63f111d68dea99b5",
+          "lines": 2111
+        }
+      ]
+    },
+    {
+      "repo": "PlanExeOrg/PlanExe",
+      "number": 394,
+      "sha": "227c3269382e1d2fd485e2231b1851cb90e6bec6",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-27T20:03:55Z",
+      "lines": 6169,
+      "files": [
+        {
+          "path": "mcp_cloud/db_setup.py",
+          "sha256": "de8e1fd5b616fd3aa177bce2692603ef6b728afd915656cfba1e46c09ab1000f",
+          "lines": 301
+        },
+        {
+          "path": "mcp_cloud/handlers.py",
+          "sha256": "500148ef4175b7ed0fc38d6687fed2a40f2febc78567fd5ac949ec25ed4fc5cc",
+          "lines": 695
+        },
+        {
+          "path": "mcp_cloud/http_server.py",
+          "sha256": "a9e34a431984fe9502f340713f95ecedecf3aef66f172b25606627aea163e452",
+          "lines": 1412
+        },
+        {
+          "path": "mcp_cloud/tool_models.py",
+          "sha256": "ef2984605b6635f93f3d8d42a2716b21daf2b552dbe570766214181d308e3b39",
+          "lines": 498
+        },
+        {
+          "path": "mcp_local/planexe_mcp_local.py",
+          "sha256": "cd5e6cae4bfca8e35618650a0934b31ed9e0b7ac03f4070a9ad18fad8576902b",
+          "lines": 1197
+        },
+        {
+          "path": "worker_plan/app.py",
+          "sha256": "e2d4c6f1d16ba0b9ea26ce664e574350c58f2eed3f9a0457c37993e30bdb0467",
+          "lines": 610
+        },
+        {
+          "path": "worker_plan_database/app.py",
+          "sha256": "0a66412b6a5400b957a0c3285cca9c4b37e42b24d7c2161c840a4b88307eccab",
+          "lines": 1456
+        }
+      ]
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 18932,
+      "sha": "f80d98a01f754a2075748320da42678affcfae27",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-09-15T15:55:34Z",
+      "lines": 1498,
+      "files": [
+        {
+          "path": "src/prefect/deployments/steps/pull.py",
+          "sha256": "180fcb1726c0d0f8e4afc1f51ee5cb8a991da36009a37b64dafb82e45037a628",
+          "lines": 285
+        },
+        {
+          "path": "tests/deployment/test_steps.py",
+          "sha256": "339a9d4f1d200b2cba66981626d84e75347b946d767399899194a7df32e38aca",
+          "lines": 1213
+        }
+      ]
+    },
+    {
+      "repo": "PrefectHQ/prefect",
+      "number": 19708,
+      "sha": "ae0a5d9419e140a2772b92ff3cb4b2c595191894",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-12-10T16:50:49Z",
+      "lines": 2532,
+      "files": [
+        {
+          "path": "src/integrations/prefect-dbt/prefect_dbt/core/runner.py",
+          "sha256": "ef5cc4ddbc0df8975ae1b6b914897b0a2452616428d30e87fb7fa8c5c2b56488",
+          "lines": 1108
+        },
+        {
+          "path": "src/integrations/prefect-dbt/tests/core/test_runner.py",
+          "sha256": "2849dc05cc8652e4ba4296eda1c014b72ced9134271fe7352ed2e5a44cad03ea",
+          "lines": 1424
+        }
+      ]
+    },
+    {
+      "repo": "PyAutoLabs/PyAutoLens",
+      "number": 396,
+      "sha": "b1dd17cda3e0604525282bce763a431fd5fda4be",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-12T10:44:44Z",
+      "lines": 149,
+      "files": [
+        {
+          "path": "autolens/quantity/fit_quantity.py",
+          "sha256": "bba8c706f03fa1ebff6b08b5fb62bae905840212be6a326e4b877d314455ce95",
+          "lines": 57
+        },
+        {
+          "path": "autolens/quantity/model/analysis.py",
+          "sha256": "b152a3b06a9fd72cd39e5abc9e97d795bd200424e7deab27c3a4abcaaa67479a",
+          "lines": 92
+        }
+      ]
+    },
+    {
+      "repo": "PyLabRobot/pylabrobot",
+      "number": 977,
+      "sha": "719432fd43cd7de4e3b2bfe03e2941f9ffea1445",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-30T21:39:59Z",
+      "lines": 1086,
+      "files": [
+        {
+          "path": "pylabrobot/opentrons/ot2/__init__.py",
+          "sha256": "78d189f45e5b778263df1f1ffd76027964c82a99c68a6b2d0f1e0ca468760e2c",
+          "lines": 38
+        },
+        {
+          "path": "pylabrobot/opentrons/ot2/driver.py",
+          "sha256": "eb4dc1083f0639bc1f3e7fbbf893861fe50af005f5805242bc389083e4d6f53d",
+          "lines": 155
+        },
+        {
+          "path": "pylabrobot/opentrons/ot2/ot2.py",
+          "sha256": "9288777d0dec3bda2e0ef7d7316e1888890f1840285ee11c780f73e197aa6deb",
+          "lines": 65
+        },
+        {
+          "path": "pylabrobot/opentrons/ot2/ot2_tests.py",
+          "sha256": "2b1ecb32c23474752d195fe1b4306d65ac73c71e5aa5411ef0f0337531a9430d",
+          "lines": 223
+        },
+        {
+          "path": "pylabrobot/opentrons/ot2/pip_backend.py",
+          "sha256": "59f20adce8d147fc74da78ab11ca5e82f73d86afcf0260698ab0a1142ef686a3",
+          "lines": 441
+        },
+        {
+          "path": "pylabrobot/opentrons/ot2/simulator.py",
+          "sha256": "d4a3ca7c2c91f217cb5df6895897e4ec06c9a9240e0975c1da4871b8921b5d17",
+          "lines": 164
+        }
+      ]
+    },
+    {
+      "repo": "ROCm/iris",
+      "number": 435,
+      "sha": "43242479b2aaa94577a155984dd5dedf639b0a78",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-07T16:05:27Z",
+      "lines": 347,
+      "files": [
+        {
+          "path": "tests/x/test_all_gather.py",
+          "sha256": "181a99d8ddd5b213feacf8080e2067a2dfc8eaf279da1a8b0d8eb737a58b3247",
+          "lines": 347
+        }
+      ]
+    },
+    {
+      "repo": "RackulaLives/Rackula",
+      "number": 1406,
+      "sha": "5cc3f41d3af691c2370f58e0c412a4f52ab714bd",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-06T12:16:44Z",
+      "lines": 364,
+      "files": [
+        {
+          "path": "e2e/shelf-category.spec.ts",
+          "sha256": "73947a7b500d0bbcdcefc84e1594c5e88246017b5d3fd29f0f6243a075872bcc",
+          "lines": 75
+        },
+        {
+          "path": "e2e/starter-library.spec.ts",
+          "sha256": "b9d1dac690eb187d8007d10a4bd287857ca5c41391837a40f0f4bbe6b07b9114",
+          "lines": 289
+        }
+      ]
+    },
+    {
+      "repo": "RooCodeInc/Roo-Code",
+      "number": 11831,
+      "sha": "95ea01f9a5a87025c593efd598c2f86508c855ea",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2026-03-02T20:57:22Z",
+      "lines": 2229,
+      "files": [
+        {
+          "path": "apps/cli/scripts/integration/cases/message-images-queue-metadata.ts",
+          "sha256": "81d70364a130fde6d8a67672079182e5e1a5dc86cba0e446d0315baf6d371de8",
+          "lines": 125
+        },
+        {
+          "path": "apps/cli/scripts/integration/lib/stream-harness.ts",
+          "sha256": "3c76f5063ae66bf2437527356148d91b3e507c932404f75475b31775fbd3e1a3",
+          "lines": 153
+        },
+        {
+          "path": "apps/cli/src/agent/extension-host.ts",
+          "sha256": "28b7c722a2497e65920b198090308e58c4ec89e3dc6b693b55eb970814a28920",
+          "lines": 609
+        },
+        {
+          "path": "apps/cli/src/commands/cli/__tests__/parse-stdin-command.test.ts",
+          "sha256": "c86a00c56df08e803b33607e435d5f9d87dfb39e9d7c56254004f7b098551f69",
+          "lines": 165
+        },
+        {
+          "path": "apps/cli/src/commands/cli/stdin-stream.ts",
+          "sha256": "cd8e035f57057e7da3d99d0780d60fee010a5dd662e87ce15fe503f7a46ecaa9",
+          "lines": 907
+        },
+        {
+          "path": "packages/types/src/__tests__/cli.test.ts",
+          "sha256": "c3d6df5ae9d5528b9ffa61f83f8549939799ad53b3fc488ceca675d6f712931e",
+          "lines": 93
+        },
+        {
+          "path": "packages/types/src/cli.ts",
+          "sha256": "805632605e95c57dc682987cbe90ff37f7d6dea148c256e0e3d3cf672a900934",
+          "lines": 177
+        }
+      ]
+    },
+    {
+      "repo": "TorchTrade/torchtrade",
+      "number": 145,
+      "sha": "da53c3d7e6ad6449a09f18010c5cb99df459f7b4",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-01-29T13:09:23Z",
+      "lines": 2051,
+      "files": [
+        {
+          "path": "examples/online_rl/dqn/utils.py",
+          "sha256": "4c7896d8262e4d35d5f32047e7561bc6657a4b387ef16d1cdb42ec640498acf5",
+          "lines": 472
+        },
+        {
+          "path": "examples/online_rl/grpo/train.py",
+          "sha256": "1b8462660c27ff64ede9d8fed887d3a35d6c085e39482f1ea1ceaec0430e50ff",
+          "lines": 261
+        },
+        {
+          "path": "examples/online_rl/grpo/utils.py",
+          "sha256": "6615326a578718d265c16725c6364caf5ac688539f737610ec36b18eb48e4f00",
+          "lines": 445
+        },
+        {
+          "path": "examples/online_rl/ppo/train.py",
+          "sha256": "d5ff6a825e8b357775f080d597bd49fbd1ee57d2f6debe1afd685cc8d28b3b51",
+          "lines": 357
+        },
+        {
+          "path": "examples/online_rl/ppo/utils.py",
+          "sha256": "f3355788e72e3d98f9fb457e5d73bbc7b1f3b37655763fa077cc429d5a13d654",
+          "lines": 443
+        },
+        {
+          "path": "torchtrade/models/__init__.py",
+          "sha256": "c82c26fee07134f347120d2fda382b8aa8ac21b862d82f25e97f5971d98ba83b",
+          "lines": 16
+        },
+        {
+          "path": "torchtrade/models/batchnorm_mlp.py",
+          "sha256": "224bf7167902b206b6583c00ac94afe182096bcd50c7c698e294e545a3e0a583",
+          "lines": 57
+        }
+      ]
+    },
+    {
+      "repo": "UM-ARM-Lab/pytorch_mppi",
+      "number": 9,
+      "sha": "4f171f868fc42df032c8ffa4a148c9bb699382db",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-12T03:18:49Z",
+      "lines": 2306,
+      "files": [
+        {
+          "path": "src/pytorch_mppi/__init__.py",
+          "sha256": "e46a4ec74e043ba5bc773b2fe3530d62c5598846d6cccbbdf05eb120da456977",
+          "lines": 2
+        },
+        {
+          "path": "src/pytorch_mppi/mppi.py",
+          "sha256": "c9160a7e3b5bed9818c72c64581a8beb898c4627aa0651a8ec534826044df89a",
+          "lines": 899
+        },
+        {
+          "path": "tests/benchmark_mppi.py",
+          "sha256": "b9050fc74a4dcc54d4993f7557f485d7af84ce9a219022b04260015818178c8c",
+          "lines": 456
+        },
+        {
+          "path": "tests/test_mppi.py",
+          "sha256": "18495a276bc86a6d4d9c1a908ebd32c39b0dfb4772c033f2e1ed875701f3ef87",
+          "lines": 949
+        }
+      ]
+    },
+    {
+      "repo": "acolomba/blackvuesync",
+      "number": 26,
+      "sha": "93e4a87ec2844fcc09aa0f259c253be5c6883500",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2025-12-28T21:48:53Z",
+      "lines": 973,
+      "files": [
+        {
+          "path": "blackvuesync.py",
+          "sha256": "9a7b4cbc89c8effec789b4f652d0ffa59b0456b72cfebf8c468f72c6f07c6282",
+          "lines": 863
+        },
+        {
+          "path": "test/blackvue_emu/blackvue_emu.py",
+          "sha256": "9ad202bb000573de66af4d4a3f79de4c49b6a41c85af6fa645b45fe611e077d9",
+          "lines": 110
+        }
+      ]
+    },
+    {
+      "repo": "adamchainz/django-mysql",
+      "number": 1169,
+      "sha": "ef0d28c124651f9732b0c700811c40b88bc5d7bb",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2025-10-30T17:53:12Z",
+      "lines": 1291,
+      "files": [
+        {
+          "path": "src/django_mysql/cache.py",
+          "sha256": "b322fe17b0f95b37af2ce81075f135615339c9d579af82a83eaca7815c8a9738",
+          "lines": 647
+        },
+        {
+          "path": "src/django_mysql/management/commands/cull_mysql_caches.py",
+          "sha256": "e5a63cce3793fe9ca031f185c58a2725303f604a7fe3569d4d25549d3795e177",
+          "lines": 49
+        },
+        {
+          "path": "src/django_mysql/management/commands/mysql_cache_migration.py",
+          "sha256": "8ecb9ea3fbb5bcd76c9183c9eee8f14022c38cb9830eb48f17127bbf32cd0dfb",
+          "lines": 97
+        },
+        {
+          "path": "src/django_mysql/models/expressions.py",
+          "sha256": "46e21468318299f1bb6ec94d51e6953777d8daa5bf957c1f552d2bbb5beef71f",
+          "lines": 287
+        },
+        {
+          "path": "src/django_mysql/models/transforms.py",
+          "sha256": "17f469e37d1da305f74edf4fe7a1c0074d53194cca36016308d4a608adfa989a",
+          "lines": 31
+        },
+        {
+          "path": "src/django_mysql/utils.py",
+          "sha256": "42c1974737ac2d8aac6de8c17ae7a1c3c4aaabcabd05b85a0908651687e0ee13",
+          "lines": 180
+        }
+      ]
+    },
+    {
+      "repo": "aden-hive/hive",
+      "number": 605,
+      "sha": "8c39dad22d047e473d423b4378d3dcdfb12f43a4",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2026-01-26T20:22:21Z",
+      "lines": 596,
+      "files": [
+        {
+          "path": "core/framework/graph/executor.py",
+          "sha256": "f9d1cd784b88e6ef48041e23550b10185b6060d33241a569e18d5d2e6e0b2ddb",
+          "lines": 596
+        }
+      ]
+    },
+    {
+      "repo": "adrgs/requestrepo",
+      "number": 66,
+      "sha": "cdfd1c41ceec1a28b9ca5738075fbd6649b0f1cf",
+      "agent": "Devin",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2025-05-28T17:11:04Z",
+      "lines": 2710,
+      "files": [
+        {
+          "path": "src/src/cache/mod.rs",
+          "sha256": "12237c312be7ba04755ed9dd8d9a706c9a2b01fc2fa94fe6dbb11a0802219861",
+          "lines": 220
+        },
+        {
+          "path": "src/src/dns/mod.rs",
+          "sha256": "7f84154255351dfd19adc1248a157ba1403ecbe470b487c24d0aa5a23383e643",
+          "lines": 358
+        },
+        {
+          "path": "src/src/http/mod.rs",
+          "sha256": "c7692bba018731979ad083bd676f35c9c75bf5fe3057e8cad90b3b8bd63c263d",
+          "lines": 84
+        },
+        {
+          "path": "src/src/http/routes.rs",
+          "sha256": "b3f574f35f377f8bf9af62da7693426d60004c1079e2a2929a80c89e179ad4a0",
+          "lines": 479
+        },
+        {
+          "path": "src/src/http/websocket.rs",
+          "sha256": "85b204996f4028401fd1265da3b53e3349cc240f27be98893741863825c94830",
+          "lines": 229
+        },
+        {
+          "path": "src/src/ip2country/mod.rs",
+          "sha256": "65e018ba81d8c832a04ed39d6d328f1ebd3b89225548f5989d39dc21983b8ec5",
+          "lines": 96
+        },
+        {
+          "path": "src/src/lib.rs",
+          "sha256": "69ced7e97fd4f5466ec54c3550f16f1050882aef878916ab9e2c242deef799df",
+          "lines": 56
+        },
+        {
+          "path": "src/src/main.rs",
+          "sha256": "caddfb692f4dc623663840ddbcfb16f428089c01f0495985691fe0190c3fccf8",
+          "lines": 15
+        },
+        {
+          "path": "src/src/models/mod.rs",
+          "sha256": "906815427aefc511d619eca6496e79136c996a726cecdfd76c73ca93d0520be5",
+          "lines": 103
+        },
+        {
+          "path": "src/src/smtp/mod.rs",
+          "sha256": "52c70f493664841a62c2d41bf24c71c0ba583dfd57c3eb522870373146cfe6e6",
+          "lines": 187
+        },
+        {
+          "path": "src/src/tcp/mod.rs",
+          "sha256": "2309e5c782743f43fae0548c3a059bf80aa4b7b5c502031b7d7f4ba32c25791b",
+          "lines": 208
+        },
+        {
+          "path": "src/src/tests/cache_tests.rs",
+          "sha256": "1ba89316f8f31e62f66fd50f7ce6a32858b852e26c5688e8e266a70624f13c9a",
+          "lines": 129
+        },
+        {
+          "path": "src/src/tests/dns_tests.rs",
+          "sha256": "a1c200e2c826fea6b2d96a992fb40b44ee2cca0d78b55507e3617be5e15f1889",
+          "lines": 82
+        },
+        {
+          "path": "src/src/tests/http_tests.rs",
+          "sha256": "39c1b12326ca879596de3f8d5c5c6dd863b40338b19792049dfa4c8b0c20a224",
+          "lines": 128
+        },
+        {
+          "path": "src/src/tests/mod.rs",
+          "sha256": "aecbb7e5fbca4ec9a494e8281d24a5efe01278df1aba4dee9429382dfe505238",
+          "lines": 6
+        },
+        {
+          "path": "src/src/tests/utils_tests.rs",
+          "sha256": "74d19a91f656deff539bfd32f3d8416461ef10f8e23b2a6d2547227cb5024032",
+          "lines": 71
+        },
+        {
+          "path": "src/src/utils/config.rs",
+          "sha256": "606a70de4b5459b1307bb1565fec5bbb60f3af1b768552304a2703b9f82a2ec3",
+          "lines": 101
+        },
+        {
+          "path": "src/src/utils/mod.rs",
+          "sha256": "03503d8bb6ea5e614a7d4c752613d0a69cd0544bcc639e877f534d0bfbb2b21f",
+          "lines": 158
+        }
+      ]
+    },
+    {
+      "repo": "agent-era/devteam",
+      "number": 47,
+      "sha": "6378c8e1e17a29e5d4277ab2b2801aaecd183cb6",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2025-08-28T20:21:36Z",
+      "lines": 2747,
+      "files": [
+        {
+          "path": "src/App.tsx",
+          "sha256": "fccb00bbc9155cf360fc96fd9df8eacd9bd138827a97da469d82d3d613d3c780",
+          "lines": 336
+        },
+        {
+          "path": "src/components/dialogs/BranchPickerDialog.ts",
+          "sha256": "74a7d10dc0d88964d07064af2c47af1feca6f923bbfb40579974ec0202a42629",
+          "lines": 217
+        },
+        {
+          "path": "src/components/dialogs/ProjectPickerDialog.ts",
+          "sha256": "1696fa3e8152355c8b703d4b2b13b03f7ef50fec635706f5c48948338e22a4cb",
+          "lines": 71
+        },
+        {
+          "path": "src/contexts/UIContext.tsx",
+          "sha256": "daedaa7f4589a7d4001fb528f7876fadf28b62baef11b25fa88847aa420fb314",
+          "lines": 196
+        },
+        {
+          "path": "src/contexts/WorktreeContext.tsx",
+          "sha256": "9188d577a53d2d5411af0945904668694436da310e30fc11080e0742d6c237a8",
+          "lines": 778
+        },
+        {
+          "path": "tests/e2e/branch-picker.test.tsx",
+          "sha256": "72c10022dcb6ca922afe4a53d04cd1edfef668f67f89e446035c91e1fd9eb0ea",
+          "lines": 675
+        },
+        {
+          "path": "tests/utils/renderApp.tsx",
+          "sha256": "762595766bc21f200c7dfaaa8b6cb5513a783faeaadf8b34638bc9a22a237aa3",
+          "lines": 474
+        }
+      ]
+    },
+    {
+      "repo": "ai-shifu/ai-shifu",
+      "number": 638,
+      "sha": "e37e246c980e66567f3a39bc5d537bad6db158a3",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-07-21T04:35:26Z",
+      "lines": 161,
+      "files": [
+        {
+          "path": "src/cook-web/src/app/c/[[...id]]/Components/ChatUi/ForkChatUI/components/Modal/Base.tsx",
+          "sha256": "381be56286e4f1dc441149538d84ca14cb6844aff30cc728bdbf03ea0a0dc4a3",
+          "lines": 161
+        }
+      ]
+    },
+    {
+      "repo": "apache/casbin",
+      "number": 1577,
+      "sha": "72afc623d443a2df91124d853614b3045d09525d",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2025-11-14T17:32:41Z",
+      "lines": 2344,
+      "files": [
+        {
+          "path": "enforcer.go",
+          "sha256": "c51e57d3b714057b4d1f46ee25cbce408c115ac591f95810a0306b6ba7e0a57d",
+          "lines": 1015
+        },
+        {
+          "path": "enforcer_backslash_test.go",
+          "sha256": "00fb63e7cd7d39eefe8f74c5e3cb13ec95f8a944d67af12347c2049123c713e7",
+          "lines": 178
+        },
+        {
+          "path": "model/model.go",
+          "sha256": "c01e9b2619d5228fae06ab32b0e9add5f2c4f55030100c51d00761af474838a6",
+          "lines": 453
+        },
+        {
+          "path": "util/util.go",
+          "sha256": "440379fabe1b40de9fa9f3cc226c0542183d851b9c39af748e9bcde180624068",
+          "lines": 426
+        },
+        {
+          "path": "util/util_test.go",
+          "sha256": "0ae1a0649cd0b418e209a028e4f43de9faba6d3d145682ab263319f560d993a7",
+          "lines": 272
+        }
+      ]
+    },
+    {
+      "repo": "aspizu/goboscript",
+      "number": 166,
+      "sha": "a71d04c441b4f8e2bb470698e4e66adbcc313fa1",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2025-06-19T05:40:29Z",
+      "lines": 926,
+      "files": [
+        {
+          "path": "src/codegen/stmt.rs",
+          "sha256": "888d877059e4ffd5172b8e496399f5c358086dbc9c3e714980d9be180a8d7b88",
+          "lines": 619
+        },
+        {
+          "path": "src/diagnostic/diagnostic_kind.rs",
+          "sha256": "a760704ecde0bb85eb1aac9d48c8d5e4149be867b97985bba41ca391d6f649b5",
+          "lines": 307
+        }
+      ]
+    },
+    {
+      "repo": "bearcove/tracey",
+      "number": 69,
+      "sha": "a1c27a8e6d7a0fddc9032b4fa2ed72edc893f99b",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-02-21T07:16:58Z",
+      "lines": 1235,
+      "files": [
+        {
+          "path": "crates/tracey/src/data.rs",
+          "sha256": "0de3089d8e6b7e58efa24117a454f478295856db8386004b183eaaf8ab93b46e",
+          "lines": 1235
+        }
+      ]
+    },
+    {
+      "repo": "bluesky-social/social-app",
+      "number": 10080,
+      "sha": "e28f6d2f370b4e882ed6f23d08ca0f8d94dbac5f",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-20T16:20:27Z",
+      "lines": 382,
+      "files": [
+        {
+          "path": "src/state/queries/usePostThread/queryCache.ts",
+          "sha256": "427f9a9e0ba298549750b05eea2a1269e753993265d588806efd1348b04d23b1",
+          "lines": 382
+        }
+      ]
+    },
+    {
+      "repo": "callstackincubator/react-native-harness",
+      "number": 70,
+      "sha": "a0f64b1d9e659b06bd47b28f29f67d310db103e7",
+      "agent": "OpenAI_Codex",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-06T18:02:40Z",
+      "lines": 201,
+      "files": [
+        {
+          "path": "packages/bundler-metro/src/factory.ts",
+          "sha256": "3309a248b07667f9e4a2b0b561652373c49ddbf2fdbed99757cb82570ba674f1",
+          "lines": 99
+        },
+        {
+          "path": "packages/config/src/types.ts",
+          "sha256": "66349d3e4dd2cebd00c7873ce07c5698ccfccd44eccb61804d17d7f4e5ff700e",
+          "lines": 102
+        }
+      ]
+    },
+    {
+      "repo": "circuit-synth/circuit-synth",
+      "number": 191,
+      "sha": "7ca5706576bd37d952c3bb8c3ab4c35c211d1adc",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2025-10-15T14:50:44Z",
+      "lines": 2524,
+      "files": [
+        {
+          "path": "src/circuit_synth/kicad/sch_gen/schematic_writer.py",
+          "sha256": "d75263408a491b972fc642a9393204908e2d8353d06e6e28e3a63b7106ceeef2",
+          "lines": 2165
+        },
+        {
+          "path": "src/circuit_synth/kicad/sch_gen/symbol_geometry.py",
+          "sha256": "e40ec1e5640173dc9300180ab40428eae11d670c592ce92806769e551a52e6d9",
+          "lines": 359
+        }
+      ]
+    },
+    {
+      "repo": "cloudflare/workers-sdk",
+      "number": 10961,
+      "sha": "02d2ea9baa8c44bce2e63b6812348c6c1ab08e47",
+      "agent": "Devin",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-12-19T14:04:50Z",
+      "lines": 339,
+      "files": [
+        {
+          "path": "packages/wrangler/src/dev/create-worker-preview.ts",
+          "sha256": "87eaf0a1b8112a802058db27fef55c6407b706a738a5cde69bd3eaca143a60fc",
+          "lines": 339
+        }
+      ]
+    },
+    {
+      "repo": "cnpm/cnpmcore",
+      "number": 967,
+      "sha": "00c0bdfaded12940cb2c61627ffae431bf8767ca",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-02-05T02:30:20Z",
+      "lines": 8172,
+      "files": [
+        {
+          "path": "app/core/service/PackageSyncerService.ts",
+          "sha256": "8ed955e5278cde6da384cefc349cc4a3df0dd3ab564509349f6a26e746de5cef",
+          "lines": 1772
+        },
+        {
+          "path": "test/core/service/PackageSyncerService/executeTask.test.ts",
+          "sha256": "b6a151929beea74e377d5f44a2894016ce7323ee5f6d16f05bd3c1a98bd9b814",
+          "lines": 3264
+        },
+        {
+          "path": "test/core/service/PackageSyncerService/executeTaskWithPackument.test.ts",
+          "sha256": "da874329e5e226debbd2b5f69de951c6be2e5f4a8ca8e0c4c736b6e802397cb5",
+          "lines": 3136
+        }
+      ]
+    },
+    {
+      "repo": "cyw0ng95/sqlvibe",
+      "number": 17,
+      "sha": "24a294029e611e434363736169a6a757d45329ee",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-02-18T17:51:09Z",
+      "lines": 6457,
+      "files": [
+        {
+          "path": "internal/CG/compiler.go",
+          "sha256": "90f5bbecb52daecd68dd346d0a02086fc323abf9c6bf398aa5d83f4b288c9865",
+          "lines": 132
+        },
+        {
+          "path": "internal/VM/compiler.go",
+          "sha256": "21b247788afbeca67b6135e3ea71b1f7ea7bf30aa90a5f60b1a85dbfa4bffd0a",
+          "lines": 1534
+        },
+        {
+          "path": "internal/VM/exec.go",
+          "sha256": "b5a695ba9a9df0e7510b4635cac49f2274f4b185505fc1f1ef42a07d88f7261d",
+          "lines": 2281
+        },
+        {
+          "path": "internal/VM/opcodes.go",
+          "sha256": "ea81e60c2fa848fc230e59c21ef657865578654fdaf89c0b00c8ad013a432bf2",
+          "lines": 415
+        },
+        {
+          "path": "pkg/sqlvibe/database.go",
+          "sha256": "8c45501b37d9540ae436d840a17cbad3f45e97b813b8fd516e932e01758f1ba5",
+          "lines": 2095
+        }
+      ]
+    },
+    {
+      "repo": "desplega-ai/agent-swarm",
+      "number": 11,
+      "sha": "e1f65a4d677a1b26b5020156a43367292dee9868",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-01-12T23:21:57Z",
+      "lines": 5104,
+      "files": [
+        {
+          "path": "src/be/db.ts",
+          "sha256": "d4a2ae4f02573af630e1243a890a0dab9e95edeed23d0259670c688600378a44",
+          "lines": 2225
+        },
+        {
+          "path": "src/commands/runner.ts",
+          "sha256": "a2cf727800894d00fcd197910c8317e94a7248f09cbc7c1a3497f8e19c4db747",
+          "lines": 725
+        },
+        {
+          "path": "src/http.ts",
+          "sha256": "c001baf7f37ab0f403c31ee6eecec54869cf2279fb2e4d3e85743ecd6d6def85",
+          "lines": 922
+        },
+        {
+          "path": "src/prompts/base-prompt.ts",
+          "sha256": "f7981e919814031f97392593d14204457004d06f6dc63faf174d0c9eee5caf59",
+          "lines": 161
+        },
+        {
+          "path": "src/server.ts",
+          "sha256": "0f54cdda93648524375056fafaa483889a458500b39e3b9c32d0696c05c657d7",
+          "lines": 105
+        },
+        {
+          "path": "src/slack/handlers.ts",
+          "sha256": "538e4b76e6b1349c4efe73b28c0a6d09c3e3a66f33ad400381eb7a5ac7d361d4",
+          "lines": 295
+        },
+        {
+          "path": "src/tools/inbox-delegate.ts",
+          "sha256": "abf167a259a91026bfeb646c54d94569ebbb35adc7784e745ed0bca34ee72e40",
+          "lines": 114
+        },
+        {
+          "path": "src/tools/poll-task.ts",
+          "sha256": "5c3a5b070bdea06b28d8b6bc44946afd774e7d317c6581f4235ebf1873bc3268",
+          "lines": 205
+        },
+        {
+          "path": "src/tools/slack-reply.ts",
+          "sha256": "d39f36c58ce4eac1f0a9e4cbfc064f87941c586e6f30453acd9c5e42a564f43c",
+          "lines": 131
+        },
+        {
+          "path": "src/types.ts",
+          "sha256": "e8b249588ea5684370687de2345c8696a034f9be269ad9e494532d516765eccc",
+          "lines": 221
+        }
+      ]
+    },
+    {
+      "repo": "devantler-tech/ksail",
+      "number": 2416,
+      "sha": "ca46f37b9b0dc40dd1e616b205f8dbd9dca75434",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2026-02-25T22:49:36Z",
+      "lines": 6930,
+      "files": [
+        {
+          "path": "pkg/apis/cluster/v1alpha1/enums.go",
+          "sha256": "7e4d79d1cb6230a6dac0ece634f75614e9c1301fb2f5717e90ce69c278b92037",
+          "lines": 774
+        },
+        {
+          "path": "pkg/apis/cluster/v1alpha1/enums_test.go",
+          "sha256": "af6fa0ad8ad4674fed6dbf4f9cd51e599436472d806ec73a4edf3b3af66cb8fb",
+          "lines": 933
+        },
+        {
+          "path": "pkg/apis/cluster/v1alpha1/options.go",
+          "sha256": "abcb6a8c91a0dc51842abb6342ff7e05e678989407e64c3b0544c0f54534eb66",
+          "lines": 101
+        },
+        {
+          "path": "pkg/apis/cluster/v1alpha1/types.go",
+          "sha256": "11df6f0ce6ac9670ca939e68439086c158c11aaa48107a39d364542525cab2be",
+          "lines": 79
+        },
+        {
+          "path": "pkg/apis/cluster/v1alpha1/validation.go",
+          "sha256": "bcaa5a2aa42e6646ac435a39cbfc87b8751229fc00f6a03b9c2fa86a85da76a3",
+          "lines": 197
+        },
+        {
+          "path": "pkg/apis/cluster/v1alpha1/validation_test.go",
+          "sha256": "5d88f7ceeb6dc93bc6b1d1c0078bc4d3cd51bdf8a774ef72f0975cf5cbcf6590",
+          "lines": 486
+        },
+        {
+          "path": "pkg/cli/cmd/cluster/delete.go",
+          "sha256": "035d1831d3625777573ca7eb8ba0b12e008ac6b7e5614b474bf3f7d7b8bf3afc",
+          "lines": 491
+        },
+        {
+          "path": "pkg/cli/cmd/cluster/list.go",
+          "sha256": "c95d71f8ce2334adc067f7ab64605c9152faaff39ea86d96998fd12fa3852af1",
+          "lines": 395
+        },
+        {
+          "path": "pkg/cli/lifecycle/simple.go",
+          "sha256": "479243459a11898e804afa2521d8698b4358a1cabd4e2b6b4f279b6c949fc447",
+          "lines": 362
+        },
+        {
+          "path": "pkg/cli/setup/components.go",
+          "sha256": "aceff4db2e780f323f67dfc527d03bba0deff1c8c457a891e7e64be76cd10a56",
+          "lines": 657
+        },
+        {
+          "path": "pkg/cli/ui/confirm/confirm.go",
+          "sha256": "ce5f33b4091124eb314195012488dd631d6025c5ec4fe6924132db60e86ad712",
+          "lines": 228
+        },
+        {
+          "path": "pkg/svc/provider/hetzner/provider.go",
+          "sha256": "f14a035f825571ac78072b1af0ec4ce8395cf3b692cdbb4385884c0c4b75ddc0",
+          "lines": 845
+        },
+        {
+          "path": "pkg/svc/provider/omni/doc.go",
+          "sha256": "0790e77f775f9167765485dc8c10a592c57b15e87d3dd66494467361897cff8d",
+          "lines": 4
+        },
+        {
+          "path": "pkg/svc/provider/omni/errors.go",
+          "sha256": "44b98cdbe1c8681e0f0103ebd8e9e05e74662bbbca6d6e5a0a21f680e608ca6b",
+          "lines": 12
+        },
+        {
+          "path": "pkg/svc/provider/omni/provider.go",
+          "sha256": "57e3d0b62c671c002797ac96087e806d3c8f962dcfe1d4d05b7eca8abcfc7a66",
+          "lines": 158
+        },
+        {
+          "path": "pkg/svc/provider/omni/provider_test.go",
+          "sha256": "49960739fbe25fb661551a6c9ab7f53f2dde815eb0c8b05c15b999a44cf13d8b",
+          "lines": 106
+        },
+        {
+          "path": "pkg/svc/provider/provider.go",
+          "sha256": "ecf156940609836c39e73d310216a62e07b1458085f7aedadd634e03c1cea201",
+          "lines": 92
+        },
+        {
+          "path": "pkg/svc/provisioner/cluster/factory.go",
+          "sha256": "795fa49c17d69eb6d69a817c89d99c45f5e31178101ad80c3f0de34b01761e19",
+          "lines": 351
+        },
+        {
+          "path": "pkg/svc/provisioner/cluster/multi.go",
+          "sha256": "cf003d83e94b66d6c8e2fa5a6e177c012f6b8cc248c48a5d5f82d96e7a202de6",
+          "lines": 232
+        },
+        {
+          "path": "pkg/svc/provisioner/cluster/talos/factory.go",
+          "sha256": "323aecdda398f3418792c45982057b44e8496b393ea60281e4f72b0bf06f2fb1",
+          "lines": 256
+        },
+        {
+          "path": "schemas/gen_schema_test.go",
+          "sha256": "77a99bc30fabf6dabb4cc5caa6056c0c007b60f74801fee62db9118d5ae75cd9",
+          "lines": 171
+        }
+      ]
+    },
+    {
+      "repo": "doobidoo/mcp-memory-service",
+      "number": 327,
+      "sha": "6696930da1dd2e142a0b612fcd0b65e63231d003",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2026-01-02T19:42:47Z",
+      "lines": 7337,
+      "files": [
+        {
+          "path": "src/mcp_memory_service/_version.py",
+          "sha256": "476cb424ff5661b06847366de83bcabe6cd751f9399bcc1ff297bdfe4a4d51c9",
+          "lines": 4
+        },
+        {
+          "path": "src/mcp_memory_service/server/handlers/quality.py",
+          "sha256": "379c6e0412e7382511be7c36a8bd1acbbb5f89dbf02cb7b6b582ac00f889bb13",
+          "lines": 256
+        },
+        {
+          "path": "src/mcp_memory_service/storage/base.py",
+          "sha256": "82560ef35b87a7b8ae50a074e09a5bcdb50955cef912650f6aaf3629e5937ab1",
+          "lines": 568
+        },
+        {
+          "path": "src/mcp_memory_service/storage/cloudflare.py",
+          "sha256": "13ce976ad631fc9c2903966ff68bb79e2c445461b43af42adf6603098d41ade1",
+          "lines": 1918
+        },
+        {
+          "path": "src/mcp_memory_service/storage/hybrid.py",
+          "sha256": "bca05e19e393228bba1489db15b3438617fcb40ff519e03ee74f4d2eba52e7ba",
+          "lines": 1828
+        },
+        {
+          "path": "src/mcp_memory_service/storage/sqlite_vec.py",
+          "sha256": "e543f26fb98d803eca4669c05bcfde738d0ff806e0d0b6519b6f454761752f28",
+          "lines": 2619
+        },
+        {
+          "path": "src/mcp_memory_service/utils/debug.py",
+          "sha256": "34b0a582ccffbe8c0e60cd470eb3650fea6e81142b96f65e3d4759b7c1ad40fd",
+          "lines": 144
+        }
+      ]
+    },
+    {
+      "repo": "dragonflyoss/nydus",
+      "number": 1867,
+      "sha": "e2afc595fbb6d7fbb9e8fdf0acda5830de0eefe5",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-01-29T06:20:33Z",
+      "lines": 26763,
+      "files": [
+        {
+          "path": "api/src/config.rs",
+          "sha256": "74b960aee00047403f5b7bfe96376223a1f4712171507b6748cd4cf207c13a35",
+          "lines": 2600
+        },
+        {
+          "path": "api/src/error.rs",
+          "sha256": "383d6a3a225d017b02ef6691c87176bfc30336892a415145be6bc0b33cdd4fc4",
+          "lines": 253
+        },
+        {
+          "path": "api/src/http_handler.rs",
+          "sha256": "e05fee89c025b960bdfd9451bbdfa1ddc7ce79a33d73ab224e894fa1b706b347",
+          "lines": 408
+        },
+        {
+          "path": "builder/src/core/context.rs",
+          "sha256": "39939e8dd45bad0ad8b8ca2d93f2ba208f156d75eb160da5b41e76f4d2681021",
+          "lines": 1673
+        },
+        {
+          "path": "builder/src/core/node.rs",
+          "sha256": "04b0102c9079e691025b3730b9a71e6526999614409a4cd6450efcc73ea4422b",
+          "lines": 1279
+        },
+        {
+          "path": "builder/src/core/overlay.rs",
+          "sha256": "645736480a1513339c632157819b69a781dd196b26ba0612210da51d8971a41f",
+          "lines": 357
+        },
+        {
+          "path": "builder/src/core/prefetch.rs",
+          "sha256": "8b1746c33c5d8bbc790a21d94b4cf3dc1a588662f64ab6c8cf483fc6c15ffc8f",
+          "lines": 387
+        },
+        {
+          "path": "rafs/src/lib.rs",
+          "sha256": "77bc7e469878e1b74396dab1300cb9d1755e1f8caf053de9cd61ff20abfaa284",
+          "lines": 359
+        },
+        {
+          "path": "rafs/src/metadata/cached_v5.rs",
+          "sha256": "02975659dc8ffe524335bc6edf0f5957625f9a0c8aabe8a3eea4ade433326d11",
+          "lines": 2028
+        },
+        {
+          "path": "rafs/src/metadata/layout/v5.rs",
+          "sha256": "e899473d2b56dd303cdf53f46b76dfd67ff243a063973690afb5e99821c97f25",
+          "lines": 2029
+        },
+        {
+          "path": "rafs/src/metadata/mod.rs",
+          "sha256": "0bf0ad962a9639092a6086476d53332811219b38419f6dde6eb0d967c032a863",
+          "lines": 1327
+        },
+        {
+          "path": "service/src/fs_cache.rs",
+          "sha256": "242788b08d7edc320dbc3daa41a11e851b58891fc82fa535c01a53dc21ff53f8",
+          "lines": 1061
+        },
+        {
+          "path": "service/src/fusedev.rs",
+          "sha256": "0fbee6b918701bd61e277c0c73927b3d47f6ff3f39f3dd5973f448c1a89447d4",
+          "lines": 830
+        },
+        {
+          "path": "service/src/lib.rs",
+          "sha256": "baa7dfa1b573543183792690f4aedba2816b6fa1402a7d04013f87173344d346",
+          "lines": 311
+        },
+        {
+          "path": "service/src/upgrade.rs",
+          "sha256": "8e8a9d3d754448b16986c679c71dd1fa2877cf6bee6aab2d25b4ad22ee1cfe96",
+          "lines": 675
+        },
+        {
+          "path": "src/bin/nydus-image/inspect.rs",
+          "sha256": "6be0faee3531518cbd02be66e1e3200af7f396c0a04862580ce7869b07d66ecf",
+          "lines": 775
+        },
+        {
+          "path": "src/bin/nydus-image/unpack/pax.rs",
+          "sha256": "e6f93f19142cb7137df21218e56b1dc1207f97acf7d398d515a6449c23d26edc",
+          "lines": 791
+        },
+        {
+          "path": "src/bin/nydusd/api_server_glue.rs",
+          "sha256": "a51281b0371a49d0a5dccf9a668857ff56fe599fd380aa1d50bb45e9265777d8",
+          "lines": 443
+        },
+        {
+          "path": "storage/src/cache/cachedfile.rs",
+          "sha256": "b457825c23bf0c4ed1f676175362f68a137b4c752d1b5f0edb9c08863ba1198a",
+          "lines": 2050
+        },
+        {
+          "path": "storage/src/cache/dedup/mod.rs",
+          "sha256": "13656f7657656d6e5ea1a700235633ba1ac828b7c9d3952a453174f82eaaa1ef",
+          "lines": 328
+        },
+        {
+          "path": "storage/src/cache/filecache/mod.rs",
+          "sha256": "e4299f32f5618e26fd67b2bc0f9549517809a907dd01ed3fd1b216ff7e2cf5c6",
+          "lines": 871
+        },
+        {
+          "path": "storage/src/cache/fscache/mod.rs",
+          "sha256": "3fac64a0f621362b1b5a6ff8025e58dbb2932203880f66f1a39c44a97bb6eb22",
+          "lines": 487
+        },
+        {
+          "path": "storage/src/factory.rs",
+          "sha256": "d6993af0118290ea1dd4e1b93fd943a2144108b5d51417f61ff91950ff7f853f",
+          "lines": 334
+        },
+        {
+          "path": "storage/src/meta/chunk_info_v2.rs",
+          "sha256": "196a0dc25a70cd19899733bcaf87be6901f5335b93ea96d035a86f98542c4152",
+          "lines": 540
+        },
+        {
+          "path": "storage/src/meta/mod.rs",
+          "sha256": "090755dcbb26afcca471bf0217b234cfafbbdde33e408f30ab08fef770252f56",
+          "lines": 2511
+        },
+        {
+          "path": "storage/src/meta/toc.rs",
+          "sha256": "144fc62be3b33470ce2c3e4eb17260241661e8d7ca9bc563c23f753859ee2082",
+          "lines": 980
+        },
+        {
+          "path": "upgrade/src/persist.rs",
+          "sha256": "b6c15eef2d1ad6c0947ae5afa00ac0694066a58bdae864a6bcfc9ab987681876",
+          "lines": 62
+        },
+        {
+          "path": "utils/src/compress/zlib_random.rs",
+          "sha256": "9ca83ab91cc5ebdd9a3ace52ba8de53b6b51b062fb9be04ba5385435739dd107",
+          "lines": 1014
+        }
+      ]
+    },
+    {
+      "repo": "eakmanrq/sqlframe",
+      "number": 601,
+      "sha": "9fd3ddac117a7d0fa98e4b71eeda8b99d14baf38",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-02-25T05:32:40Z",
+      "lines": 12725,
+      "files": [
+        {
+          "path": "sqlframe/base/functions.py",
+          "sha256": "7d3fae5f3c2c0ed693247e6c65f4c9dddfe4b5441e5602816a8c759953598305",
+          "lines": 7290
+        },
+        {
+          "path": "tests/integration/engines/test_int_functions.py",
+          "sha256": "7a35664451228c265e517e8ff6cd09b25d5b6abb3dd05259931ff85f40e20316",
+          "lines": 5435
+        }
+      ]
+    },
+    {
+      "repo": "epam/ketcher",
+      "number": 8730,
+      "sha": "a53a216f8425ec67a88a37d0d350c4add0916e04",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-11-25T11:41:39Z",
+      "lines": 973,
+      "files": [
+        {
+          "path": "packages/ketcher-react/src/script/ui/views/components/MonomerCreationWizard/MonomerCreationWizard.tsx",
+          "sha256": "10c2c15f2f4e920bb9fdc606f9a5ae3aa1d23d6ecce741f4e1a1b356ecce7d43",
+          "lines": 973
+        }
+      ]
+    },
+    {
+      "repo": "erans/pgsqlite",
+      "number": 50,
+      "sha": "937c19d3db4b8c93b80108f4cb9726d267286541",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2025-07-22T11:26:57Z",
+      "lines": 4984,
+      "files": [
+        {
+          "path": "src/query/executor.rs",
+          "sha256": "1deedca2682edea54fce9d1c91fd724520927af90cd67a660822f5a55d69da68",
+          "lines": 1654
+        },
+        {
+          "path": "src/session/db_handler.rs",
+          "sha256": "50ccc443f86fa3d15abcece76d5a3f86c0cfc1ff9faa73a728ee023001b07886",
+          "lines": 1710
+        },
+        {
+          "path": "src/translator/batch_delete_translator.rs",
+          "sha256": "7dcce71f20f1d04c2df0815f609c13f389eb87c8bcf2e2f70673af27fa3fb618",
+          "lines": 372
+        },
+        {
+          "path": "src/translator/batch_update_translator.rs",
+          "sha256": "4bed7061a84a30893fb865ea5d76174b49c94a2052193a304212d9bbd5c8bea6",
+          "lines": 374
+        },
+        {
+          "path": "src/translator/mod.rs",
+          "sha256": "7d677538f77d3fe79706ee5e0f3ae57652b6d5c20e5a64e465fd81f789e800ed",
+          "lines": 45
+        },
+        {
+          "path": "tests/batch_delete_test.rs",
+          "sha256": "1c670757270a9a5cdb927edd9204379d00fa7412a5b9636fbd5d30f4b79068be",
+          "lines": 301
+        },
+        {
+          "path": "tests/batch_update_test.rs",
+          "sha256": "caaba044150a2e9352cf3db1ec4b6dd13c935aad081cce3699b54e20042faad8",
+          "lines": 249
+        },
+        {
+          "path": "tests/benchmark_batch_operations.rs",
+          "sha256": "83d763df5c2d47af236f3addf9a3cb26e2f6833de6bc816f8a5a776c1532e2fa",
+          "lines": 279
+        }
+      ]
+    },
+    {
+      "repo": "finos/morphir",
+      "number": 511,
+      "sha": "359ef5989214dc65defbfd6f8c064b37a48b1ce1",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2026-01-08T15:17:23Z",
+      "lines": 656,
+      "files": [
+        {
+          "path": "pkg/bindings/golang/doc.go",
+          "sha256": "e2aa7970af0ad0727b1a4ec9c0947913ef0a90157f33e027178d524cb9b31ee2",
+          "lines": 97
+        },
+        {
+          "path": "pkg/bindings/golang/domain/doc.go",
+          "sha256": "e1d7f55decc8b38ba598afcb4dbf7de49ec6cca067a328ba3afc0d4866779c7c",
+          "lines": 46
+        },
+        {
+          "path": "pkg/bindings/golang/internal/doc.go",
+          "sha256": "6b0c5a6405fea26b4ad1d8131fea7e1a9e001f26dee6163f3eaf211468e246b3",
+          "lines": 25
+        },
+        {
+          "path": "pkg/bindings/golang/pipeline/build.go",
+          "sha256": "510d4400302043a9498b314459a52a74f49456ecb6069380d7855376fb115faf",
+          "lines": 73
+        },
+        {
+          "path": "pkg/bindings/golang/pipeline/diagnostics.go",
+          "sha256": "b8c3e7593825a75e4576d96ad6a8ccc8a2e9b940c15de1582be463cdc6fa7be4",
+          "lines": 81
+        },
+        {
+          "path": "pkg/bindings/golang/pipeline/doc.go",
+          "sha256": "02cfcd4fdcc3fbe5d417be2f35897cffc5cb057fc79d6aa72fc5ebfbadad25c4",
+          "lines": 93
+        },
+        {
+          "path": "pkg/bindings/golang/pipeline/gen.go",
+          "sha256": "f1eb2ad99f31cc77086960e3391bfd027f176727278d600e95d69139a944c7e2",
+          "lines": 70
+        },
+        {
+          "path": "pkg/bindings/golang/pipeline/make.go",
+          "sha256": "6cca2828d16b62ce931d884493dcab6c8455c83679020ddb0ec38d763d13091a",
+          "lines": 30
+        },
+        {
+          "path": "pkg/bindings/golang/pipeline/types.go",
+          "sha256": "51188a2086c5bb47e2706790477efa73e82cc3fb072765d5f88d7376c70047fd",
+          "lines": 141
+        }
+      ]
+    },
+    {
+      "repo": "foxglove/foxglove-sdk",
+      "number": 860,
+      "sha": "30bc962e98b106b2dbf991a4d3bf0d916be93518",
+      "agent": "Cursor",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-02-04T20:37:36Z",
+      "lines": 356,
+      "files": [
+        {
+          "path": "rust/examples/ws_stream_mcap/src/mcap_player.rs",
+          "sha256": "d1b17ac8a4deece4d1b9b4a10cf01b1672a4fd0a55b5e7679a9112cb6e22b6a9",
+          "lines": 356
+        }
+      ]
+    },
+    {
+      "repo": "garrytan/gstack",
+      "number": 206,
+      "sha": "00cefcafb1f4e6b3c931bb0798af19950eaaade9",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-19T06:36:26Z",
+      "lines": 1678,
+      "files": [
+        {
+          "path": "scripts/gen-skill-docs.ts",
+          "sha256": "4e80924bb1ad46b9eef8f367fac497bcc005c726d496a28e43c104b01daea241",
+          "lines": 1253
+        },
+        {
+          "path": "test/gen-skill-docs.test.ts",
+          "sha256": "d6efcf0f7ecd46eb37ba012916e794a7e67fe5d315f7224d0fd59e454a2f3609",
+          "lines": 425
+        }
+      ]
+    },
+    {
+      "repo": "gastownhall/gastown",
+      "number": 995,
+      "sha": "4500f1968e280c44b7c188ba99f83cd9d38f54bb",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-01-29T19:59:29Z",
+      "lines": 1227,
+      "files": [
+        {
+          "path": "internal/cmd/doctor.go",
+          "sha256": "9043669c3514e48da2dec2c9d2eeeeae86f1e17b00863c4a4bbf25f55aeb2d4a",
+          "lines": 229
+        },
+        {
+          "path": "internal/doctor/doctor.go",
+          "sha256": "2bcf6734918e81294c50494bc37d3c80d8fb0fc4a3e1a00ed352589a0442aa4f",
+          "lines": 254
+        },
+        {
+          "path": "internal/doctor/doctor_test.go",
+          "sha256": "ab6a387d595bb80b470b98b3b3bd9dcffa672f8763b39231d4df28f83a066b56",
+          "lines": 365
+        },
+        {
+          "path": "internal/doctor/types.go",
+          "sha256": "cf40e284e6a36d570fd7d59023a8cea6e44e08d5ea7a65638e9652bfcd3563d3",
+          "lines": 379
+        }
+      ]
+    },
+    {
+      "repo": "gijzelaerr/python-snap7",
+      "number": 648,
+      "sha": "b16c70780e7436255f17f40d7d61180f918e1a72",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-20T11:45:53Z",
+      "lines": 6410,
+      "files": [
+        {
+          "path": "snap7/util/db.py",
+          "sha256": "81e7ac612da8c8eb930033896b699ed69d6ba895733ee2d309fc9ee8921e6afd",
+          "lines": 792
+        },
+        {
+          "path": "tests/test_async_client.py",
+          "sha256": "1c9242664b2bc75e3028b14a113ffa9cb746741566ff4d4537bb88efcf9c8c03",
+          "lines": 330
+        },
+        {
+          "path": "tests/test_connection.py",
+          "sha256": "a5482ced13c8ff70fb5b678dd5c9a095815a3247fea370a8b5604c6c56670678",
+          "lines": 476
+        },
+        {
+          "path": "tests/test_logo_client.py",
+          "sha256": "2019e169893b972d905bf5c18f607034852bb92b2c29dfc4559b7c142c368ffb",
+          "lines": 372
+        },
+        {
+          "path": "tests/test_partner.py",
+          "sha256": "a24aa98103b82fb0dab0ab8907289e3a8835c2e3d11c6e39a706b65791db8e7b",
+          "lines": 736
+        },
+        {
+          "path": "tests/test_s7commplus_codec.py",
+          "sha256": "fed5fc60e1e336821ecc01493e51e99971239e359a7401fbf15d3765799613b1",
+          "lines": 630
+        },
+        {
+          "path": "tests/test_s7commplus_unit.py",
+          "sha256": "5049ba16cf47cd58b7d51aed13f7140313c6156f68da0bb04fdedf2eadb92901",
+          "lines": 460
+        },
+        {
+          "path": "tests/test_s7protocol.py",
+          "sha256": "6bde9dc8e03c72b23d3ea4dd8aec9526979213f30a0cf0cf46e90e7fc0227910",
+          "lines": 538
+        },
+        {
+          "path": "tests/test_server.py",
+          "sha256": "a2df7d0fbf14f1e91616def9c3063451f5228698c190aa450c510e3847bd4abe",
+          "lines": 597
+        },
+        {
+          "path": "tests/test_util.py",
+          "sha256": "82615614ba5fcfbcb9b80f7576305c54511a9e5a1adf80186970169b5a558502",
+          "lines": 1479
+        }
+      ]
+    },
+    {
+      "repo": "giselles-ai/giselle",
+      "number": 1018,
+      "sha": "a611aee19908a8e734659cbd499f85f407ab7d79",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-05-30T08:35:18Z",
+      "lines": 1553,
+      "files": [
+        {
+          "path": "internal-packages/workflow-designer-ui/src/editor/index.tsx",
+          "sha256": "c499f6067a811da55dcba18e5911125fdd31e0828e90536f49ffe3adab787014",
+          "lines": 468
+        },
+        {
+          "path": "packages/giselle-engine/src/core/flows/delete-trigger.ts",
+          "sha256": "95bb92d2df0cdd283ab4d92f100c2e045a31c987f83342d40d28959ddc3d0849",
+          "lines": 14
+        },
+        {
+          "path": "packages/giselle-engine/src/core/flows/index.ts",
+          "sha256": "704c1507c0520091709e9306ced7ee377f1eb8fa4b9b7a66daa4065d9f317b2f",
+          "lines": 7
+        },
+        {
+          "path": "packages/giselle-engine/src/core/flows/utils.ts",
+          "sha256": "c6cf67787510488a4360d0bbc430871ac72ddd5f538c139e6ab9ce15197bee2c",
+          "lines": 58
+        },
+        {
+          "path": "packages/giselle-engine/src/core/index.ts",
+          "sha256": "cb31726e28c9dd90c558e4e0346c595dd09f80124163bc649117c07d384d65d2",
+          "lines": 203
+        },
+        {
+          "path": "packages/giselle-engine/src/core/integrations/utils.ts",
+          "sha256": "545fe510eb07f08421020770ae88f75c9748f3fea11287596e68545565999bd9",
+          "lines": 92
+        },
+        {
+          "path": "packages/giselle-engine/src/http/router.ts",
+          "sha256": "998d0d1ba3c7bf71bcccf6f010def6b9587cdeae24c4e1c55fe02e47ac4b6736",
+          "lines": 343
+        },
+        {
+          "path": "packages/workflow-designer/src/react/workflow-designer-context.tsx",
+          "sha256": "380a0c43ea96930b7919dbf591bb2d7f10b2460a951cfa221502484971be12cd",
+          "lines": 368
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 10605,
+      "sha": "512467e2cee667a7d6ad19f409b423dad051104e",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-01-18T18:19:54Z",
+      "lines": 328,
+      "files": [
+        {
+          "path": "pkg/campaign/command.go",
+          "sha256": "ecad9dcd811ef7c34df0a3214c93de72a5ebefa1fa9d3ab11e45547ee839cb48",
+          "lines": 328
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 14899,
+      "sha": "ca36bd747413c480a957981c4fb57363e04db0c4",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-02-11T06:41:26Z",
+      "lines": 1984,
+      "files": [
+        {
+          "path": "pkg/workflow/config_helpers.go",
+          "sha256": "33949fa6de41d2db79083b64ba8b5c02cec04506b0327cf74cd657fa8688972a",
+          "lines": 305
+        },
+        {
+          "path": "pkg/workflow/config_parsing_helpers_test.go",
+          "sha256": "2f13e73105630b79bda462097afe475dfb19a851a74723a66ca7d2abcee3ee21",
+          "lines": 1215
+        },
+        {
+          "path": "pkg/workflow/create_discussion.go",
+          "sha256": "6ea99c23386f98824228317398aa9ef3e6908e4c25a3a2192dd20491e8c8f041",
+          "lines": 241
+        },
+        {
+          "path": "pkg/workflow/create_issue.go",
+          "sha256": "bdd9a87c0af9c4eb180566deb777c7153d9ccde8c2698528b460e2cca60ad784",
+          "lines": 223
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 1734,
+      "sha": "140b85d95cfbaf696fe56efcde9a52cb79defd3e",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2025-10-15T10:25:34Z",
+      "lines": 2900,
+      "files": [
+        {
+          "path": "pkg/workflow/js/add_comment.cjs",
+          "sha256": "1c6b5cc0b88308073fdf385563ab275754afed7a50c8913b7df7a0f25ccd1b32",
+          "lines": 367
+        },
+        {
+          "path": "pkg/workflow/js/add_comment.test.cjs",
+          "sha256": "50abb0696b02e213681800268f2fe2f36bfca47ab3937fd2c7e761b2c8a1d13b",
+          "lines": 458
+        },
+        {
+          "path": "pkg/workflow/js/create_issue.cjs",
+          "sha256": "a8a8cddebc7d3671a1806fa6e9b3d4bdfb2eeeb86cc30bd83cfb37344ad84ee2",
+          "lines": 286
+        },
+        {
+          "path": "pkg/workflow/js/create_issue.test.cjs",
+          "sha256": "9def31358c64dcc1b48cd511c1f5247078dfa2333c3e70f92bcc565b5611058d",
+          "lines": 716
+        },
+        {
+          "path": "pkg/workflow/js/create_pr_review_comment.cjs",
+          "sha256": "d84f278fba867f826b01e6680abba0bddec3b2628fc74c44bc1bc223f8ebf033",
+          "lines": 353
+        },
+        {
+          "path": "pkg/workflow/js/create_pr_review_comment.test.cjs",
+          "sha256": "1fd741f207452af6dc8c1cd6340d3cab1a0d9216a178a3a51689c981c89b4457",
+          "lines": 720
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 21219,
+      "sha": "63b748dc6ef5391f6f3b57be3851ba1f65e12ec7",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-03-16T17:12:01Z",
+      "lines": 4008,
+      "files": [
+        {
+          "path": "pkg/workflow/compiler_jobs.go",
+          "sha256": "07841ae7aa28f19feaa9d1e6f238c592a7d8a8e96ae075bd3fd7c871b77bd0d8",
+          "lines": 770
+        },
+        {
+          "path": "pkg/workflow/compiler_orchestrator_workflow.go",
+          "sha256": "690fc5b12da58101b9c95b71475e0800812fc178ed9809d0ca3efe676dc76765",
+          "lines": 743
+        },
+        {
+          "path": "pkg/workflow/compiler_pre_activation_job.go",
+          "sha256": "dc3d818c1edb92f68af8043af352b8151563981192e9257eed75961e3ba50600",
+          "lines": 609
+        },
+        {
+          "path": "pkg/workflow/compiler_types.go",
+          "sha256": "960f265a3c84cae23ef9bd8723ed4db707562e3cd3943faff09b133c435e5a92",
+          "lines": 552
+        },
+        {
+          "path": "pkg/workflow/frontmatter_extraction_yaml.go",
+          "sha256": "252e1a589c5cc7820f75bab8ac7a084bb960c1439c1b85964b4710af48264db4",
+          "lines": 824
+        },
+        {
+          "path": "pkg/workflow/on_steps_test.go",
+          "sha256": "e4a255f9ba73442bf0085cdd09fce89651425a544caabafbab7fe778a21e287a",
+          "lines": 510
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 3591,
+      "sha": "cc64a5afc9c8bb83156108c355f0bf8854b3b32b",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2025-11-11T05:10:11Z",
+      "lines": 1475,
+      "files": [
+        {
+          "path": "pkg/cli/logs_report.go",
+          "sha256": "bd58fb174ffd9b63f41fc844c94a69c7cd9ff3c1e089cc7973e7f606f0fcd307",
+          "lines": 692
+        },
+        {
+          "path": "pkg/cli/logs_report_test.go",
+          "sha256": "cfd81e5637aaa894096587c7044d8cfe243a30004bc6f1e4df43b24c047faa6a",
+          "lines": 783
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 7009,
+      "sha": "1cb5173d47020cf535af17cceaf9c186b6caec04",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2025-12-19T23:27:36Z",
+      "lines": 432,
+      "files": [
+        {
+          "path": "pkg/workflow/aw_info_steps_test.go",
+          "sha256": "791bc71402c0154afd63d42d17666d5b73de72c3bc636cfe5c30b95386e333b5",
+          "lines": 129
+        },
+        {
+          "path": "pkg/workflow/compiler_permissions_test.go",
+          "sha256": "a1490121729c100b5c6bb8cbcfb73d4dfb71aff395a3ad993368aec7eb7f2523",
+          "lines": 303
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 8400,
+      "sha": "6b1413efc9d0e20df4ad3a24824083d1730d5b39",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-01-01T02:02:21Z",
+      "lines": 2312,
+      "files": [
+        {
+          "path": "pkg/workflow/action_pins.go",
+          "sha256": "d68c8318700deb1fbbf9351d1edca137eb89470a5190bb06a4a2a2daf935c995",
+          "lines": 376
+        },
+        {
+          "path": "pkg/workflow/action_pins_test.go",
+          "sha256": "709ad8af1a7d4d3db2a103b4d2282baa014766c26d9e97d6f59c35698704277c",
+          "lines": 966
+        },
+        {
+          "path": "pkg/workflow/step_types.go",
+          "sha256": "b56a1a87e846e97b6206c2c725077ae7ad358b0e08a8919dd51cc8d3d69d2bbf",
+          "lines": 230
+        },
+        {
+          "path": "pkg/workflow/step_types_test.go",
+          "sha256": "fb32ac2d0017bd17bdb052eebb536aaf008009cca0f461b476150859e37249c5",
+          "lines": 740
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw",
+      "number": 931,
+      "sha": "d3c29a9fa8b20f419befc7cb2027adc386cf702a",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2025-09-19T03:37:28Z",
+      "lines": 1986,
+      "files": [
+        {
+          "path": "pkg/constants/constants.go",
+          "sha256": "55b18ff2951252b95021d3e3e04e76d0d2501506d2e3ff3052b52e8fe90dcba6",
+          "lines": 67
+        },
+        {
+          "path": "pkg/parser/mcp.go",
+          "sha256": "a6c04a23c16eec2e445a04545f232d3eb378e76fc358dd7fe92887ebb22bf1ce",
+          "lines": 422
+        },
+        {
+          "path": "pkg/parser/mcp_test.go",
+          "sha256": "672464960091d750fa24ed11c89b16370693bb3b9d95cdee58d6acfdd427a240",
+          "lines": 785
+        },
+        {
+          "path": "pkg/workflow/custom_engine_test.go",
+          "sha256": "1a64dee19bce214a1c20bb1421aaa732d109ed10a7480401fd7503ff1e781e8b",
+          "lines": 466
+        },
+        {
+          "path": "pkg/workflow/mcps.go",
+          "sha256": "66733a3f7e959506df9b867c8a1c794e97c877996a7f8942f808024438e01f11",
+          "lines": 246
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw-mcpg",
+      "number": 1585,
+      "sha": "68bb2952270d7de1d2f7a424fb92cbcabd44af1c",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-03-05T12:52:45Z",
+      "lines": 3183,
+      "files": [
+        {
+          "path": "internal/cmd/root.go",
+          "sha256": "b9540227c2236b240941812beef0f7d7dd886c5deaeaeabe1950bf2286cb25a6",
+          "lines": 493
+        },
+        {
+          "path": "internal/config/config_core.go",
+          "sha256": "7bb5c5e5ed5b468c85ae81255ef4c5ebb638724bccd99adc4e3b03eec58c0034",
+          "lines": 258
+        },
+        {
+          "path": "internal/config/config_test.go",
+          "sha256": "f69348e4ede3fbe3d939a0a909cddff832149c927c4231258bee377e8967eba7",
+          "lines": 1630
+        },
+        {
+          "path": "internal/launcher/launcher.go",
+          "sha256": "25617f213bc377d0d1491c5c82a1aa198b08225a4a18d00833910f234f22c7b0",
+          "lines": 273
+        },
+        {
+          "path": "internal/server/handlers.go",
+          "sha256": "e91ee7b1e08da2fcfc76d9da889eec64f9f065d96ee374e681e74391da7cd6ee",
+          "lines": 114
+        },
+        {
+          "path": "internal/server/health.go",
+          "sha256": "f9040d217220ac55f6f5c67b110b5fdf656a0e5b28fe8ec7600440450f1acc67",
+          "lines": 59
+        },
+        {
+          "path": "internal/server/http_helpers.go",
+          "sha256": "529506773ba78889accf84800005a55c7175da6f1f52c5066a8707370a6973a9",
+          "lines": 168
+        },
+        {
+          "path": "internal/server/routed.go",
+          "sha256": "0bf1f519ba7f23ba828a44bf35e557551958bc3a887a7e73ea4032657ac544ea",
+          "lines": 188
+        }
+      ]
+    },
+    {
+      "repo": "github/gh-aw-mcpg",
+      "number": 186,
+      "sha": "0b0d3b038bb7c5b513bc584a8604ef64e9679dea",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-01-12T08:54:39Z",
+      "lines": 925,
+      "files": [
+        {
+          "path": "internal/logger/rpc_logger.go",
+          "sha256": "83cb10af38fac83e2d3119342ea6891becf09f2be87837119222af0bfc093623",
+          "lines": 324
+        },
+        {
+          "path": "internal/logger/rpc_logger_test.go",
+          "sha256": "e58e0aa2a51f7d3563a1c3aac3f1f830f46388a5a17cde8d071ce0395c00b8a1",
+          "lines": 601
+        }
+      ]
+    },
+    {
+      "repo": "github/hotkey",
+      "number": 145,
+      "sha": "a991102d81fdeecb439cb6609e42bafdf7a8ad1c",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2025-10-07T19:46:06Z",
+      "lines": 752,
+      "files": [
+        {
+          "path": "src/index.ts",
+          "sha256": "a3201b3f7b21c2d12a778aea50d220c5f418a9ab5b3c4a9ea116dce19551791f",
+          "lines": 88
+        },
+        {
+          "path": "test/test-normalize-hotkey.js",
+          "sha256": "ecef20cff91d2b03edf7847885171219b33bc32fd84fbce923b026b151f3db38",
+          "lines": 42
+        },
+        {
+          "path": "test/test-radix-trie.js",
+          "sha256": "9c8f65d196028a1863ded334925eaa16aae8842eca4010db52818fe6cd9ed990",
+          "lines": 63
+        },
+        {
+          "path": "test/test.js",
+          "sha256": "ddc1cbfb54025615e0179b14f7304e574f2ce90b73ee52efd6bceaa8073c8cb3",
+          "lines": 541
+        },
+        {
+          "path": "vitest.config.js",
+          "sha256": "e739802d5f64d2cf17a63f2f969f32c6ea6027f62fb040ae370e7ca1f3e1560a",
+          "lines": 18
+        }
+      ]
+    },
+    {
+      "repo": "goravel/example",
+      "number": 108,
+      "sha": "1cce1661916a6ddc6b868a69d0fff3c3b90c491a",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-03-14T13:24:05Z",
+      "lines": 95,
+      "files": [
+        {
+          "path": "tests/feature/crypt_test.go",
+          "sha256": "cba6e2ace5227143c6661fc4aef1f40155f54f1dd4a270c2fb7cef7a7404e4e6",
+          "lines": 95
+        }
+      ]
+    },
+    {
+      "repo": "goruck/home-generative-agent",
+      "number": 270,
+      "sha": "4555de9648019c4f7cae1879914b5cef4b3dffa3",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-02-27T04:09:47Z",
+      "lines": 4679,
+      "files": [
+        {
+          "path": "custom_components/home_generative_agent/audit/models.py",
+          "sha256": "db64a26e8fbe73cdfe9c8c6e88a0b21af6c7bed6bb2c7173a8b4d8aaa8967514",
+          "lines": 42
+        },
+        {
+          "path": "custom_components/home_generative_agent/audit/store.py",
+          "sha256": "815883dfe2ac3c52bc1543b5b45605bf2e93c47c9277b8b1bb89c63da7eed107",
+          "lines": 147
+        },
+        {
+          "path": "custom_components/home_generative_agent/const.py",
+          "sha256": "3fcfe316c2ec9f9671132c5621bac5ca9c2f433209a97a28ad77b57acdd64c7b",
+          "lines": 701
+        },
+        {
+          "path": "custom_components/home_generative_agent/sentinel/engine.py",
+          "sha256": "28f1cd2d371a600635fb8b8553719b5e8d3cb570d577b975bef9ac24cf8d5b76",
+          "lines": 697
+        },
+        {
+          "path": "custom_components/home_generative_agent/sentinel/execution.py",
+          "sha256": "6163df9918834fd2023121b71c04adc1e027d4348a5087407703e7ca995acd60",
+          "lines": 462
+        },
+        {
+          "path": "custom_components/home_generative_agent/sentinel/suppression.py",
+          "sha256": "9e78667d3085b955e1363357e3b58b776e59a75ba96278c4a126bf531b905128",
+          "lines": 544
+        },
+        {
+          "path": "custom_components/home_generative_agent/sentinel/trigger_scheduler.py",
+          "sha256": "5a99312f7017c45c4ca1458b04be69f455f1bb89185b1e76c5e20676c8c85c22",
+          "lines": 336
+        },
+        {
+          "path": "tests/custom_components/home_generative_agent/test_event_driven_trigger.py",
+          "sha256": "051b7f38d075e2deaa71a2f5cdee052d866e7d3c0d34b83ab946e9a61ede72aa",
+          "lines": 352
+        },
+        {
+          "path": "tests/custom_components/home_generative_agent/test_execution_service.py",
+          "sha256": "fbf60f85aae85b567ff5b8491d1213debf3e5509ee54b7f11e1210386ef6dac8",
+          "lines": 437
+        },
+        {
+          "path": "tests/custom_components/home_generative_agent/test_sentinel_end_to_end.py",
+          "sha256": "e04a68353448c7ce595503fad863a95965d6428a055a81e37e1769566a607635",
+          "lines": 137
+        },
+        {
+          "path": "tests/custom_components/home_generative_agent/test_suppression_upgrades.py",
+          "sha256": "3ac0b6bd45f316663fc16053c7b2f3894ca02ffc5c631caf5af1aaebe9af7795",
+          "lines": 474
+        },
+        {
+          "path": "tests/custom_components/home_generative_agent/test_trigger_scheduler.py",
+          "sha256": "f63f0467ba5ad54820f6cae4923e9e5b3f68e0aa6b75131c52b74f5d6bd067aa",
+          "lines": 350
+        }
+      ]
+    },
+    {
+      "repo": "graphistry/pygraphistry",
+      "number": 807,
+      "sha": "c2cf6361c7ca21d77e3c59701fcfe116020deaaf",
+      "agent": "Claude_Code",
+      "license": "BSD-3-Clause",
+      "language": "python",
+      "mergedAt": "2025-10-19T15:46:26Z",
+      "lines": 119,
+      "files": [
+        {
+          "path": "graphistry/__init__.py",
+          "sha256": "2de5be390504849fb557a4115d82391317eeebe1964d55c2b743792b35e0197d",
+          "lines": 119
+        }
+      ]
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 3083,
+      "sha": "9272556063e19c53970cb52305d1897c9273952c",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-30T20:39:15Z",
+      "lines": 727,
+      "files": [
+        {
+          "path": "src/resources/extensions/gsd/paths.ts",
+          "sha256": "a9ca676d555e523a098bfb29475c72eac1e0bf382dacceab51ac3bdb0b830ce0",
+          "lines": 562
+        },
+        {
+          "path": "src/resources/extensions/gsd/tests/gsdroot-worktree-detection.test.ts",
+          "sha256": "13b182c3d3b3e9f40800361160928cb7bb8a17f2f31ad08a28cd06dea9616934",
+          "lines": 165
+        }
+      ]
+    },
+    {
+      "repo": "gsd-build/gsd-2",
+      "number": 412,
+      "sha": "2b453c7f32bf3891de24fb40845c3bfb3dcfcc44",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-14T21:26:21Z",
+      "lines": 10133,
+      "files": [
+        {
+          "path": "packages/pi-coding-agent/src/core/agent-session.ts",
+          "sha256": "e443b1f342e724811c0f9e656dd88a025f07262363e00870a45fd25eb6cbc8be",
+          "lines": 3225
+        },
+        {
+          "path": "packages/pi-coding-agent/src/core/auth-storage.ts",
+          "sha256": "330425134405a8d8dc4195aa822770dd0d0268276a01a0734b85366341015d05",
+          "lines": 787
+        },
+        {
+          "path": "packages/pi-coding-agent/src/core/fallback-resolver.test.ts",
+          "sha256": "da31314817e2aa117e4155f47ce7c65e390e0323faa1c1a69bf389227438779b",
+          "lines": 230
+        },
+        {
+          "path": "packages/pi-coding-agent/src/core/fallback-resolver.ts",
+          "sha256": "09171e549faf542d7df34aa5000514c002f6028b5e6f77268bd7a4b3ebf0304b",
+          "lines": 166
+        },
+        {
+          "path": "packages/pi-coding-agent/src/core/index.ts",
+          "sha256": "e446aa3a9f934f6024b1a682d2e5ae74c62e5cd061624a4c1e6e84f79801b08b",
+          "lines": 63
+        },
+        {
+          "path": "packages/pi-coding-agent/src/core/settings-manager.ts",
+          "sha256": "2bec6b35ed83ed9526a0bbb43b430b1d11055262cd525f3a51a5baae89a0a69a",
+          "lines": 1080
+        },
+        {
+          "path": "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
+          "sha256": "44fd19a247452a66b0a2d5707c61536bb9196f414575e74e34be1e359ea999db",
+          "lines": 4582
+        }
+      ]
+    },
+    {
+      "repo": "holoviz/panel",
+      "number": 8403,
+      "sha": "547692ea687dfa7ee8033f02e5d5297e096a8a89",
+      "agent": "Copilot",
+      "license": "BSD-3-Clause",
+      "language": "python",
+      "mergedAt": "2026-02-02T09:46:34Z",
+      "lines": 1328,
+      "files": [
+        {
+          "path": "panel/tests/ui/test_custom.py",
+          "sha256": "17b0fa9165308550e27e778a95e7b1718c69cf2fd545bd5bca82d742fdb109c9",
+          "lines": 1328
+        }
+      ]
+    },
+    {
+      "repo": "homeassistant-ai/ha-mcp",
+      "number": 229,
+      "sha": "3a9faf19d8f98308a0315115cc1876c9ec057213",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2025-12-01T20:22:46Z",
+      "lines": 362,
+      "files": [
+        {
+          "path": "src/ha_mcp/tools/tools_traces.py",
+          "sha256": "c2c30e9379a9cb66b3759a3bf5b7a1d8b5bf4cd69b32ef0f0ee410c7c0761e0c",
+          "lines": 362
+        }
+      ]
+    },
+    {
+      "repo": "ithacaxyz/porto",
+      "number": 458,
+      "sha": "3d7fc679b5a7185774ebda1a66216fb16607e2fb",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-06-12T11:14:35Z",
+      "lines": 4716,
+      "files": [
+        {
+          "path": "apps/dialog/src/routes/-components/Email.tsx",
+          "sha256": "4005aa11333651ed549e7b8ddd0c2f748dc235eaf05c8c1ce12c07628527e6ba",
+          "lines": 111
+        },
+        {
+          "path": "apps/dialog/src/routes/dialog/wallet_prepareUpgradeAccount.tsx",
+          "sha256": "1ee8b164cd42d0a89bd93141c10bc2c256a517626370ce675d8ae1295484d26e",
+          "lines": 71
+        },
+        {
+          "path": "src/core/internal/mode.ts",
+          "sha256": "29b49617cb7498627198b430d658c2024b64ee402bf6841c3f9efddf95a1bd87",
+          "lines": 448
+        },
+        {
+          "path": "src/core/internal/modes/contract.ts",
+          "sha256": "4890fae74eb9a5e019268039269b5a4b5392bf5f69e674afab63ddb6f51c622a",
+          "lines": 583
+        },
+        {
+          "path": "src/core/internal/modes/dialog.ts",
+          "sha256": "ffa1c9dda0f280f57160f8394eabee3ce00d254b1d45ca51857ce2a4e140430e",
+          "lines": 862
+        },
+        {
+          "path": "src/core/internal/modes/rpcServer.ts",
+          "sha256": "b5f2f9de30e7ee7d4b60765b21ed265abc3e0ea3a9bf6dd12deb8aa1ee0d72a7",
+          "lines": 824
+        },
+        {
+          "path": "src/core/internal/provider.ts",
+          "sha256": "6a00157b843d753d1983cf8cd9c67001f0ab01703974583f9358cd7473088ff8",
+          "lines": 1140
+        },
+        {
+          "path": "src/core/internal/typebox/rpc.ts",
+          "sha256": "f4b34d2ca05bcef7990a2f8d0317cd831d4eb09dbdc3bfc30132976338ad12f0",
+          "lines": 677
+        }
+      ]
+    },
+    {
+      "repo": "jdx/hk",
+      "number": 326,
+      "sha": "a0fcb5ab309ecbde6ad1cd00292cf36631ad0433",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2025-10-03T15:59:00Z",
+      "lines": 164,
+      "files": [
+        {
+          "path": "src/cli/util/check_symlinks.rs",
+          "sha256": "17c5a0d76a12b32ffe4c24f2a8d6e440ac08de5dd40cb9d3312a71497175353e",
+          "lines": 127
+        },
+        {
+          "path": "src/cli/util/mod.rs",
+          "sha256": "1672be46955d2030b3433f0865df0c586237e81ff8db55050e63156c0ffa3e5a",
+          "lines": 37
+        }
+      ]
+    },
+    {
+      "repo": "jdx/hk",
+      "number": 434,
+      "sha": "6e0c13e50f63547ecda87db5e04c2281e84d9043",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2025-11-19T21:22:26Z",
+      "lines": 1367,
+      "files": [
+        {
+          "path": "src/git.rs",
+          "sha256": "da59c1329d0523e1cca3a5b4b1c39749a835d6caa27e238a64dc95329a05d607",
+          "lines": 1367
+        }
+      ]
+    },
+    {
+      "repo": "jdx/mise",
+      "number": 6439,
+      "sha": "be38fabb0742a1d58792edd5bf688bf16c5a3beb",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2025-09-27T15:23:21Z",
+      "lines": 1175,
+      "files": [
+        {
+          "path": "src/backend/http.rs",
+          "sha256": "c2840ba885be3a76cbf1ebb629f78a0939ad1ca1637cb7da3657a393515451e7",
+          "lines": 488
+        },
+        {
+          "path": "src/backend/static_helpers.rs",
+          "sha256": "f3695c7c8acd1fb49bdb6f080d8d6a7a928546bc5181898a27f45291e2fc96af",
+          "lines": 687
+        }
+      ]
+    },
+    {
+      "repo": "jdx/mise",
+      "number": 7285,
+      "sha": "41b13a49cf71e1b5ae3ad1038097f482469638e4",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2025-12-14T14:36:18Z",
+      "lines": 410,
+      "files": [
+        {
+          "path": "docs/.vitepress/config.ts",
+          "sha256": "4640b3b52fb03ef5c195c662c227035776744b40d803db59f3f70a537f7c378f",
+          "lines": 410
+        }
+      ]
+    },
+    {
+      "repo": "jdx/mise",
+      "number": 8004,
+      "sha": "b56cfdd88722af3a78bd05fb4414a58a8434bcf0",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-02-04T22:12:10Z",
+      "lines": 321,
+      "files": [
+        {
+          "path": "src/toolset/tool_request_set.rs",
+          "sha256": "abeb3cb332a5aa13a7ff36c7abee48ef94f9e331746d2f11b855f48ac5bd9ff8",
+          "lines": 321
+        }
+      ]
+    },
+    {
+      "repo": "jdx/mise",
+      "number": 8275,
+      "sha": "b78abf51c60728ab4e25a2ab5aa6cb7fc4a95aeb",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-02-21T15:10:30Z",
+      "lines": 572,
+      "files": [
+        {
+          "path": "src/cmd.rs",
+          "sha256": "a507010e5ab932d3ff27af711c96c85f31b689e53c32817fcaeff75f5e02fc26",
+          "lines": 572
+        }
+      ]
+    },
+    {
+      "repo": "joshmedeski/sesh",
+      "number": 325,
+      "sha": "3880253be6963cf11dfca8b07ccbf64070ce2c06",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-02-02T15:42:27Z",
+      "lines": 792,
+      "files": [
+        {
+          "path": "configurator/configurator.go",
+          "sha256": "6e30e79dac7ee4e695d0391806194a05a0e61a2f2e81560c636995ecaa19c852",
+          "lines": 179
+        },
+        {
+          "path": "configurator/configurator_test.go",
+          "sha256": "b194669803293b6f3e8f53277948272a16ea73d6c2e74e693c096edee70eac07",
+          "lines": 152
+        },
+        {
+          "path": "seshcli/clone.go",
+          "sha256": "a1ecceefde4f2e4b727b66cdb4b7b9df697f0b40f0ebe3225524a96f5654c353",
+          "lines": 45
+        },
+        {
+          "path": "seshcli/connect.go",
+          "sha256": "a65788cf4b264ecf51af89206f291ffa795a903db35158943751527bb131ac24",
+          "lines": 63
+        },
+        {
+          "path": "seshcli/deps.go",
+          "sha256": "bc43ed2f14327ffb21852c42572483b2902d6bc1db60154eb161933b49c89399",
+          "lines": 142
+        },
+        {
+          "path": "seshcli/last.go",
+          "sha256": "1af1e54a32b3ae82639b48333d409e85cf80bad98babf664774c663949ed55a6",
+          "lines": 30
+        },
+        {
+          "path": "seshcli/list.go",
+          "sha256": "133bde202c2dca8a041328fb6870704bff6f1981c2a62bde57c5fc2b82e4f9ca",
+          "lines": 78
+        },
+        {
+          "path": "seshcli/preview.go",
+          "sha256": "c5d8efdc086562651238c856c9939219a02a161b39394dadc349a8553aa3b4a2",
+          "lines": 39
+        },
+        {
+          "path": "seshcli/root.go",
+          "sha256": "dd36e82f366cff11381978a6af84b341113ff2643538399c28f46cadec642664",
+          "lines": 33
+        },
+        {
+          "path": "seshcli/root_command.go",
+          "sha256": "f12d6a9f79417ee02fe82951c0ed07672cb517e527b5bf1fc0ef9d6f32b01c75",
+          "lines": 31
+        }
+      ]
+    },
+    {
+      "repo": "jrkropp/open-webui-developer-toolkit",
+      "number": 354,
+      "sha": "448f662a70dd9439c89644f33168a5d933491555",
+      "agent": "OpenAI_Codex",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2025-05-24T20:02:44Z",
+      "lines": 2432,
+      "files": [
+        {
+          "path": ".tests/test_pipeline.py",
+          "sha256": "bcf2192a81b9a3f76fb7cc0de0f8b6922e9d494fa2d86e0f6bd2f16cbee669e2",
+          "lines": 1140
+        },
+        {
+          "path": "functions/pipes/openai_responses_api_pipeline.py",
+          "sha256": "5ca6bf9ef5d274965161f2462eee96e8eee8b510f9819de5dd7b4c4b162764fa",
+          "lines": 1292
+        }
+      ]
+    },
+    {
+      "repo": "liam-hq/liam",
+      "number": 3189,
+      "sha": "f0cbae7ca08f33c9f508eecb7b4e49b263972793",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-08-28T00:43:43Z",
+      "lines": 25,
+      "files": [
+        {
+          "path": "frontend/apps/app/components/SessionDetailPage/components/Chat/components/ChatInput/CtaBar.tsx",
+          "sha256": "4704f303f6c12a1911e6d8b1952600659e1caa9d83f839cdd3fe64c12d6ef917",
+          "lines": 25
+        }
+      ]
+    },
+    {
+      "repo": "liam-hq/liam",
+      "number": 3937,
+      "sha": "3b121dc4043dbd7f99e476849c91ffa75d62d222",
+      "agent": "Devin",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-10-30T02:50:04Z",
+      "lines": 516,
+      "files": [
+        {
+          "path": "frontend/apps/app/components/SessionDetailPage/SessionDetailPageClient.tsx",
+          "sha256": "98cc273860b968df4bb78cfb659a027b64db8fe062b4a7cf1cf20877ae9096ab",
+          "lines": 216
+        },
+        {
+          "path": "frontend/apps/app/components/SessionDetailPage/components/Output/Output.tsx",
+          "sha256": "29da3c71d510e655c7e9b605c1e13c69deb3c1617f6f7334747be16a61f73aa3",
+          "lines": 104
+        },
+        {
+          "path": "frontend/apps/app/components/SessionDetailPage/components/Output/components/Migrations/Migrations.tsx",
+          "sha256": "50cfdc866014156eb5ec71dd9ee9f666ea12b631a6455e67a22f83bd39cd13bb",
+          "lines": 33
+        },
+        {
+          "path": "frontend/apps/app/components/SessionDetailPage/components/Output/components/Migrations/MigrationsViewer/MigrationsViewer.tsx",
+          "sha256": "b039a38176fc6a3bb1f48fb494a67df326a8abb8174c063e85ca04e703011585",
+          "lines": 16
+        },
+        {
+          "path": "frontend/apps/app/components/SessionDetailPage/components/Output/components/Migrations/MigrationsViewer/useMigrationsViewer/useMigrationsViewer.tsx",
+          "sha256": "2b73cab73736cc9d3ae4e05c6224bd512abd3652dafe874ebb73e2cee3170a20",
+          "lines": 92
+        },
+        {
+          "path": "frontend/apps/app/components/SessionDetailPage/types.ts",
+          "sha256": "518cd2b59f981b5dce0ca88103a933b3ec0a01fbf55f9745824232f753634054",
+          "lines": 55
+        }
+      ]
+    },
+    {
+      "repo": "longbridge/openapi",
+      "number": 485,
+      "sha": "579e395b2e30c5c4b0724e339121d1312d473738",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-03-22T02:49:52Z",
+      "lines": 2067,
+      "files": [
+        {
+          "path": "rust/src/quote/types.rs",
+          "sha256": "195f9f26c1bfe96576907280859319de0a7d14e321914045cd7bd4045d52f533",
+          "lines": 2067
+        }
+      ]
+    },
+    {
+      "repo": "mbailey/voicemode",
+      "number": 79,
+      "sha": "15076417091ac5f6403bc0f852569283bdcdb4c8",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2025-10-12T08:01:53Z",
+      "lines": 1388,
+      "files": [
+        {
+          "path": "installer/voicemode_install/__init__.py",
+          "sha256": "c4a6c24bbf30a80ec7e36c168fc6b7560a5843bd346e82e04a0c915bfecffd61",
+          "lines": 4
+        },
+        {
+          "path": "installer/voicemode_install/checker.py",
+          "sha256": "c977cb6243f108a2bae2140a42eb9a224665cbfd0692c566347a7357780a7512",
+          "lines": 192
+        },
+        {
+          "path": "installer/voicemode_install/cli.py",
+          "sha256": "04c7620c36eeb629e351763d93a824b75d50198bb961385a4f90cc097d43c888",
+          "lines": 298
+        },
+        {
+          "path": "installer/voicemode_install/hardware.py",
+          "sha256": "8f86c3bf5bfc6eaca18b2b16b130f817ea842511be6bc675a3ea8f7f1a1f42de",
+          "lines": 93
+        },
+        {
+          "path": "installer/voicemode_install/installer.py",
+          "sha256": "bd2d86d2de9ad6365cc65b3f828ee80ccaa73582c7645d87fe065ad5d46eb31d",
+          "lines": 144
+        },
+        {
+          "path": "installer/voicemode_install/logger.py",
+          "sha256": "52935e805d83fb2fbb46d8738734853221cf45a155d3d176014c608e6e5bd8fc",
+          "lines": 91
+        },
+        {
+          "path": "installer/voicemode_install/system.py",
+          "sha256": "4c159d3fda4d4c7f41b5a6707b8372cef103a10b810a3ea0a87b49c80c858aaa",
+          "lines": 142
+        },
+        {
+          "path": "scripts/test_installer.py",
+          "sha256": "d74dbee37487e9f1d81d619f5f68b66899d1342cd7e35c6344460fa82673f43f",
+          "lines": 424
+        }
+      ]
+    },
+    {
+      "repo": "medplum/medplum",
+      "number": 8353,
+      "sha": "a8993736e75f9350a12d58a7ce57e14ae1a38139",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2026-02-03T23:38:29Z",
+      "lines": 369,
+      "files": [
+        {
+          "path": "packages/generator/src/index.ts",
+          "sha256": "d807c77d3c314fc6958d2bbd985b9b654473921aa5559998aa2bc478a7e65745",
+          "lines": 369
+        }
+      ]
+    },
+    {
+      "repo": "microsoft/vscode",
+      "number": 292645,
+      "sha": "9140aa3debb96452cb67cf6e11fe2de4518031d7",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-02-04T03:38:29Z",
+      "lines": 1784,
+      "files": [
+        {
+          "path": "src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.ts",
+          "sha256": "aa4ce728f4cc99fdd13239dcf5de3907bcbc053d6145ed47a99f02aa45804056",
+          "lines": 1784
+        }
+      ]
+    },
+    {
+      "repo": "milvus-io/milvus",
+      "number": 47972,
+      "sha": "9f52ec1afe8932c5494c1c1c3df0da09ae9295fa",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2026-03-02T07:55:20Z",
+      "lines": 13053,
+      "files": [
+        {
+          "path": "internal/datacoord/task_stats.go",
+          "sha256": "3f8935f3c4b071cf9d0cb02b8eb0bf0e77bc0ae94b00f70d6df53db07d5e5175",
+          "lines": 386
+        },
+        {
+          "path": "internal/datacoord/task_stats_test.go",
+          "sha256": "2137a5e6eb168788f5fb2e4fd2ed278b39b9aee366e207faca54227ad6e91ba0",
+          "lines": 686
+        },
+        {
+          "path": "internal/metastore/kv/rootcoord/kv_catalog.go",
+          "sha256": "4567d2b7fd203be8b3f2e5c593908a040b9ba2c502a2ce8a5e237cb9787f2186",
+          "lines": 1703
+        },
+        {
+          "path": "internal/metastore/kv/rootcoord/kv_catalog_test.go",
+          "sha256": "ed3c6c355860ae691f73d97ef8f84eebfb6ea52bc2d41c99d4e6477dd7163c84",
+          "lines": 3260
+        },
+        {
+          "path": "internal/proxy/impl_test.go",
+          "sha256": "68979730298e2013ed49dc8ff8186a48e5b0ceddea2190d9c5b81a1420595c64",
+          "lines": 2126
+        },
+        {
+          "path": "internal/proxy/proxy_test.go",
+          "sha256": "05e108150e4856f5b028ac0949e0671a5306f08923cac592315cdc72a8b6758d",
+          "lines": 4623
+        },
+        {
+          "path": "internal/proxy/task_import.go",
+          "sha256": "7387f71386a9c1871d940ce378f059b61d0896859f3a401bf934774902460f86",
+          "lines": 269
+        }
+      ]
+    },
+    {
+      "repo": "mlflow/mlflow",
+      "number": 18124,
+      "sha": "473bad5356506e43357920b1d3d12403a0245498",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-10-04T03:34:59Z",
+      "lines": 414,
+      "files": [
+        {
+          "path": "tests/server/jobs/test_jobs.py",
+          "sha256": "5951c38c507a89caafac1b8eab20996d3290f18b9bb934b387bf284c36199178",
+          "lines": 414
+        }
+      ]
+    },
+    {
+      "repo": "mnfst/manifest",
+      "number": 1197,
+      "sha": "75e03536b420548e1d33bb9495471b920b092db3",
+      "agent": "OpenAI_Codex",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-22T22:14:23Z",
+      "lines": 5236,
+      "files": [
+        {
+          "path": "packages/backend/src/common/utils/anthropic-model-id.ts",
+          "sha256": "f24a5b303cfc08461275a7bcdaa369f13795839c3ab224c0d7da46e655b4c793",
+          "lines": 35
+        },
+        {
+          "path": "packages/backend/src/model-prices/model-name-normalizer.spec.ts",
+          "sha256": "b73e37e833283d92a6b4c4ac4cd501c6583734d883e4e17d979bc724bde98dce",
+          "lines": 225
+        },
+        {
+          "path": "packages/backend/src/model-prices/model-name-normalizer.ts",
+          "sha256": "0478154c80b5590a652cef6210dc11e2505da50796fef936eb95f52bf9c9531a",
+          "lines": 141
+        },
+        {
+          "path": "packages/backend/src/model-prices/model-pricing-cache.service.spec.ts",
+          "sha256": "1214a45d74f14da322ac8a960eab64fc881666c8f7b4ca803497b09601df4561",
+          "lines": 205
+        },
+        {
+          "path": "packages/backend/src/routing/model-discovery/model-discovery.service.spec.ts",
+          "sha256": "2b24c750ada5dad160004f0252b0d12d88d2854c3874a054475f0d44387f7a5b",
+          "lines": 1444
+        },
+        {
+          "path": "packages/backend/src/routing/model-discovery/model-fallback.ts",
+          "sha256": "b79b8d3f0f202c8526d1062a2555cf057e72479d535bdfd297e985ed0d09e97f",
+          "lines": 242
+        },
+        {
+          "path": "packages/backend/src/routing/proxy/__tests__/proxy.service.spec.ts",
+          "sha256": "f8bac2fe9f20cbea4586c8e234b42ca8082d3490f43b8cdf20fd60aab7ac5da1",
+          "lines": 2366
+        },
+        {
+          "path": "packages/backend/src/routing/proxy/proxy.service.ts",
+          "sha256": "facd955151b04059fd714b12b239fd214e8729f858f994e72a9b8e2b4d07a0a8",
+          "lines": 578
+        }
+      ]
+    },
+    {
+      "repo": "moltis-org/moltis",
+      "number": 16,
+      "sha": "b5f3968ad8ba788ce2aa73b56c99795ed148793e",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-02-02T03:01:39Z",
+      "lines": 10017,
+      "files": [
+        {
+          "path": "crates/agents/src/auth_profiles.rs",
+          "sha256": "dc36a7f94baaf3b78c691b7a5589889fa26b4c66f46da6630368687ed2f1c0c3",
+          "lines": 22
+        },
+        {
+          "path": "crates/agents/src/providers/anthropic.rs",
+          "sha256": "870cef4e5c28dbccdcb7bee72bec5d2280f6e1419cbcac2f090eef607820cbcf",
+          "lines": 308
+        },
+        {
+          "path": "crates/agents/src/providers/github_copilot.rs",
+          "sha256": "8b9c541fa2fc2582e104a6400bdcfa8b7ff4c432c16f1ea49aa8acc5ed524a9d",
+          "lines": 863
+        },
+        {
+          "path": "crates/agents/src/providers/kimi_code.rs",
+          "sha256": "8bfb58bb5f597f5d8861f83462414e725ccb071801a77ead0c5861b0d79be5e8",
+          "lines": 687
+        },
+        {
+          "path": "crates/agents/src/providers/mod.rs",
+          "sha256": "c805fe6d85321c759cf663d9ef28346faf39c369c1707a562f45e8b9d7b90d0a",
+          "lines": 1122
+        },
+        {
+          "path": "crates/agents/src/providers/openai.rs",
+          "sha256": "9b154b18a808dfe339789bc4c2efa07738db1e1deff3b692dae82ed08a05a351",
+          "lines": 249
+        },
+        {
+          "path": "crates/agents/src/providers/openai_codex.rs",
+          "sha256": "dcc8deb2d7ebdf9d61342db2a046f0cb1e910d02fbeb7d1df4c9bba2101a0cf4",
+          "lines": 615
+        },
+        {
+          "path": "crates/config/src/schema.rs",
+          "sha256": "22803ae9f192a9fe36bce644404940fe28c1149da7df2fa1f414de0d19f7bb63",
+          "lines": 332
+        },
+        {
+          "path": "crates/gateway/src/auth.rs",
+          "sha256": "0b3bfd8be2a2ad1bd93450c19f1795abeed5875de6030ede4372fd2128053742",
+          "lines": 764
+        },
+        {
+          "path": "crates/gateway/src/auth_routes.rs",
+          "sha256": "798f1fe84563e3e29503e1e63f5a66922dd448b36b779f417a8ec8a47bd786ca",
+          "lines": 523
+        },
+        {
+          "path": "crates/gateway/src/provider_setup.rs",
+          "sha256": "eafb2dc9ebb07a32ada8fb35a053f4705093d889debada4a4e630e6b6e610b25",
+          "lines": 833
+        },
+        {
+          "path": "crates/gateway/src/server.rs",
+          "sha256": "3bb93026ee3247a75b7149e7c7eb0e373365f6e13790be62c5494d0447926a49",
+          "lines": 1465
+        },
+        {
+          "path": "crates/gateway/src/state.rs",
+          "sha256": "04683b6d24a9883b75fd3e7be8997b3bb63afe1396ab834947a85972e9c33ac5",
+          "lines": 300
+        },
+        {
+          "path": "crates/gateway/tests/auth_middleware.rs",
+          "sha256": "ed40799001a2cb4d1986ad838ee09feda0845d9230935cca62fa373b7cb8a1fe",
+          "lines": 551
+        },
+        {
+          "path": "crates/memory/src/embeddings_openai.rs",
+          "sha256": "21aa5cbf6a95440cbcf695897c893aba18fef024a52e0aa8f1ca3dc1d1cbf996",
+          "lines": 94
+        },
+        {
+          "path": "crates/oauth/src/device_flow.rs",
+          "sha256": "dcd357fbb1f08386ba2249ac27e89c47a34ee284cc5734bcd68d583899c0f34f",
+          "lines": 428
+        },
+        {
+          "path": "crates/oauth/src/flow.rs",
+          "sha256": "af126c52f98d75ae9e0726f2185cb431d35561cd9de9966896cdeaf361bcb646",
+          "lines": 125
+        },
+        {
+          "path": "crates/oauth/src/lib.rs",
+          "sha256": "a3fa5104d3bc89954adf60d229b4f352fc6f8299126d23fdbd42fe8ab12f9a0c",
+          "lines": 20
+        },
+        {
+          "path": "crates/oauth/src/types.rs",
+          "sha256": "4ac8f63bfe3c92b3ec3409d23a85a2e67664525100c76e61ecec9863bd1081e7",
+          "lines": 79
+        },
+        {
+          "path": "crates/oauth/tests/oauth_tests.rs",
+          "sha256": "33db025cb41857b3ce1dd7cd42d88ac13145240af572d7525a44effa397fe61b",
+          "lines": 139
+        },
+        {
+          "path": "crates/telegram/src/bot.rs",
+          "sha256": "14a3f9f9488013c9984576ebfd01e9356c2cf924c97e7de8097aaf0e1f8367de",
+          "lines": 174
+        },
+        {
+          "path": "crates/telegram/src/config.rs",
+          "sha256": "8793314310d82933879634525e2a60e7b07ffdc1dc905466d6d651722f5474f0",
+          "lines": 130
+        },
+        {
+          "path": "crates/telegram/src/plugin.rs",
+          "sha256": "6ec1bcd48a9e243fb1c88cef9bf6e0dba3939e5bc2c80869707c233564bb6c7c",
+          "lines": 194
+        }
+      ]
+    },
+    {
+      "repo": "nansen-ai/nansen-cli",
+      "number": 165,
+      "sha": "2d379f7792a922d2b1fc64b1dee2918a87a467c3",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-02T08:05:18Z",
+      "lines": 4033,
+      "files": [
+        {
+          "path": "src/__tests__/trading.test.js",
+          "sha256": "2436e4c17a78faa1b1eb2901787689492bd1d69d736a5fb78f8a64afa0079805",
+          "lines": 1186
+        },
+        {
+          "path": "src/cli.js",
+          "sha256": "fd1d3bd213f98b9e9bea430088bb512d89098dfafcc7f7238306920c99e5e9e0",
+          "lines": 1466
+        },
+        {
+          "path": "src/trading.js",
+          "sha256": "1fcc2caba2ddd59208c83b99e47c7354649f50c78bab14e5e9f8e8ebaa16a4b6",
+          "lines": 1381
+        }
+      ]
+    },
+    {
+      "repo": "nearai/ironclaw",
+      "number": 436,
+      "sha": "6481448d50bbc5fb1223e6b33df8147e3e109c06",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-03-01T03:58:07Z",
+      "lines": 12886,
+      "files": [
+        {
+          "path": "src/agent/agent_loop.rs",
+          "sha256": "c2393d8a8491b13b1fa67c9e3bced5a4820ab59548685ccb5a608cb4f06501d9",
+          "lines": 869
+        },
+        {
+          "path": "src/agent/commands.rs",
+          "sha256": "4732558e568a795e7edd5e78169be11cc7ec45c21800594a9e0d9bc9f73d20b7",
+          "lines": 758
+        },
+        {
+          "path": "src/agent/worker.rs",
+          "sha256": "6df0838ae2c31800cd4cb236bead9be5ecfa3de60575ef459b3c20101d2b1581",
+          "lines": 1303
+        },
+        {
+          "path": "src/channels/web/handlers/jobs.rs",
+          "sha256": "b9860e685f61759ef0f41c4860a21a450b415b0a7c72d36aa53dd1534f88a31b",
+          "lines": 581
+        },
+        {
+          "path": "src/channels/web/server.rs",
+          "sha256": "194b97a47a21078ad6803ec35e67089bddfed8a130022b1fbc38c5fdf57d2e62",
+          "lines": 2222
+        },
+        {
+          "path": "src/db/libsql/jobs.rs",
+          "sha256": "245cc396c72def64c6b41e708b99c3b1fe74e5cc5cf5907d415a2486f51a4629",
+          "lines": 394
+        },
+        {
+          "path": "src/db/mod.rs",
+          "sha256": "943681b5a723d4df0025797491f2e05c6bfcc8cd3febc77e164462ca6bc48856",
+          "lines": 417
+        },
+        {
+          "path": "src/db/postgres.rs",
+          "sha256": "8fee9f93cc553d8070aefd6e9361921d1b915afa4c2625a3baba6d3bd732b187",
+          "lines": 664
+        },
+        {
+          "path": "src/history/mod.rs",
+          "sha256": "d2507377fe412cef197355a49589079dac6145ae0243e94f2c6216b64b8b4715",
+          "lines": 20
+        },
+        {
+          "path": "src/history/store.rs",
+          "sha256": "4d1cd3e042215129554dbc9d38431da753dc78b4f1f0085d77f74cd22fa17d9a",
+          "lines": 1915
+        },
+        {
+          "path": "src/main.rs",
+          "sha256": "6db46d2e7e94dea4f2e09a649db37c613f2ae75441a8ae9633fab1903ba6989b",
+          "lines": 1135
+        },
+        {
+          "path": "src/tools/builtin/job.rs",
+          "sha256": "c0cf54127b6783f6f22d5929722fb1a97a2e1adf16f597f8ab653e995438896c",
+          "lines": 1835
+        },
+        {
+          "path": "src/tools/builtin/mod.rs",
+          "sha256": "c795819d87e3a77e839fe3798cab1670e2c7ba141561db33a9cddf2b8db7b5a0",
+          "lines": 40
+        },
+        {
+          "path": "src/tools/registry.rs",
+          "sha256": "380a6f39ef1f31ef8ed8d39f2852892260271da49b85b5f9139362c6c360df09",
+          "lines": 733
+        }
+      ]
+    },
+    {
+      "repo": "nesquikm/mcp-rubber-duck",
+      "number": 51,
+      "sha": "476c7900cbc65b96b76d7d80107edd092aa66883",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-02-03T08:07:01Z",
+      "lines": 7646,
+      "files": [
+        {
+          "path": "src/config/config.ts",
+          "sha256": "eb3d465b9b2d0cc1bca2eee406bff8486381ce455f09a6b70ee0f69a52df6ab1",
+          "lines": 634
+        },
+        {
+          "path": "src/config/types.ts",
+          "sha256": "458e95a4d179e49f69daf573fe4fdae1fa614e7bcd122842448ff909f559b78e",
+          "lines": 339
+        },
+        {
+          "path": "src/providers/cli/cli-provider.ts",
+          "sha256": "cb3aa5ded0f061d5123470710c2479843bca9d9b0a4f3e0b6b0c922a00c2180e",
+          "lines": 206
+        },
+        {
+          "path": "src/providers/cli/index.ts",
+          "sha256": "8b8dc75d98ab2cf7b850b029ea43b4b0c145bfa38e03470ccbd40650d13b28db",
+          "lines": 5
+        },
+        {
+          "path": "src/providers/cli/output-parsers.ts",
+          "sha256": "060aa5cb7b2d33c62c8aa2a6b6632c88c2af4b36b93e9f44c534d654ba13422c",
+          "lines": 174
+        },
+        {
+          "path": "src/providers/cli/presets.ts",
+          "sha256": "3a18088b6aacf5f27c161d691408ae7b6e63c2084641436182c7bc651fa8f156",
+          "lines": 128
+        },
+        {
+          "path": "src/providers/cli/process-runner.ts",
+          "sha256": "7389d2cb5380045d6b6145cabc4fbbb1e0cb51f25108ede7f9a3f6ad010b5893",
+          "lines": 109
+        },
+        {
+          "path": "src/providers/enhanced-manager.ts",
+          "sha256": "5d74f23e9f9e7b93e16fef43081632793406c02dab854da0723319b0e6d66a51",
+          "lines": 396
+        },
+        {
+          "path": "src/providers/manager.ts",
+          "sha256": "8853171721714fc510b9dfe453f45c086ce385fd30f94beda8e1a32c8d4b35ca",
+          "lines": 335
+        },
+        {
+          "path": "src/providers/provider.ts",
+          "sha256": "14dfdd6613c6c251d24b5602dcf4d8abce31ad5e983db99069b4fba480ff4a38",
+          "lines": 230
+        },
+        {
+          "path": "src/providers/types.ts",
+          "sha256": "fa9172ff0aee8b9039043d1f465e97e05058fa9751c830875ee57015323a7448",
+          "lines": 93
+        },
+        {
+          "path": "src/tools/list-ducks.ts",
+          "sha256": "d8b45aaf7901cddb611d1a3bd40c5a8b571d3d448ee742d5a2649c8a6b21cacb",
+          "lines": 73
+        },
+        {
+          "path": "tests/cli-output-parsers.test.ts",
+          "sha256": "875f78f5f9cef10c9901629a90bbad60226dd2765f83167201dba116c4e91b3f",
+          "lines": 301
+        },
+        {
+          "path": "tests/cli-presets.test.ts",
+          "sha256": "65e8a1cf338180d2dde121593d73a0a0ad7de2ffcb3316c638062d72c87a445d",
+          "lines": 160
+        },
+        {
+          "path": "tests/cli-process-runner.test.ts",
+          "sha256": "2f6d9c1f95547237c9c92e1d662096ec02ea1b039067a39fa7702c8665874de1",
+          "lines": 118
+        },
+        {
+          "path": "tests/cli-provider.test.ts",
+          "sha256": "1d05a8f9b673fae2ee9ee9feb4ba7b4809ad02dbd1d0a37ad44276d33f3edd88",
+          "lines": 668
+        },
+        {
+          "path": "tests/config.test.ts",
+          "sha256": "a48ca09a2d5dfb65f29426ac36ad45a16ada02cb2f3870f4f6376261b267f6b4",
+          "lines": 897
+        },
+        {
+          "path": "tests/providers.test.ts",
+          "sha256": "d7bdf0c2c1414d98cdb6c8405834e477202700973df900cc675ddbe2127400db",
+          "lines": 1843
+        },
+        {
+          "path": "tests/tools/compare-ducks.test.ts",
+          "sha256": "cb9a0b07b721405745352820f8b9f2a88be36320a9112187b2a1e1d3798d2844",
+          "lines": 342
+        },
+        {
+          "path": "tests/tools/duck-council.test.ts",
+          "sha256": "00dcd3c7436e7249fe5f73e7e8c3f951ab05f48e00fbe42e88bd1df622f31af8",
+          "lines": 367
+        },
+        {
+          "path": "tests/tools/list-ducks.test.ts",
+          "sha256": "7aef8f7decd53fa832535c120fe08b881189183b17a9b6e72bf2a13722c23cda",
+          "lines": 228
+        }
+      ]
+    },
+    {
+      "repo": "nexi-lab/nexus",
+      "number": 2203,
+      "sha": "8335c1973e7f142535e7288766501a8433925853",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2026-02-19T11:52:22Z",
+      "lines": 884,
+      "files": [
+        {
+          "path": "src/nexus/search/query_expansion.py",
+          "sha256": "7f9f7e3b800a1f04d140fed37cf2f2c7365f83e1d8c8c992ff891ca671e735e0",
+          "lines": 884
+        }
+      ]
+    },
+    {
+      "repo": "nexi-lab/nexus",
+      "number": 2774,
+      "sha": "ef0397e056c1bdf3a3720bfd5a90569eb192e30a",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2026-03-05T02:30:36Z",
+      "lines": 9063,
+      "files": [
+        {
+          "path": "src/nexus/__init__.py",
+          "sha256": "19557ccbb971a34d9d2f92b2a1c3a0b240e60df0343e34eab34c50ee7ae47dce",
+          "lines": 566
+        },
+        {
+          "path": "src/nexus/bricks/auth/stores/nexusfs_provisioner.py",
+          "sha256": "353d8c0cc7a2b0e39fc5c00bcfbd209956ce84b1de009037a430b12649432f74",
+          "lines": 63
+        },
+        {
+          "path": "src/nexus/bricks/mcp/server.py",
+          "sha256": "03f859019f5a0d1fe492d47d17a0f71848b898cc200807230d2d2fe46bedfcb5",
+          "lines": 1855
+        },
+        {
+          "path": "src/nexus/cli/commands/server.py",
+          "sha256": "55d49c1df2a5848908002c4225d71cd9e5808ac009314061b047b941aef1f51a",
+          "lines": 1521
+        },
+        {
+          "path": "src/nexus/factory/service_routing.py",
+          "sha256": "a53238ed12f7f3c81865a98812f2af9744e27a9672729ff57a220522f045be46",
+          "lines": 196
+        },
+        {
+          "path": "src/nexus/server/auth/auth_routes.py",
+          "sha256": "867876da2cb7987cb77281b13959708fee00fed54e3306ff8ecc41a95cf42695",
+          "lines": 1537
+        },
+        {
+          "path": "src/nexus/system_services/agents/agent_provisioning.py",
+          "sha256": "080b45108c7d07af89edd8af45a55241421e002018f0434ecf993abb7cd05fd6",
+          "lines": 190
+        },
+        {
+          "path": "tests/unit/auth/test_protocols.py",
+          "sha256": "5fe09fa2b4d5d709f35bfc95d6fe3f7a3f2d4dc94510890615369a302ff50326",
+          "lines": 337
+        },
+        {
+          "path": "tests/unit/bricks/mcp/test_mcp_server_tools.py",
+          "sha256": "43f3b440b40b62a5fc63d555027af338b1affac30f52ce0188f636c8a5dd267f",
+          "lines": 1414
+        },
+        {
+          "path": "tests/unit/core/test_nexus_fs_mounts.py",
+          "sha256": "3db6ed85ba3971e0c65dca5932d5ff8e0b3756d1b334502aa3e3a4369501e6d9",
+          "lines": 969
+        },
+        {
+          "path": "tests/unit/core/test_nexus_fs_provision_user.py",
+          "sha256": "5e9ff63295fe0c4e1386b746673cc238c6ae3246219819d81d64a4a0526d2b13",
+          "lines": 324
+        },
+        {
+          "path": "tests/unit/factory/test_service_routing.py",
+          "sha256": "1e4693bc6223fc198e3946e6ee4a6387585eb33edc6135b1d373048fbf66fece",
+          "lines": 91
+        }
+      ]
+    },
+    {
+      "repo": "nexi-lab/nexus",
+      "number": 2871,
+      "sha": "829022d10ae71ebf8b28c3cb9430753a9b7016d2",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2026-03-10T08:19:36Z",
+      "lines": 23290,
+      "files": [
+        {
+          "path": "src/nexus/__init__.py",
+          "sha256": "f0f3aa876da6b3a5771253dd15395cb2f799e897f39c5425527de438c75412c4",
+          "lines": 582
+        },
+        {
+          "path": "src/nexus/bricks/auth/stores/nexusfs_provisioner.py",
+          "sha256": "d5c47e20a206761f80e8fbde164b616b246ded63d06b537ab278afbb36581075",
+          "lines": 63
+        },
+        {
+          "path": "src/nexus/bricks/filesystem/scoped_filesystem.py",
+          "sha256": "76cfdae85c3d809b054fa0e6d592b95efb68d3f18795769066c5353ff458154f",
+          "lines": 346
+        },
+        {
+          "path": "src/nexus/bricks/llm/llm_document_reader.py",
+          "sha256": "47a2d2ab64053bd1e04988d1446c14aa9b37899358df57f61d91082a9379fe94",
+          "lines": 302
+        },
+        {
+          "path": "src/nexus/bricks/mcp/server.py",
+          "sha256": "08c6497ae413b72282f1a4cbca5e73850c68731a5bf01e4cfda62f2863f49449",
+          "lines": 1837
+        },
+        {
+          "path": "src/nexus/bricks/memory/memory_provider.py",
+          "sha256": "75529161ca4ca6ace01d4713a9e1dfe8bc239536f5d174f565d1cfcace40183d",
+          "lines": 166
+        },
+        {
+          "path": "src/nexus/bricks/mount/mount_service.py",
+          "sha256": "2a28338084bde3bb7b52a4271c474dbd4855e02f11f5264503efbda35ebbce8d",
+          "lines": 1131
+        },
+        {
+          "path": "src/nexus/cli/commands/agent.py",
+          "sha256": "c264ddefb1d6c3907465d09bff3320acfad4ba818a7fb01d244f2b23189c8574",
+          "lines": 386
+        },
+        {
+          "path": "src/nexus/cli/commands/connectors.py",
+          "sha256": "5ddcef1a03cfefb4a4883ff9eb607a4b24abbf651c0575b0688d89c3c386c8dd",
+          "lines": 184
+        },
+        {
+          "path": "src/nexus/cli/commands/directory.py",
+          "sha256": "4195a62233637b2863d767eaf3e38fd62f9a8370b0d499e1cc88962e383b85e2",
+          "lines": 423
+        },
+        {
+          "path": "src/nexus/cli/commands/file_ops.py",
+          "sha256": "aa8482ee3a6af69744d46b68b2bf6226250d597f2e719ed7641ac3e07067f66b",
+          "lines": 929
+        },
+        {
+          "path": "src/nexus/cli/commands/memory.py",
+          "sha256": "ebe9840c55aef9a263a19074c99c580d0aa709753b6ea8ab0a9ed441a5da5dcb",
+          "lines": 934
+        },
+        {
+          "path": "src/nexus/cli/commands/mounts.py",
+          "sha256": "944f93bc9c7ea955765b01787a4fdcbc35627ce757364797b628176b20c01adc",
+          "lines": 850
+        },
+        {
+          "path": "src/nexus/cli/commands/operations.py",
+          "sha256": "250ba0ecc0eb130372bd37961f6b380f07951b3b4d82f35205b245ebd66329ea",
+          "lines": 321
+        },
+        {
+          "path": "src/nexus/cli/commands/rebac.py",
+          "sha256": "cbb1732615ab768ed41249aafc53f9951d67f31ed39ba9ca3ec62f56af0c0650",
+          "lines": 1138
+        },
+        {
+          "path": "src/nexus/cli/commands/sandbox.py",
+          "sha256": "66344083c9e0f74abf9b3fb1dbd777dd346399cc7abc1c2fb072e8c71d4b6109",
+          "lines": 566
+        },
+        {
+          "path": "src/nexus/cli/commands/search.py",
+          "sha256": "18b3cb646522d8304debbc780cef0ed5af7e566815711855adba37ebf00cc5c1",
+          "lines": 580
+        },
+        {
+          "path": "src/nexus/cli/commands/workspace.py",
+          "sha256": "19742b0f17d5126d105db201db184a92772a9b5b18eb2450b680cbe2d9b865af",
+          "lines": 578
+        },
+        {
+          "path": "src/nexus/contracts/filesystem/filesystem_abc.py",
+          "sha256": "8d6eceb5c4df636e6de584b090cb12d1ad4165bc7d2b332e059a4f17a98e2af2",
+          "lines": 381
+        },
+        {
+          "path": "src/nexus/core/nexus_fs.py",
+          "sha256": "d82aa45e189a3f6857a033a83871cfd3c1aec2cbcec7638fbf4770848e96fdbd",
+          "lines": 4096
+        },
+        {
+          "path": "src/nexus/factory/_memory.py",
+          "sha256": "0b9d13870ad70237c66705ac6a39a9255a311d128733e45affa07991732cd81b",
+          "lines": 128
+        },
+        {
+          "path": "src/nexus/factory/orchestrator.py",
+          "sha256": "5c13c75b472d37bc3266312e2f5ab590f8ce23214099209041ebf846f44b67a2",
+          "lines": 576
+        },
+        {
+          "path": "src/nexus/fuse/ops/_shared.py",
+          "sha256": "b009c595116b5c0733c7b9421d1c08f4b1eb9db86862976d3b758bd7c25c6427",
+          "lines": 618
+        },
+        {
+          "path": "src/nexus/server/api/v2/routers/events_replay.py",
+          "sha256": "5c7dd3e85e20c800de3e6c97baf4d099f3cad8db03215b7883bb7b70d5b9cc1a",
+          "lines": 393
+        },
+        {
+          "path": "src/nexus/server/api/v2/routers/manifest.py",
+          "sha256": "8ddf83dcb5bdbd743fadb336289ce8bb425eb39cdfc4d59712708dc26ac0ae0d",
+          "lines": 294
+        },
+        {
+          "path": "src/nexus/server/auth/auth_routes.py",
+          "sha256": "91d2460b9a3ca983f6e8ebde7b22445829c9b91a2a2efc54e991374b9ab69874",
+          "lines": 1543
+        },
+        {
+          "path": "src/nexus/server/cache_warmer.py",
+          "sha256": "e5a2311f200281fb810002d401312a0d4ea2c51a1136b442666f5efbdf475d05",
+          "lines": 1059
+        },
+        {
+          "path": "src/nexus/server/fastapi_server.py",
+          "sha256": "ac893821bdc254baaa9b0e962937153cb41b04b5fc05a350f03fb7bcd9b1d6a0",
+          "lines": 879
+        },
+        {
+          "path": "src/nexus/server/rpc/handlers/filesystem.py",
+          "sha256": "7fc85e627ba0cecd99652b3227f04e4f8dd0c2cd32123aca3cfd710bc0833f24",
+          "lines": 464
+        },
+        {
+          "path": "src/nexus/server/rpc/handlers/memory.py",
+          "sha256": "145ee7bbffa668040d730c7fdb11d4e5b251cf422da3421e2bec30b3522ab2b1",
+          "lines": 161
+        },
+        {
+          "path": "src/nexus/system_services/agent_runtime/tool_dispatcher.py",
+          "sha256": "6c8e81cbeeecf9aa0fd2694968fb6a6dac98dba69910d27d1473961d052d4e68",
+          "lines": 522
+        },
+        {
+          "path": "src/nexus/system_services/agents/agent_provisioning.py",
+          "sha256": "b63dcdfe8a92c1a471b1517733f9a2d8cba2469cf1567bb0d847346611c61f92",
+          "lines": 190
+        },
+        {
+          "path": "src/nexus/system_services/gateway.py",
+          "sha256": "d2156354c6a90e4ad175ee27a1a6a17f73c3a4dbade8385aaf6cc97e3a9474ae",
+          "lines": 670
+        }
+      ]
+    },
+    {
+      "repo": "nomadkaraoke/karaoke-gen",
+      "number": 318,
+      "sha": "e8f6e1c03b116b1b103008c079a3cbc0f3bbc05a",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-01-20T18:16:55Z",
+      "lines": 173,
+      "files": [
+        {
+          "path": "frontend/e2e/helpers/debug-prod-template.mjs",
+          "sha256": "3d981b6c730b2aecb1757dda7340791a0f9325ccfb9d9b990af73948a598dbf9",
+          "lines": 173
+        }
+      ]
+    },
+    {
+      "repo": "nomadkaraoke/karaoke-gen",
+      "number": 599,
+      "sha": "046ca69a1cfcf3fb8ed09045c85cbb28f77bc78a",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-25T18:36:03Z",
+      "lines": 3076,
+      "files": [
+        {
+          "path": "backend/tests/test_modal_gcp_migration.py",
+          "sha256": "55eaa3bb5bbc1405503cca573b7c03c734bb80fd17ee1fcdaf03895647eeeaa4",
+          "lines": 515
+        },
+        {
+          "path": "backend/workers/audio_worker.py",
+          "sha256": "eecbe3b7e3e9b44886278058c0706501124172a5260a503f1ca5e367a7ae3aae",
+          "lines": 848
+        },
+        {
+          "path": "infrastructure/__main__.py",
+          "sha256": "dac8fdbb0cdd3792668a97f670ba2c4ce01f1a2b48806d1d32caa440e8ef4a07",
+          "lines": 627
+        },
+        {
+          "path": "infrastructure/modules/iam/github_actions_sa.py",
+          "sha256": "2053da45e2e85ce7d961f42b05d0c4d34858cc577ffaf1ebc403b010e8caaf24",
+          "lines": 230
+        },
+        {
+          "path": "karaoke_gen/audio_processor.py",
+          "sha256": "04f15248c1f77992a1cc7aa1289de784dfa963b11c6f9892a3f7730426419ebf",
+          "lines": 856
+        }
+      ]
+    },
+    {
+      "repo": "nrwl/nx",
+      "number": 31887,
+      "sha": "68d4d4e994f4371e2445dfffc4c6dc147a813168",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2025-12-16T11:05:58Z",
+      "lines": 6476,
+      "files": [
+        {
+          "path": "packages/js/src/plugins/typescript/plugin.spec.ts",
+          "sha256": "153cc4ce73492649a05cfeb60a4d37f55e917834a1557be8a47c9853736762f7",
+          "lines": 6133
+        },
+        {
+          "path": "packages/js/src/plugins/typescript/util.ts",
+          "sha256": "e5d0a94eac6bae1aefe950fd2747b811c4e736ea11deb21de02140fe41fac2bd",
+          "lines": 343
+        }
+      ]
+    },
+    {
+      "repo": "obsessiondb/rudel",
+      "number": 83,
+      "sha": "bb127dc8c787c3b0497a8cd3a6790913d66d621a",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-02T04:13:06Z",
+      "lines": 238,
+      "files": [
+        {
+          "path": "apps/web/src/components/analytics/CliSetupHint.tsx",
+          "sha256": "964196094193c010808d8d27cb9f679d8ba16d7b9c8a43decfb8e6248f1b01b9",
+          "lines": 52
+        },
+        {
+          "path": "apps/web/src/pages/dashboard/OverviewPage.tsx",
+          "sha256": "4e66eb19d9476be258c415568e04ebd7f38220fdeac77a2ef874c9e9fb129065",
+          "lines": 186
+        }
+      ]
+    },
+    {
+      "repo": "onikan27/claude-code-monitor",
+      "number": 18,
+      "sha": "27f84487fd58f7ffdc55460a19d614859bdc285a",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-01-23T14:42:47Z",
+      "lines": 198,
+      "files": [
+        {
+          "path": "src/utils/focus.ts",
+          "sha256": "0000cdd457801e0fe234fea92ae3a85bfa00a12c56ae7781dc38c47ae7034c6e",
+          "lines": 198
+        }
+      ]
+    },
+    {
+      "repo": "open-cluster-management-io/api",
+      "number": 416,
+      "sha": "68cef17a0643a744bcc75b7bfdc1d156466b035d",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2026-01-08T01:53:15Z",
+      "lines": 169,
+      "files": [
+        {
+          "path": "addon/v1beta1/types_addondeploymentconfig.go",
+          "sha256": "079c513f2c0d0e29e3a1df22658d155293c4c1f9ed9083e6754a0db6ff19b470",
+          "lines": 169
+        }
+      ]
+    },
+    {
+      "repo": "open-metadata/OpenMetadata",
+      "number": 23671,
+      "sha": "90e93949cf41b713676df2fbbd7ae2952d85c621",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-11-12T19:29:56Z",
+      "lines": 2887,
+      "files": [
+        {
+          "path": "ingestion/src/metadata/ingestion/source/database/dbt/metadata.py",
+          "sha256": "19e78717d19fd6e38ee04695a5fe619f243e6b7fad1af804de810e2ee3a7cd21",
+          "lines": 1345
+        },
+        {
+          "path": "ingestion/src/metadata/ingestion/source/database/dbt/models.py",
+          "sha256": "251663b439c707906c28e84e27f68b8036aca7f499e96c6d17f9a094006e8a7d",
+          "lines": 48
+        },
+        {
+          "path": "ingestion/tests/unit/test_dbt.py",
+          "sha256": "9a78a7660bf10f7f3082f791cea359bde5bb29a425288720998e6db394e908c7",
+          "lines": 1494
+        }
+      ]
+    },
+    {
+      "repo": "openacid/slim",
+      "number": 182,
+      "sha": "5fb2da6560e0dda945043b94e2109a32735c5f6e",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-03-10T17:15:16Z",
+      "lines": 186,
+      "files": [
+        {
+          "path": "array/base.go",
+          "sha256": "6769799e0f4d1388fc6dd9faddfc8b60a060b414127b8750ef3ab3f170e45b84",
+          "lines": 186
+        }
+      ]
+    },
+    {
+      "repo": "openclaw/openclaw",
+      "number": 1751,
+      "sha": "0f662c29353c378dc1770267aa537026a5650683",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-01-25T10:03:08Z",
+      "lines": 4389,
+      "files": [
+        {
+          "path": "extensions/bluebubbles/src/channel.ts",
+          "sha256": "25fcbed1e7aa6ce613fe7eeb5ed064112a8a2a4f8fdd3e2423087b4f968f8671",
+          "lines": 400
+        },
+        {
+          "path": "extensions/bluebubbles/src/send.test.ts",
+          "sha256": "349a6ee4ef0746c603ec43156ec1704d335979e2d6da374dc7f7014a461d64cb",
+          "lines": 759
+        },
+        {
+          "path": "extensions/bluebubbles/src/send.ts",
+          "sha256": "e9800d941530cf86d4c16a3b4aa41d4566a87fa704eaaa4ee63ef520f7ad1f5e",
+          "lines": 419
+        },
+        {
+          "path": "src/agents/tools/message-tool.ts",
+          "sha256": "32862b843eac8e8d1402c4b0d5a1ab72887ce26dc64d2f3610454e521b82221b",
+          "lines": 400
+        },
+        {
+          "path": "src/channels/plugins/types.core.ts",
+          "sha256": "73dc8bd1a8ef6c0811edd1b32377aa88afb447fef9abec0d53933a110e9e0249",
+          "lines": 328
+        },
+        {
+          "path": "src/infra/outbound/message-action-runner.ts",
+          "sha256": "9f997da129d311544a12f85030a01213e80ea199a069ca12e0905db6812e1773",
+          "lines": 987
+        },
+        {
+          "path": "src/infra/outbound/message.ts",
+          "sha256": "b32d6d05dabc42292a8dcaae626486f1e155087715f32bf5c7d0daf92bb9405e",
+          "lines": 297
+        },
+        {
+          "path": "src/infra/outbound/outbound-policy.ts",
+          "sha256": "aaa82e15c174886d072fc10968a62ad871206e0fd28a72ad2eb96eaaff3296ce",
+          "lines": 171
+        },
+        {
+          "path": "src/infra/outbound/outbound-send-service.ts",
+          "sha256": "9594d0444010eb43bb735c4e3e0f88e8ae5b6ea704b48721375700262a8a58fd",
+          "lines": 192
+        },
+        {
+          "path": "src/infra/outbound/target-resolver.ts",
+          "sha256": "18372bc313417846dc558cdd79ee49cd7739e33a0f7a37bf93832315fb518a7a",
+          "lines": 436
+        }
+      ]
+    },
+    {
+      "repo": "openclaw/openclaw",
+      "number": 22296,
+      "sha": "5dae5e6ef2119fb7e2de40eadd6557a8a47b0861",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-02-21T03:03:58Z",
+      "lines": 715,
+      "files": [
+        {
+          "path": "src/auto-reply/reply/agent-runner-utils.ts",
+          "sha256": "e53fb0389699cdf59f00f6999252c2d2a5e28ef1183e2a6fb33a2e01bf85745e",
+          "lines": 252
+        },
+        {
+          "path": "src/auto-reply/reply/followup-runner.ts",
+          "sha256": "e5470a6be43e142f1058660204af5cb41ac50c50727cef86e385a89e6d9d0ceb",
+          "lines": 295
+        },
+        {
+          "path": "src/auto-reply/reply/queue/types.ts",
+          "sha256": "b1d158f8447259bae4db9d3eeeb4f85f586c21ea30250bea5412c8988d1f3c58",
+          "lines": 92
+        },
+        {
+          "path": "src/shared/chat-envelope.ts",
+          "sha256": "99ebe73bb376fa1902281ccc04484742b33559b6e6c45e87f56be6baea9f5213",
+          "lines": 76
+        }
+      ]
+    },
+    {
+      "repo": "owid/owid-grapher",
+      "number": 5292,
+      "sha": "37f3fc33d10d63ce7bcbbecc2435223716e3b025",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2025-08-25T06:44:57Z",
+      "lines": 268,
+      "files": [
+        {
+          "path": "baker/DeployUtils.ts",
+          "sha256": "5c224437539388a420531f608a4c6b5bf1e144302c96f3a7b67265f156c54ac8",
+          "lines": 216
+        },
+        {
+          "path": "baker/startDeployQueueServer.ts",
+          "sha256": "d2d9ee6c18bb06a6fc52ca7aae56520dc665fa251a94a6d878b04eae3cfcd7a1",
+          "lines": 52
+        }
+      ]
+    },
+    {
+      "repo": "pandas-dev/pandas",
+      "number": 64548,
+      "sha": "2aef62f7fd5b11d84faabd571d0221f6b31c5407",
+      "agent": "Claude_Code",
+      "license": "BSD-3-Clause",
+      "language": "python",
+      "mergedAt": "2026-03-15T22:27:02Z",
+      "lines": 5170,
+      "files": [
+        {
+          "path": "pandas/compat/__init__.py",
+          "sha256": "3e8b66368e06c4e65956239b90693a3ac854f9774d33ee19ffc6d13d7d80bf39",
+          "lines": 160
+        },
+        {
+          "path": "pandas/tests/extension/test_arrow.py",
+          "sha256": "91c355ef2faa77948dca1fae8086aa782231d571c9f009701b66fe882e76da8f",
+          "lines": 3985
+        },
+        {
+          "path": "pandas/tests/interchange/test_impl.py",
+          "sha256": "0663903d0bc7d273cde0072f626e8ae244f8ca8edfc61ca055ea328870b82f35",
+          "lines": 697
+        },
+        {
+          "path": "pandas/tests/io/conftest.py",
+          "sha256": "b1eecfee569dda0c71e3309ea7626b6930b58cbd6dc61f2829fe5cf40dc225db",
+          "lines": 191
+        },
+        {
+          "path": "scripts/run_stubtest.py",
+          "sha256": "bb2e9e4b877a7101b74a8694c8d8461bffb8dd35fc80fb16ae689efd88ffa81f",
+          "lines": 137
+        }
+      ]
+    },
+    {
+      "repo": "pbakaus/agent-reviews",
+      "number": 1,
+      "sha": "c22677fd829581804a96c16d5d3b2eeffd838b84",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-06T09:04:30Z",
+      "lines": 2265,
+      "files": [
+        {
+          "path": "bin/agent-reviews.js",
+          "sha256": "b6c2aa21cecdf5372c0423cd5735aa8cdda6424436d006b1461deaf8f4a03ada",
+          "lines": 584
+        },
+        {
+          "path": "lib/comments.js",
+          "sha256": "1d0666e82a1bbe2b0c7cf2999dc59235c97f05afef0865aaf2b341dcbaa11191",
+          "lines": 531
+        },
+        {
+          "path": "lib/github.js",
+          "sha256": "ca2b005f85f379c4daf4f918c2c76a42684b6326caa3673f6f9a09860c8842a5",
+          "lines": 240
+        },
+        {
+          "path": "scripts/install-skills.js",
+          "sha256": "52b87c70c58de95dd0f424842d00e6ddd79c8e5fcab35ad7ef7df5adf8d8f8d8",
+          "lines": 52
+        },
+        {
+          "path": "test/comments.test.js",
+          "sha256": "d6c3ab7f77f71612a3265d66bfcc647bce7d1696196c3b5354599477e224c9f9",
+          "lines": 659
+        },
+        {
+          "path": "test/github.test.js",
+          "sha256": "d6fa0d233a8990379e159104041cbfd98694e11c444316b207352fda54146a3b",
+          "lines": 199
+        }
+      ]
+    },
+    {
+      "repo": "pnpm/pnpm",
+      "number": 10969,
+      "sha": "58429f9ba00f90740b0f9b95961959b348c896c4",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-15T11:31:37Z",
+      "lines": 606,
+      "files": [
+        {
+          "path": "cli/cli-utils/src/getConfig.ts",
+          "sha256": "bf75ea1c9cb036709e6e9ffdc7e94e30aa76fa06a84ff8458f0ea7ff4dfa285d",
+          "lines": 132
+        },
+        {
+          "path": "config/deps-installer/src/index.ts",
+          "sha256": "c5921f34e498db8da884f6973174538163da7ec22086d622d8bf3892b7e0e841",
+          "lines": 5
+        },
+        {
+          "path": "config/deps-installer/src/pruneEnvLockfile.ts",
+          "sha256": "9982f836db1afd5fe8383361b4d99b01498e673e07bda758b814eff467a6b1ca",
+          "lines": 37
+        },
+        {
+          "path": "config/deps-installer/src/resolveAndInstallConfigDeps.ts",
+          "sha256": "fd2eba89f2d1c8557d6975d981ce8d486c71a013901651c08a1150cd92dceeeb",
+          "lines": 139
+        },
+        {
+          "path": "config/deps-installer/src/resolvePackageManagerIntegrities.ts",
+          "sha256": "ed244f214165ad7e1f6a16e3d84f2ea433aac3369a5ff53bc9f5d5d61b555732",
+          "lines": 89
+        },
+        {
+          "path": "config/deps-installer/test/resolveAndInstallConfigDeps.test.ts",
+          "sha256": "790dc82c725e74d91a35586283dff85b5d204b6d9f5884e80bbba1f9633a1478",
+          "lines": 204
+        }
+      ]
+    },
+    {
+      "repo": "projectcalico/calico",
+      "number": 12210,
+      "sha": "9b3d1ab3a9e3ccab266af72be56d0e34414c76f6",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2026-03-27T15:39:34Z",
+      "lines": 5037,
+      "files": [
+        {
+          "path": "felix/dataplane/linux/bpf_ep_mgr.go",
+          "sha256": "9eb7c5e4686feea3d48f95c2bb1cac0b8a6b01fb5eb3a9df726e488eaa75e446",
+          "lines": 5037
+        }
+      ]
+    },
+    {
+      "repo": "prowler-cloud/prowler",
+      "number": 10161,
+      "sha": "6291429d43083bf52f005d4f8872c6079332a2a2",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2026-02-24T16:42:22Z",
+      "lines": 661,
+      "files": [
+        {
+          "path": "tests/providers/aws/services/vpc/vpc_service_test.py",
+          "sha256": "934d4982e67769a9e615cd33b021a35772e0e740ecd8627d42a8d0fefb54eda5",
+          "lines": 661
+        }
+      ]
+    },
+    {
+      "repo": "python/devguide",
+      "number": 1583,
+      "sha": "470512685664d98e7d9b20f99cdf8dfb7ac1d030",
+      "agent": "OpenAI_Codex",
+      "license": "CC0-1.0",
+      "language": "python",
+      "mergedAt": "2025-06-24T07:21:07Z",
+      "lines": 230,
+      "files": [
+        {
+          "path": "conf.py",
+          "sha256": "d3b74a530ddbe7999889a6a3f27119f0a8dd64014a0ce84f4a896be4c37defbf",
+          "lines": 230
+        }
+      ]
+    },
+    {
+      "repo": "quay/quay",
+      "number": 4535,
+      "sha": "2beba31c08b4669fbd96044379e57f2bb167d6fc",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2025-11-18T14:19:35Z",
+      "lines": 932,
+      "files": [
+        {
+          "path": "endpoints/api/logs.py",
+          "sha256": "faa021fc7664ba5ad82c94621d308934055b32be69c4662519ebd35a3c8fcf36",
+          "lines": 526
+        },
+        {
+          "path": "endpoints/api/test/test_global_readonly_superuser.py",
+          "sha256": "92b38f581c62a1d129a1617456d0606c84acaabfea6ea6184b4e4c0370845fca",
+          "lines": 406
+        }
+      ]
+    },
+    {
+      "repo": "qwibitai/nanoclaw",
+      "number": 394,
+      "sha": "495b7df5fc0f2fc1a36c52988ad3493a2dbc3ab7",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-02-22T22:04:23Z",
+      "lines": 1988,
+      "files": [
+        {
+          "path": "container/agent-runner/src/index.ts",
+          "sha256": "53b157a06d32cb1faa8bfc9fac087e36fe5085fc54838ad54dd8ce9806943c80",
+          "lines": 589
+        },
+        {
+          "path": "src/container-runner.ts",
+          "sha256": "76e82bf4b00ab2eed98081f81269bb18b306d3d04971bb4a829bf8d37ce1d89e",
+          "lines": 650
+        },
+        {
+          "path": "src/index.ts",
+          "sha256": "761b599c797653bc18b5bdad818c30f859a2b34ffad9dc15dfedcdc20fb004d7",
+          "lines": 499
+        },
+        {
+          "path": "src/task-scheduler.ts",
+          "sha256": "9588779e6afc3e0b85aebc41325b04132dec02dc716e725d9c0c1c99d7373e2a",
+          "lines": 250
+        }
+      ]
+    },
+    {
+      "repo": "risingwavelabs/risingwave",
+      "number": 24450,
+      "sha": "3f54da5177f7a1d9228d4a462e5a6fc418a71fc4",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-01-14T06:47:02Z",
+      "lines": 6026,
+      "files": [
+        {
+          "path": "src/meta/service/src/ddl_service.rs",
+          "sha256": "97cdc32c1d8dc8b342bbb990567597661a8f226a331e58e33792f16e502fc148",
+          "lines": 1680
+        },
+        {
+          "path": "src/meta/service/src/stream_service.rs",
+          "sha256": "a3c99412b0b43c19ca60cf4d6666f25d727d36a890e99464f60f1b6978a1db05",
+          "lines": 893
+        },
+        {
+          "path": "src/meta/src/barrier/command.rs",
+          "sha256": "f36f7cfc25261d946d16ee5c6038bd1bdf92892f00c38342dfd85e384983bfeb",
+          "lines": 1592
+        },
+        {
+          "path": "src/stream/src/executor/mod.rs",
+          "sha256": "8ecdc18b41193cb527c7a6afa0311ce3133ed2bbdd0323276785f9725547e6bb",
+          "lines": 1861
+        }
+      ]
+    },
+    {
+      "repo": "roborev-dev/roborev",
+      "number": 426,
+      "sha": "a5457fd05b777d49ce85528218ab6b2764c3cf8b",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-03-05T13:16:47Z",
+      "lines": 12961,
+      "files": [
+        {
+          "path": "cmd/roborev/list.go",
+          "sha256": "e5e409e95b2528d1766903192d923fe4251e86e9642443d46a38881374d59899",
+          "lines": 176
+        },
+        {
+          "path": "cmd/roborev/list_test.go",
+          "sha256": "e59f8c398ef5865d93560c88c4004dd011568b5ffc19d5b8dec764b2973666ae",
+          "lines": 341
+        },
+        {
+          "path": "cmd/roborev/review.go",
+          "sha256": "25b82d1dcb89538f342e9b19d76e90cd6650468fd0e989893766ceebecb1167a",
+          "lines": 447
+        },
+        {
+          "path": "cmd/roborev/review_test.go",
+          "sha256": "c4eb9b18122f6daa4fedda0d1451d494ded578b08a0a10502907a8f7c5b66517",
+          "lines": 626
+        },
+        {
+          "path": "cmd/roborev/show.go",
+          "sha256": "00968ce88738de932cd220a412fff92f3d25029233491f1e3c19e2668bebc703",
+          "lines": 144
+        },
+        {
+          "path": "cmd/roborev/show_test.go",
+          "sha256": "3914797275b5a2d3ae3de64ab104baf359f1292342745763476aa549c040693d",
+          "lines": 214
+        },
+        {
+          "path": "internal/daemon/ci_poller_test.go",
+          "sha256": "e2a061c156a775e6fd4c3f33b23a6afe6812164815535a270af68ca7c9e72f9b",
+          "lines": 3141
+        },
+        {
+          "path": "internal/daemon/server.go",
+          "sha256": "95eeafa71413e8a1248ebf72e4177639b71fe2cf751225479f0e60612274078b",
+          "lines": 2237
+        },
+        {
+          "path": "internal/daemon/server_jobs_test.go",
+          "sha256": "0ba158ca33e8365d551cfe4add2badf6aa95debc05db37c43c5e5e3778259524",
+          "lines": 1445
+        },
+        {
+          "path": "internal/daemon/server_repos_test.go",
+          "sha256": "22d3f6c6b6cdf285c48974a428c34e7dbc1c53a817dbe1d2b332eb14009bb11f",
+          "lines": 530
+        },
+        {
+          "path": "internal/storage/db_filter_test.go",
+          "sha256": "dfe64d83a451a5a67615f140af7cc769580c92435d65608ff99470883909918c",
+          "lines": 1204
+        },
+        {
+          "path": "internal/storage/jobs.go",
+          "sha256": "01fd649da494fdfba37e036651b4050323660e36f2e03edcacf281ebb9175b25",
+          "lines": 1840
+        },
+        {
+          "path": "internal/storage/repos.go",
+          "sha256": "b55e67af36d4ebe8b029182b94ca8e1c2f5b246215377466e379a6655f19787c",
+          "lines": 616
+        }
+      ]
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 104,
+      "sha": "0183a275635d7c3bdaf3a804454ed040caeeb786",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-12T06:11:05Z",
+      "lines": 1609,
+      "files": [
+        {
+          "path": "scripts/build_slides.py",
+          "sha256": "f8b4c273a9962141e0eb8b43601b210a8b60028529dad1d63391f07b96a02aa7",
+          "lines": 1609
+        }
+      ]
+    },
+    {
+      "repo": "robotocore/robotocore",
+      "number": 41,
+      "sha": "d0eef4135f86462223aa5e36525950becf4c7a79",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2026-03-11T05:51:45Z",
+      "lines": 1459,
+      "files": [
+        {
+          "path": "src/robotocore/services/lambda_/docker_executor.py",
+          "sha256": "2574853a77dd566c9e7a7c867187522a26e99cf2fb36128e1939f7dee82c4f91",
+          "lines": 559
+        },
+        {
+          "path": "src/robotocore/services/lambda_/invoke.py",
+          "sha256": "2cf242604b3543475610ac5723f6d882f4349eeb04a0b842e667e7490825ab80",
+          "lines": 151
+        },
+        {
+          "path": "tests/unit/services/lambda_/test_docker_executor.py",
+          "sha256": "15d84221b042c8da0b961d1a49717839f0bc554247d0598df49e5d60eef8c13c",
+          "lines": 461
+        },
+        {
+          "path": "tests/unit/services/lambda_/test_docker_integration.py",
+          "sha256": "eb30cbdcfec41d8c6889e8b922f35541e37e0c43c63eca9c434d0dec1ff5c7fd",
+          "lines": 288
+        }
+      ]
+    },
+    {
+      "repo": "rolldown/rolldown",
+      "number": 8222,
+      "sha": "316ad847ea8b82374773940d57f45b634970b4dc",
+      "agent": "Copilot",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-02-07T14:30:25Z",
+      "lines": 590,
+      "files": [
+        {
+          "path": "crates/rolldown/src/ast_scanner/import_analyzer.rs",
+          "sha256": "0566333c1d4ee9891c64c60389b8ff20b29a7ddf14f1926265b88c505c1f89f8",
+          "lines": 117
+        },
+        {
+          "path": "crates/rolldown_error/src/build_diagnostic/constructors.rs",
+          "sha256": "119f08acb461a4dcafab24d7a6416bb5fdd53cd92b0d88e1cfb8820e5cc613ba",
+          "lines": 418
+        },
+        {
+          "path": "crates/rolldown_error/src/build_diagnostic/events/assign_to_import.rs",
+          "sha256": "7d5a89b34b3b94beb1487541fb57e89163620772b7704f20cc8ec8b2c7f383fc",
+          "lines": 55
+        }
+      ]
+    },
+    {
+      "repo": "rue-language/rue",
+      "number": 634,
+      "sha": "e93605fd749d41c156109644ce5977fa7a663ad8",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2025-12-31T06:37:35Z",
+      "lines": 7945,
+      "files": [
+        {
+          "path": "crates/rue-codegen/src/aarch64/cfg_lower.rs",
+          "sha256": "1d9c39ba9d6f7559aae589033bf8c024fe485adeee2c125fea6ac624448aa380",
+          "lines": 3674
+        },
+        {
+          "path": "crates/rue-codegen/src/types.rs",
+          "sha256": "0b6b4fa99862ce9f010405cc3582ce520093d7ead63484118e2faca8a4f4ecfb",
+          "lines": 275
+        },
+        {
+          "path": "crates/rue-codegen/src/x86_64/cfg_lower.rs",
+          "sha256": "100c39dd9c32c33235806734fa54ea8336975ce3ab8f36879faa426add328f3b",
+          "lines": 3541
+        },
+        {
+          "path": "crates/rue-compiler/src/drop_glue.rs",
+          "sha256": "f0ed48ef5fde506749695a07dbe08f62522621c167ddfb673316d3754e687fca",
+          "lines": 455
+        }
+      ]
+    },
+    {
+      "repo": "rue-language/rue",
+      "number": 756,
+      "sha": "128db1ec395cd6b24210864d707dbde9ef6b9776",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-01-03T05:37:42Z",
+      "lines": 8967,
+      "files": [
+        {
+          "path": "crates/rue-air/src/sema/analysis.rs",
+          "sha256": "79a4e043586a6950715df5e2f90e1778bcdb524636ee7fced21aaf1f9ecd4fc0",
+          "lines": 8757
+        },
+        {
+          "path": "crates/rue-air/src/sema/known_symbols.rs",
+          "sha256": "d0c96fd9d05fbf873394e0778cc79f3b9d48b420b92eccb15457fbf0be430a8a",
+          "lines": 210
+        }
+      ]
+    },
+    {
+      "repo": "rue-language/rue",
+      "number": 829,
+      "sha": "9ae89650c007e4ae169fbbaf69a3f1dfd477ef91",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-01-05T04:59:52Z",
+      "lines": 13045,
+      "files": [
+        {
+          "path": "crates/rue-air/src/inference/generate.rs",
+          "sha256": "8b44a57472c70f3e4aab5988a40c65ca20f5d597725c053d24dcf83a08b7498f",
+          "lines": 2026
+        },
+        {
+          "path": "crates/rue-air/src/sema/analysis.rs",
+          "sha256": "337aeee989d1c3a025a30e2dc9dcd8bb94ef83c8cf4165fb59c997b49db2e2da",
+          "lines": 11019
+        }
+      ]
+    },
+    {
+      "repo": "rue-language/rue",
+      "number": 865,
+      "sha": "85dc8b025f94f53069054711b11452407c8e8fff",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "python",
+      "mergedAt": "2026-01-12T03:15:09Z",
+      "lines": 161,
+      "files": [
+        {
+          "path": "scripts/append-benchmark.py",
+          "sha256": "9dd10b070bf464d6021f550f6d9cc413f15a7d312b383545e5f27d350ce5f40f",
+          "lines": 161
+        }
+      ]
+    },
+    {
+      "repo": "samanhappy/mcphub",
+      "number": 367,
+      "sha": "4d736c543dbf73cc999885169df03d18bcd3fa2e",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-10-13T11:39:01Z",
+      "lines": 2210,
+      "files": [
+        {
+          "path": "frontend/src/components/ServerCard.tsx",
+          "sha256": "f114ba7383378831dbf919b913e4cd7c071002c1cc82e4264bdd2969cec87f29",
+          "lines": 387
+        },
+        {
+          "path": "frontend/src/constants/permissions.ts",
+          "sha256": "a63fd8d68fd019047898173614fdfdf25fc693dc8c683ff6cf67cfdf29d6a278",
+          "lines": 11
+        },
+        {
+          "path": "frontend/src/hooks/useSettingsData.ts",
+          "sha256": "31caeca74d73135f04d5d16891ecf6df187d48d63c79f8ff6de95a3aa2889aca",
+          "lines": 475
+        },
+        {
+          "path": "frontend/src/pages/SettingsPage.tsx",
+          "sha256": "230aba7cfe108ee9cad09db21367dad15f21c8e13d50d601469d2ae02a7f836a",
+          "lines": 870
+        },
+        {
+          "path": "src/controllers/configController.ts",
+          "sha256": "99ecc881ca07ab627db772f23098f360e7211ca81bc68dcb9a0cda9d7140b3fe",
+          "lines": 118
+        },
+        {
+          "path": "src/routes/index.ts",
+          "sha256": "ea219648fa7d3fab3b1179d6bba8e4f325be11c1592980de9b21cf8ad8b5405a",
+          "lines": 209
+        },
+        {
+          "path": "tests/controllers/configController.test.ts",
+          "sha256": "eac52456ac84b9232d49caee96e56bb9fb41c0479eea4c5cfc4c956c1583547d",
+          "lines": 140
+        }
+      ]
+    },
+    {
+      "repo": "samhotchkiss/otter-camp",
+      "number": 1491,
+      "sha": "3a55d4cac989bd0afbf2c90d31e4863545db2bf7",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-02-25T22:22:54Z",
+      "lines": 4825,
+      "files": [
+        {
+          "path": "internal/gateway/client.go",
+          "sha256": "1078dd9a7652a9d0dd72e766179f60412c5fd1596736c3d9b6d784dca545d1f5",
+          "lines": 1109
+        },
+        {
+          "path": "internal/gateway/client_test.go",
+          "sha256": "21cd1a5b72758f3f480bf608eb10d3414d4734ec407dfee0310ca576c6e9aa8a",
+          "lines": 237
+        },
+        {
+          "path": "internal/tools/resolver.go",
+          "sha256": "860e11c0911e0718c8879208d8343c31220ecfb9aa473c1b2b638b378c604c8f",
+          "lines": 629
+        },
+        {
+          "path": "internal/tools/resolver_test.go",
+          "sha256": "b9c66ae03f1aec5328c6cefa7916d0944ce9d9d8248f8fd5244e7cfd94baaa2c",
+          "lines": 1194
+        },
+        {
+          "path": "internal/turn/engine.go",
+          "sha256": "caf5cf00ca6c7b9c05f125bc07cef9c95d2e100d135b78f205de33d44488e591",
+          "lines": 1656
+        }
+      ]
+    },
+    {
+      "repo": "scylladb/scylla-rust-driver",
+      "number": 1509,
+      "sha": "ddd0db39734b2b21d27227d2b33ae82e626bfd9b",
+      "agent": "Copilot",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-01-08T14:43:57Z",
+      "lines": 219,
+      "files": [
+        {
+          "path": "scylla/src/policies/reconnect.rs",
+          "sha256": "87d6c1a02caba9901c43390995f95f2404e3a1bda0b0af5aff46609bd84e4200",
+          "lines": 219
+        }
+      ]
+    },
+    {
+      "repo": "shivasurya/code-pathfinder",
+      "number": 340,
+      "sha": "62dc10d6d5ca213532e98252495a54bb6a9b3213",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2025-11-02T01:44:24Z",
+      "lines": 2763,
+      "files": [
+        {
+          "path": "sourcecode-parser/graph/callgraph/builder.go",
+          "sha256": "4dffb0cb916af6f27ca13c45faef2a7d7be6bfcba2deccd2b837bc0eca1af54b",
+          "lines": 978
+        },
+        {
+          "path": "sourcecode-parser/graph/callgraph/builder_remote_test.go",
+          "sha256": "05e94070a7cdbe0733b75fb807266568ccd8d43a4cffde0e5ac648f362c73261",
+          "lines": 309
+        },
+        {
+          "path": "sourcecode-parser/graph/callgraph/python_version_detector.go",
+          "sha256": "06412c3cef52df0b66ca4b9b91354a69a458fb8111e6351de5dfe2b4697ac53b",
+          "lines": 120
+        },
+        {
+          "path": "sourcecode-parser/graph/callgraph/python_version_detector_test.go",
+          "sha256": "6fc421a53aa88ca1af0b3bd08b8239fa26a463c7049a2205dcb3b44b458f214d",
+          "lines": 321
+        },
+        {
+          "path": "sourcecode-parser/graph/callgraph/stdlib_registry_remote.go",
+          "sha256": "4dbb42ed6674d5d912775c175f027f9545842a24e4895b8a9894ead573c37c93",
+          "lines": 280
+        },
+        {
+          "path": "sourcecode-parser/graph/callgraph/stdlib_registry_remote_test.go",
+          "sha256": "3e208b6d315a295e7ceed48f5fc9759c4f0d736afc009bb8fb05c875e2f6a0cd",
+          "lines": 589
+        },
+        {
+          "path": "sourcecode-parser/graph/callgraph/type_inference.go",
+          "sha256": "aaf6a5ab95f6292620733eeb58969b99c2a6aa2e40d9b001424ffd37b783f2ef",
+          "lines": 166
+        }
+      ]
+    },
+    {
+      "repo": "shopware/shopware-cli",
+      "number": 710,
+      "sha": "55870987b9c00c702772d99ce7585c7429e95492",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2025-10-01T09:23:55Z",
+      "lines": 84,
+      "files": [
+        {
+          "path": "cmd/project/project_admin_build.go",
+          "sha256": "d10158c2d8380fe98ad9085ebfff42d002818e6562096002a0f3cc07b0ab52d1",
+          "lines": 84
+        }
+      ]
+    },
+    {
+      "repo": "shotgun-sh/shotgun",
+      "number": 205,
+      "sha": "7734ebab0ac8f145648274b204767e58fe9f67c2",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "python",
+      "mergedAt": "2025-12-10T15:04:20Z",
+      "lines": 2776,
+      "files": [
+        {
+          "path": "src/shotgun/agents/agent_manager.py",
+          "sha256": "88f78f9ecf31d347d246584b19048d798b072b38a7487f8612d299bf97417bc4",
+          "lines": 1532
+        },
+        {
+          "path": "src/shotgun/agents/tools/file_management.py",
+          "sha256": "524d40cfdbfb875f0f604b80af55de0a2fba64f7fc6a65ccf5285d2241d2b01d",
+          "lines": 333
+        },
+        {
+          "path": "src/shotgun/tui/screens/chat_screen/history/agent_response.py",
+          "sha256": "8469f2d6869457894cb643b8ae15d9ae229b410bb177de32207d903b2ab6ca27",
+          "lines": 71
+        },
+        {
+          "path": "src/shotgun/tui/screens/chat_screen/history/partial_response.py",
+          "sha256": "af5280246aed0e64c6109495ebafe983f4c0539e411fd7e8140eb7f8c1c97c23",
+          "lines": 54
+        },
+        {
+          "path": "test/unit/test_file_management.py",
+          "sha256": "e2e2832a935c57b71e6a114eeb88fcc4a982176634c45b33cd293f05dde6465c",
+          "lines": 786
+        }
+      ]
+    },
+    {
+      "repo": "slatedb/slatedb",
+      "number": 1305,
+      "sha": "c4aaee650d9407fe7a08282e91b61203f06733ec",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "rust",
+      "mergedAt": "2026-02-20T18:34:02Z",
+      "lines": 1570,
+      "files": [
+        {
+          "path": "slatedb/src/config.rs",
+          "sha256": "09f8ab6b3a0807c64721a8861561e66156b4a3ce4a5fb017d05fedd5daffbd4e",
+          "lines": 1570
+        }
+      ]
+    },
+    {
+      "repo": "stacklok/toolhive",
+      "number": 4079,
+      "sha": "7a30b4b6b854321f8048f260a5315fc4b4ca72e0",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "go",
+      "mergedAt": "2026-03-11T23:58:14Z",
+      "lines": 927,
+      "files": [
+        {
+          "path": "pkg/transport/proxy/transparent/delete_session_test.go",
+          "sha256": "103c0a35ddea349933968adab0588a1349102c5dcd385f57d46751d9eb4c2f89",
+          "lines": 104
+        },
+        {
+          "path": "pkg/transport/proxy/transparent/transparent_proxy.go",
+          "sha256": "5cc51e9cf3306ac531927d7073865381f2aa5067a3220da5a3adfd0a9df89489",
+          "lines": 823
+        }
+      ]
+    },
+    {
+      "repo": "suzuki-shunsuke/pinact",
+      "number": 1250,
+      "sha": "0d844574c7727508da54ad4719e119a2f69de6cf",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2025-12-05T05:15:00Z",
+      "lines": 2952,
+      "files": [
+        {
+          "path": "cmd/pinact/main.go",
+          "sha256": "cfe1d46c8e9a4e049285f3e5358393f47668524d05704ef0fa0b36101eb725ad",
+          "lines": 53
+        },
+        {
+          "path": "pkg/cli/initcmd/command.go",
+          "sha256": "b3650eb78713bf840ebfcd195b4e841aa21d554526d8ed18d4fe3a6f47846e4e",
+          "lines": 92
+        },
+        {
+          "path": "pkg/cli/migrate/command.go",
+          "sha256": "a2dcb096a836034ccd0dbcfed6f1d1c28206b4afab24b5005d6354d7574e2721",
+          "lines": 79
+        },
+        {
+          "path": "pkg/cli/run/command.go",
+          "sha256": "6fddd1af421546ac425642875523c11e95eff387c2bd985ac6ae36f39b8ba25d",
+          "lines": 383
+        },
+        {
+          "path": "pkg/cli/runner.go",
+          "sha256": "a2a3314abe5c54ec0f3bda08aa2f679202c4e850546bfdcdca197b9631fead97",
+          "lines": 60
+        },
+        {
+          "path": "pkg/cli/token/command.go",
+          "sha256": "cab743f04c2c9efbccb23caecadd11eaf6631d4b80a35653c0490cf33343ffdb",
+          "lines": 28
+        },
+        {
+          "path": "pkg/controller/migrate/ast.go",
+          "sha256": "811da99858ee9fd1c766b69d821184db37ebcf855169307e1d11411f857e6f69",
+          "lines": 160
+        },
+        {
+          "path": "pkg/controller/migrate/migrate.go",
+          "sha256": "45da00dba4d2ff2c52f11b060a40a36a73a43aadbde06aea32e7ea3b3875151d",
+          "lines": 128
+        },
+        {
+          "path": "pkg/controller/run/github.go",
+          "sha256": "fb67feb06f07a2e47460c3c6ef2dad5a726512bd3eff668f357df44c7e397b89",
+          "lines": 328
+        },
+        {
+          "path": "pkg/controller/run/github_internal_test.go",
+          "sha256": "86dd45cc302cf200abb165c518bafadeb300057aa0d61bf3e3f5aa8eba1a372f",
+          "lines": 495
+        },
+        {
+          "path": "pkg/controller/run/parse_line.go",
+          "sha256": "4acf03f8c2812b73349dd2bf1d6767382ac48ee82c391b695cbf9e54ecc227fe",
+          "lines": 494
+        },
+        {
+          "path": "pkg/controller/run/parse_line_internal_test.go",
+          "sha256": "fa2d06f92032c321723ff10bb86ac0fcf38e1a44ca0a18089d74bf76749629d2",
+          "lines": 266
+        },
+        {
+          "path": "pkg/controller/run/run.go",
+          "sha256": "48c26d2ae2beebe589a39bd23077d9aa02adb5a5d56859ae770ed11594f1a80a",
+          "lines": 290
+        },
+        {
+          "path": "pkg/github/github.go",
+          "sha256": "49b5bafecc66b5150dab23561ad6d42fbb060c0c12cd7dc8e8262cbf2bfb3e98",
+          "lines": 96
+        }
+      ]
+    },
+    {
+      "repo": "suzuki-shunsuke/pinact",
+      "number": 1282,
+      "sha": "511ec64111f5eb32380eb660a04f6ab04747e198",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2025-12-15T09:55:15Z",
+      "lines": 155,
+      "files": [
+        {
+          "path": "pkg/cli/run/command.go",
+          "sha256": "21fdf0df021ed57edba9362b39f3e2b91c0b47b9b6576635bbbb2454d9ec5b80",
+          "lines": 155
+        }
+      ]
+    },
+    {
+      "repo": "temporalio/sdk-core",
+      "number": 1164,
+      "sha": "f00f733710a864127414f79186c5b968604a301e",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-03-18T22:18:28Z",
+      "lines": 6207,
+      "files": [
+        {
+          "path": "crates/client/src/async_activity_handle.rs",
+          "sha256": "448abb1e0a8ff92a26b903faa15525a94165fec3aff4520a4001d1d95f7ebc20",
+          "lines": 302
+        },
+        {
+          "path": "crates/sdk-core/src/pollers/poll_buffer.rs",
+          "sha256": "803c2a1a318d551eec0e566e162ecbb7f9cdda1dee5e1b5b55800403fd85ff63",
+          "lines": 1271
+        },
+        {
+          "path": "crates/sdk-core/src/worker/activities.rs",
+          "sha256": "6e1e6571f861903610f18134cce2b0fdcdde9332e8f3d20acc6c8d58f454e06e",
+          "lines": 1006
+        },
+        {
+          "path": "crates/sdk-core/src/worker/client.rs",
+          "sha256": "0333120d62c658854a8fc7d27cd04b324b8860d92431823c25cd4687fe2a87c9",
+          "lines": 907
+        },
+        {
+          "path": "crates/sdk-core/src/worker/mod.rs",
+          "sha256": "8b98eacf19f072ff6afe9b04ce4012c238a362dcc89dcf9eb8b96e43cdca826a",
+          "lines": 2418
+        },
+        {
+          "path": "crates/sdk-core/src/worker/workflow/wft_poller.rs",
+          "sha256": "2ac7cda903d4fc2df0393bbf840c22c4e2604fec229db331a14b852cb0217356",
+          "lines": 303
+        }
+      ]
+    },
+    {
+      "repo": "towardsthecloud/cloudburn",
+      "number": 44,
+      "sha": "5c1a9cb3349ab3394e164b929b0e76e992f5a908",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2026-03-20T20:18:56Z",
+      "lines": 801,
+      "files": [
+        {
+          "path": "packages/cloudburn/src/cli.ts",
+          "sha256": "fa7cebc9050920f179bd95db2e648db4c1f964b08f3f0694e281abe7faa023bb",
+          "lines": 68
+        },
+        {
+          "path": "packages/cloudburn/src/commands/config.ts",
+          "sha256": "fdd7b8ed85330576fa52c7620a80fcdefbd13a7805b358d4ccf80dad0fbc81a4",
+          "lines": 257
+        },
+        {
+          "path": "packages/cloudburn/test/cli.test.ts",
+          "sha256": "1acd4271fb44771d1ef1cb752f7584e845b6b0ef07677551632ebd2f9676d7ab",
+          "lines": 46
+        },
+        {
+          "path": "packages/cloudburn/test/completion.test.ts",
+          "sha256": "f202f78709fdae1991000d8424f5c471d2f1116329f8c180a96c94ae3858513b",
+          "lines": 241
+        },
+        {
+          "path": "packages/cloudburn/test/config.e2e.test.ts",
+          "sha256": "d18188b864e41cfa485326c8d2456cffa1524e3c0cca8800ee096d3e5d5020e5",
+          "lines": 189
+        }
+      ]
+    },
+    {
+      "repo": "tryethernal/ethernal",
+      "number": 785,
+      "sha": "d93d7a9099f496bb8ba167b1c74b1fc627865518",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-20T10:36:23Z",
+      "lines": 347,
+      "files": [
+        {
+          "path": "run/api/blocks.js",
+          "sha256": "81b00c2197bbb3ba971febb65f824cff9486a235e4ae476d058063075fa0aa75",
+          "lines": 144
+        },
+        {
+          "path": "run/tests/api/blocks.test.js",
+          "sha256": "33c19f9d600424eebc82a3dc95b0704ebba67d1b98219210c7d8753c013f4c3f",
+          "lines": 203
+        }
+      ]
+    },
+    {
+      "repo": "vargHQ/sdk",
+      "number": 145,
+      "sha": "f7827adebadfce8815d122adac811873ef896083",
+      "agent": "Claude_Code",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2026-03-04T05:39:06Z",
+      "lines": 757,
+      "files": [
+        {
+          "path": "src/react/renderers/render.ts",
+          "sha256": "0bcebeb2f9fbf0a962722179c9d0cd20c072bbb5de45ed76244b26619dc42cbd",
+          "lines": 436
+        },
+        {
+          "path": "src/react/types.ts",
+          "sha256": "556c5021c32cf9bf15317a446e8a800a8610b53063896a44d82c40d8f73b29d1",
+          "lines": 321
+        }
+      ]
+    },
+    {
+      "repo": "viperrcrypto/Siftly",
+      "number": 33,
+      "sha": "87d36fce936450e0e1d792879df9d78f27ce525d",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-09T20:38:54Z",
+      "lines": 297,
+      "files": [
+        {
+          "path": "lib/twitter-api.ts",
+          "sha256": "222744e5188214b1a39fb17065b9c929c51698ba44dc004882630218c41c589c",
+          "lines": 297
+        }
+      ]
+    },
+    {
+      "repo": "voidzero-dev/oxc-angular-compiler",
+      "number": 29,
+      "sha": "a387e4e238bb2795ab3aa2935b6f098ff582c9a2",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-02-22T11:57:44Z",
+      "lines": 8526,
+      "files": [
+        {
+          "path": "crates/oxc_angular_compiler/src/pipeline/phases/reify/mod.rs",
+          "sha256": "8481ca8db6ac04f398679bfda385a9c6dea60b68949c875bd51ff39243d0c559",
+          "lines": 1390
+        },
+        {
+          "path": "crates/oxc_angular_compiler/src/pipeline/phases/resolve_contexts.rs",
+          "sha256": "8c80c5ebe85fadb1a4f23bad9699992c7abcced08cd7f23cbd98e62c83c71941",
+          "lines": 368
+        },
+        {
+          "path": "crates/oxc_angular_compiler/src/pipeline/phases/resolve_names.rs",
+          "sha256": "bce2a0a06728de5822c510b85def7cf72a2a1f3ddd88716c5bb2c294f112ab12",
+          "lines": 1602
+        },
+        {
+          "path": "crates/oxc_angular_compiler/tests/integration_test.rs",
+          "sha256": "eee916bf5bdbc3c14481d19d4ce931368701164af3a080e2b4545815587d7559",
+          "lines": 5166
+        }
+      ]
+    },
+    {
+      "repo": "vorbei/figma-capture",
+      "number": 1,
+      "sha": "c620a837d29171d6c6f9d865ebe6bfec5bde5fa7",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "ts",
+      "mergedAt": "2026-03-06T09:50:54Z",
+      "lines": 395,
+      "files": [
+        {
+          "path": "background.js",
+          "sha256": "0754f19304796751d6688137a6ac7f64ceeecb40bd20fe790a0ca441b99f30b6",
+          "lines": 395
+        }
+      ]
+    },
+    {
+      "repo": "wailsapp/wails",
+      "number": 4923,
+      "sha": "19b2ec7fbe6391cb65c083f2f1a4d7ffa9ce1ad7",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "go",
+      "mergedAt": "2026-02-02T07:57:35Z",
+      "lines": 5099,
+      "files": [
+        {
+          "path": "v3/pkg/application/linux_cgo.go",
+          "sha256": "fe1dfdad83b15b6c498fc714190635a02e318713d2b7846da826eb5df63b2408",
+          "lines": 2289
+        },
+        {
+          "path": "v3/pkg/application/linux_purego.go",
+          "sha256": "cc9a163481287b79302cce199a84dc1eedbad8731655eb7d4173296aa2fac96d",
+          "lines": 1276
+        },
+        {
+          "path": "v3/pkg/application/webview_window.go",
+          "sha256": "9abd5447ed20be02e326a6d2781f5a7412eb677b0ae42528e266c8e9312d0097",
+          "lines": 1534
+        }
+      ]
+    },
+    {
+      "repo": "whitphx/stlite",
+      "number": 1766,
+      "sha": "f92373595352e314204ed7cf88ffb9a7ad4cccfd",
+      "agent": "OpenAI_Codex",
+      "license": "Apache-2.0",
+      "language": "ts",
+      "mergedAt": "2025-12-04T09:57:49Z",
+      "lines": 400,
+      "files": [
+        {
+          "path": "packages/sharing-editor/src/Editor/index.tsx",
+          "sha256": "2ae3778a981da3a60331bb2f77ec6c8a9d0e4298f80ac25cb84930338511231d",
+          "lines": 400
+        }
+      ]
+    },
+    {
+      "repo": "zhnd/lumo",
+      "number": 28,
+      "sha": "c36feef9328146129bbe81f2e4d5cfe731732413",
+      "agent": "Claude_Code",
+      "license": "MIT",
+      "language": "rust",
+      "mergedAt": "2026-03-22T05:00:39Z",
+      "lines": 372,
+      "files": [
+        {
+          "path": "src-tauri/src/daemon/manager.rs",
+          "sha256": "3cdacc2207d39563f34c9354de85fbd58ddd5101e2b97d12a4aff3064249d058",
+          "lines": 306
+        },
+        {
+          "path": "src-tauri/src/daemon/mod.rs",
+          "sha256": "82f54cab970bc934f2591b04d180412e9cbac30da9e1cbcc4de0bbcc0f532dc0",
+          "lines": 12
+        },
+        {
+          "path": "src-tauri/src/daemon/systemd.rs",
+          "sha256": "e749b59ff03cfa458596eab1f1194ed171de70b76eed3e00d7b91b9e1fdfc99a",
+          "lines": 54
+        }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,8 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Added
+- `benchmark/ai-pr/` — a real AI pull request corpus: 150 merged PRs from six coding agents across 121 repositories (703 files, 461,062 lines), with per-PR provenance, a structural skeleton for import resolution, per-fingerprint tp/fp labels and a published 92.8% labeled precision (103 tp, 8 fp).
+- `scripts/fetch-ai-pr-corpus.mjs` verifies the release asset's SHA-256 and unpacks it; `scripts/benchmark-ai-pr.mjs` scans only the changed files and fails on unlabeled, stale or missing corpus entries.
 - `npm run test:coverage` enforces line 95%, branch 85% and function 92% in `src/`; `npm run verify` now uses it instead of the plain sandbox suite.
 - `scripts/check-benchmark-drift.mjs` compares a fresh benchmark run with the committed baseline: corpus digest, file and high-confidence counts, labeled precision, stale/unlabeled labels, seeded recall, parse-error drift and the CPython duration budget.
 - Unit tests for the drift checker (9 cases) and a test that rejects any workflow action not pinned to a full commit SHA.
@@ -17,7 +19,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Committed benchmark digests refreshed to the canonical (path-sorted, CRLF-normalized) values.
 
 ### Changed
-- 494 tests.
+- 497 tests.
 - CI now runs the coverage-gated suite; every workflow `uses:` is pinned to a commit SHA and Dependabot updates the `github-actions` ecosystem weekly.
 - Added CodeQL (`javascript-typescript`, `security-and-quality`), dependency review (runtime, high/critical) and a weekly full benchmark that compares fresh results with the committed baseline through `scripts/check-benchmark-drift.mjs`.
 - Added [docs/quality-gates.md](docs/quality-gates.md) and linked it from the docs map.

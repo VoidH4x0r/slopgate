@@ -43,7 +43,9 @@
     "prepack": "npm run build",
     "check:hygiene": "node scripts/check-repo-hygiene.mjs",
     "check:performance": "node scripts/check-performance.mjs",
-    "release:check": "node scripts/check-release.mjs"
+    "release:check": "node scripts/check-release.mjs",
+    "fetch:ai-pr": "node scripts/fetch-ai-pr-corpus.mjs",
+    "bench:ai-pr": "node scripts/benchmark-ai-pr.mjs"
   },
   "dependencies": {
     "@types/emscripten": "^1.41.6",

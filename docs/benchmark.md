@@ -126,4 +126,52 @@ The overhead is about 1 second, or roughly 9% of a scan that is already dominate
 ## What this benchmark does not measure
 
 - **Usefulness.** A finding can be correct and still be intentional (the CPython swallowed-exception findings usually are). The report separates "is it true" from "would you act on it" only implicitly, through the notes in the labels file.
-- **AI-generated code specifically.** The AI corpus is a fixed-prompt regression set, not a sample of real AI-generated pull requests. Its 13 high findings are useful for rule coverage, not for estimating a model's real-world error rate.
+- **AI-generated code specifically.** The 20-file `fixtures/ai-generated` corpus is a fixed-prompt regression set. The real AI pull request corpus below is the sample used to estimate how the rules behave on merged agent code.
+
+## Real AI pull request corpus
+
+The other corpora are human-written code plus synthetic AI fixtures. This corpus is 150 **merged pull requests written by AI coding agents** and published with provenance.
+
+### Provenance and selection
+
+- Source: [`hao-li/AIDev`](https://huggingface.co/datasets/hao-li/AIDev) v5 (cutoff 2026-03-31). AIDev only ships metadata and patches; the code is fetched from GitHub at each PR's merge commit.
+- Selection: merged PRs from repositories with more than 100 stars, one of six agents (`Claude_Code`, `Copilot`, `OpenAI_Codex`, `Cursor`, `Devin`, `Google_Jules`), and a permissive repository license.
+- Size: 150 PRs from 121 repositories, 703 changed files, 461,062 lines.
+- Languages: Python 45, TypeScript/JavaScript 45, Go 30, Rust 30.
+- Licenses: MIT 91, Apache-2.0 54, BSD-3-Clause 3, CC0-1.0 1, Unlicense 1.
+- `benchmark/ai-pr/manifest.json` records every PR, its merge commit, agent, license and the SHA-256 of each changed file.
+
+### Why the corpus ships a skeleton, not the repositories
+
+Downloading 121 full repository snapshots is not practical here: GitHub's archive endpoint was measured at roughly 11 KB/s on this network and frequently returns 504 for large repositories (the repositories total 54 GB of git objects).
+
+Scanning only the changed files without the rest of the repository is not valid either: the four `phantom-import` rules need the repository layout, and a two-PR trial produced 52 false positives out of 56 high findings.
+
+The corpus therefore ships a **structural skeleton** per PR: a GitHub tree listing reproduces every source path as an empty placeholder file, the real dependency manifests (`pyproject.toml`, requirements files, `package.json`, `tsconfig`, `go.mod`, `Cargo.toml`, lockfiles) are fetched verbatim, and the changed files keep their real content. Import resolution sees the same module layout as the original repository while only the changed files are scanned.
+
+The archive is a GitHub release asset (`ai-pr-corpus-v1.tar.gz`, 0.4 MB) because it contains third-party code; the manifest stores its SHA-256 and the fetch script verifies it before unpacking.
+
+### Running it
+
+```bash
+npm run build
+node scripts/fetch-ai-pr-corpus.mjs
+node scripts/benchmark-ai-pr.mjs
+```
+
+The benchmark exits non-zero when a high finding is unlabeled, a label no longer matches, or a corpus file fails its digest check.
+
+### Published result
+
+- **111 high-confidence findings, 103 labeled `tp`, 8 labeled `fp`: 92.8% labeled precision.**
+- 150 PRs, 703 changed files, 461,062 lines, about 20 seconds.
+- `benchmark/ai-pr/results.json` and `benchmark/ai-pr/report.md` are committed; `benchmark/ai-pr/labels.json` holds the labels.
+
+The eight false positives are all `phantom-import` reports from repositories that declare the package in a sibling subproject's manifest (`mcp_cloud/requirements.txt`), which the per-project resolver does not merge into `mcp_local/`. The corpus records the limitation instead of hiding it; the fix is tracked separately.
+
+### Limits
+
+- A skeleton is not the original tree: generated files, deleted files and vendored trees are absent, so this corpus under-reports findings that need them.
+- The corpus is a sample of merged (reviewed) agent code, not of all agent output. Merged code has already passed human review.
+- Labels were produced while iterating on the rules in the same session; this is a development-set measurement, not a held-out estimate.
+
