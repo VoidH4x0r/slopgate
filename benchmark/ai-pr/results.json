@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-26T08:00:26.420Z",
+  "generatedAt": "2026-11-26T08:13:58.121Z",
   "slopgateVersion": "1.0.3",
   "nodeVersion": "v24.19.0",
   "corpus": {
@@ -27,7 +27,7 @@
       "sha256": "c29a2423e66a062962a7603bdafe7e291b485b7d8a780a99dc942878db4bb693"
     }
   },
-  "durationMs": 23821,
+  "durationMs": 21169,
   "high": 111,
   "labeled": {
     "tp": 103,

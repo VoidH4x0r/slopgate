@@ -12,7 +12,7 @@
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findingFingerprint } from '../dist/baseline.js';
@@ -37,7 +37,7 @@ const outPath = path.resolve(ROOT, arg('out', 'benchmark/ai-pr/results.json'));
 const reportPath = path.resolve(ROOT, arg('report', 'benchmark/ai-pr/report.md'));
 const updateBaseline = process.argv.includes('--update-baseline');
 const packageJson = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-const previous = existsSync(outPath) ? JSON.parse(readFileSync(outPath, 'utf8')) : undefined;
+const previous = await readFile(outPath, 'utf8').then((text) => JSON.parse(text)).catch(() => undefined);
 
 if (!existsSync(path.join(skeletons, '.complete'))) {
   throw new Error('corpus missing: run `node scripts/fetch-ai-pr-corpus.mjs` first');
@@ -54,13 +54,13 @@ for (const pr of manifest.prs) {
   const root = path.join(skeletons, key);
   for (const file of pr.files) {
     const target = path.join(root, ...file.path.split('/'));
-    const info = await stat(target).catch(() => undefined);
-    if (!info || info.size === 0) {
+    const content = await readFile(target).catch(() => undefined);
+    if (!content || content.length === 0) {
       console.error(`missing corpus file: ${pr.repo}#${pr.number} ${file.path}`);
       verifyFailures += 1;
       continue;
     }
-    const digest = createHash('sha256').update(await readFile(target)).digest('hex');
+    const digest = createHash('sha256').update(content).digest('hex');
     if (digest !== file.sha256) {
       console.error(`digest mismatch: ${pr.repo}#${pr.number} ${file.path}`);
       verifyFailures += 1;
@@ -141,7 +141,7 @@ const results = {
   findings,
 };
 
-writeFileSync(outPath, JSON.stringify(results, null, 2) + '\n');
+await writeFile(outPath, JSON.stringify(results, null, 2) + '\n');
 
 const percent = (value) => (value === null ? 'n/a' : `${(value * 100).toFixed(1)}%`);
 const lines = [
