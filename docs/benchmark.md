@@ -159,6 +159,8 @@ node scripts/fetch-ai-pr-corpus.mjs
 node scripts/benchmark-ai-pr.mjs
 ```
 
+The corpus is unpacked under the user's cache directory (`$XDG_CACHE_HOME/slopgate/ai-pr`, or `~/.cache/slopgate/ai-pr`), not inside the checkout. A cache inside the repository makes the project resolver walk up into slopgate's own manifests and resolve imports against the wrong tree; the benchmark also pins every resolution root to the corpus entry so an accidental in-repo cache cannot change the result.
+
 The benchmark exits non-zero when a high finding is unlabeled, a label no longer matches, or a corpus file fails its digest check. The weekly benchmark workflow runs both commands and compares the result with the committed `results.json`; `--update-baseline` is the explicit way to record an intended change.
 
 ### Published result

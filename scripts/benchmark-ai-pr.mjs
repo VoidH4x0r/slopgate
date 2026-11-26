@@ -13,6 +13,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findingFingerprint } from '../dist/baseline.js';
@@ -31,7 +32,9 @@ function arg(name, fallback) {
 
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
 const labels = JSON.parse(readFileSync(LABELS, 'utf8'));
-const cache = path.resolve(ROOT, arg('cache', 'benchmark/ai-pr/cache'));
+const cacheHome = process.env.XDG_CACHE_HOME || path.join(os.homedir(), '.cache');
+const defaultCache = path.join(cacheHome, 'slopgate', 'ai-pr');
+const cache = path.resolve(ROOT, arg('cache', defaultCache));
 const skeletons = path.join(cache, 'skeletons');
 const outPath = path.resolve(ROOT, arg('out', 'benchmark/ai-pr/results.json'));
 const reportPath = path.resolve(ROOT, arg('report', 'benchmark/ai-pr/report.md'));
@@ -73,8 +76,15 @@ const findings = [];
 for (const pr of manifest.prs) {
   const key = `${pr.repo.replace('/', '__')}__${pr.sha.slice(0, 10)}`;
   const root = path.join(skeletons, key);
+  // Pin every resolution root to the corpus entry: if the cache lives inside a
+  // checkout, the default project lookup would walk up into that checkout and
+  // scan the wrong tree.
   const scan = await scanProject({
     root,
+    projectRoot: root,
+    indexRoot: root,
+    lookupRoot: root,
+    configRoot: root,
     config: { ...DEFAULT_CONFIG, include: pr.files.map((file) => file.path) },
   });
   for (const finding of scan.findings) {

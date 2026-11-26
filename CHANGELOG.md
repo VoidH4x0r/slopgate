@@ -12,6 +12,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Unit tests for the drift checker (9 cases) and a test that rejects any workflow action not pinned to a full commit SHA.
 
 ### Fixed
+- The AI PR corpus benchmark unpacks the corpus under the user cache directory and pins every resolution root to the corpus entry. A cache inside the checkout previously let the project resolver walk up into slopgate's own manifests, which changed the result (99 high findings instead of 82 on Linux CI).
 - `py/phantom-import` and `ts/phantom-import` consult every project manifest in the repository before claiming a package is missing. Imports that a sibling subproject or workspace package declares are reported at medium confidence instead of high.
 - `py/phantom-import` and `ts/phantom-import` no longer claim a package is missing when a lockfile pins it: `uv.lock`, `poetry.lock`, `pdm.lock`, `Pipfile.lock`, `package-lock.json`, `pnpm-lock.yaml` and `yarn.lock` are read, and a locked package is reported at medium confidence with the lockfile as evidence.
 - Benchmark corpus digests are hashed in sorted relative-path order with CRLF normalized to LF, so a Windows and a Linux checkout of the same tree share one identity and the scheduled benchmark does not report false drift.
