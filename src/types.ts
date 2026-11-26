@@ -91,6 +91,8 @@ export interface RuleMeta {
 export interface PythonDeps {
   declared: Set<string>;
   manifests: string[];
+  /** Distributions that a lockfile pins, so they are installed even without a manifest entry. */
+  installed: Set<string>;
   /** Top-level module names that exist inside the repository. */
   localModules: Set<string>;
 }

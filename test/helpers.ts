@@ -14,6 +14,7 @@ export const FIXTURES = path.join(ROOT, 'fixtures');
 
 export interface DepsOverrides {
   pythonDeclared?: string[];
+  pythonInstalled?: string[];
   pythonLocal?: string[];
   pythonManifests?: string[];
   nodeDeclared?: string[];
@@ -38,6 +39,7 @@ export function makeDeps(overrides: DepsOverrides = {}): ProjectDeps {
     python: {
       declared: new Set(overrides.pythonDeclared ?? []),
       manifests: overrides.pythonManifests ?? [],
+      installed: new Set(overrides.pythonInstalled ?? []),
       localModules: new Set(overrides.pythonLocal ?? []),
     },
     node: {

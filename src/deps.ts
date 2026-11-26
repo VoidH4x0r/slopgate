@@ -9,8 +9,7 @@ export function normalizePythonName(name: string): string {
 }
 
 /** `requests[socks]>=2.0 ; python_version > "3.6"` -> `requests` */
-export function requirementName(spec: string): string | undefined {
-  const trimmed = spec.trim().replace(/^['"]|['"]$/g, '').trim();
+export function requirementName(spec: string): string | undefined {  const trimmed = spec.trim().replace(/^['"]|['"]$/g, '').trim();
   if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('-')) return undefined;
   const direct = /^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])?\s*@\s*[A-Za-z][A-Za-z0-9+.-]*:\/\//.exec(trimmed);
   if (direct?.[1]) return normalizePythonName(direct[1]);
@@ -449,6 +448,34 @@ function requirementsIncludes(text: string): string[] {
   return includes;
 }
 
+const PYTHON_LOCKFILES = ['uv.lock', 'poetry.lock', 'pdm.lock', 'Pipfile.lock'];
+
+/**
+ * Distribution names pinned by a Python lockfile. A package can be installed
+ * transitively (or through an extra) without a direct manifest entry; treating
+ * those as unknown produces phantom-import noise on real repositories.
+ */
+export function pythonLockNames(fileName: string, text: string): string[] {
+  const base = path.basename(fileName).toLowerCase();
+  const names: string[] = [];
+  if (base === 'pipfile.lock') {
+    const parsed = tryParseJson(text) as Record<string, unknown> | undefined;
+    for (const section of ['default', 'develop']) {
+      const value = parsed?.[section];
+      if (value && typeof value === 'object') {
+        for (const name of Object.keys(value as Record<string, unknown>)) names.push(normalizePythonName(name));
+      }
+    }
+    return names;
+  }
+  // uv.lock, poetry.lock and pdm.lock all use `[[package]]` blocks with a name.
+  for (const block of text.split(/^\s*\[\[package\]\]\s*$/m).slice(1)) {
+    const name = /^\s*name\s*=\s*"([^"]+)"/m.exec(block)?.[1] ?? /^\s*name\s*=\s*'([^']+)'/m.exec(block)?.[1];
+    if (name) names.push(normalizePythonName(name));
+  }
+  return names;
+}
+
 async function loadPythonDeps(root: string): Promise<PythonDeps> {
   const declared = new Set<string>();
   const manifests: string[] = [];
@@ -515,7 +542,13 @@ async function loadPythonDeps(root: string): Promise<PythonDeps> {
     manifests.push(rel.replace(/\\/g, '/'));
     for (const name of parsePythonManifestText(rel, text)) declared.add(name);
   }
-  return { declared, manifests, localModules: new Set<string>() };
+  const installed = new Set<string>();
+  for (const lockName of PYTHON_LOCKFILES) {
+    const text = await readIfExists(path.join(root, lockName));
+    if (text === undefined) continue;
+    for (const name of pythonLockNames(lockName, text)) installed.add(name);
+  }
+  return { declared, manifests, installed, localModules: new Set<string>() };
 }
 
 /** Parse the parts of go.mod that matter for import resolution. */
@@ -1000,6 +1033,34 @@ async function loadWorkspaceNames(root: string): Promise<{ names: Set<string>; d
   return { names, dependencies };
 }
 
+const NODE_LOCKFILES = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'];
+
+/** Package names pinned by a Node lockfile, used when node_modules is absent. */
+export function nodeLockNames(fileName: string, text: string): string[] {
+  const base = path.basename(fileName).toLowerCase();
+  const names = new Set<string>();
+  if (base === 'package-lock.json') {
+    const parsed = tryParseJson(text) as { packages?: Record<string, unknown> } | undefined;
+    for (const key of Object.keys(parsed?.packages ?? {})) {
+      const match = /(?:^|\/)node_modules\/(.+)$/.exec(key);
+      if (match?.[1]) names.add(match[1]);
+    }
+    return [...names];
+  }
+  if (base === 'pnpm-lock.yaml') {
+    for (const match of text.matchAll(/^\s{2}'?((?:@[^/'\s]+\/)?[^@'\s:]+)@[^':]+'?:\s*$/gm)) {
+      if (match[1]) names.add(match[1]);
+    }
+    return [...names];
+  }
+  if (base === 'yarn.lock') {
+    for (const match of text.matchAll(/^"?'?((?:@[^/"]+\/)?[^@",\s]+)@[^":]*"?:/gm)) {
+      if (match[1]) names.add(match[1]);
+    }
+  }
+  return [...names];
+}
+
 async function loadNodeDeps(root: string): Promise<NodeDeps> {
   const declared = new Set<string>();
   const pkgPath = path.join(root, 'package.json');
@@ -1023,6 +1084,12 @@ async function loadNodeDeps(root: string): Promise<NodeDeps> {
   ]);
 
   for (const dependency of workspaceInfo.dependencies) declared.add(dependency);
+
+  for (const lockName of NODE_LOCKFILES) {
+    const lockText = await readIfExists(path.join(root, lockName));
+    if (lockText === undefined) continue;
+    for (const name of nodeLockNames(lockName, lockText)) installed.add(name);
+  }
 
   return {
     declared,
